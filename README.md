@@ -1,1 +1,5 @@
 # Ethnivaa
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
