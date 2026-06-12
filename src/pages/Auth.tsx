@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useShop } from '../context/ShopContext';
 import { Mail, Lock, User, KeyRound, Sparkles, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -7,9 +7,11 @@ interface AuthProps {
 }
 
 export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
-  const { login, signup, navigateTo, pendingAction } = useShop();
+  const { login, startSignup, verifySignupOtp, completeSignup, googleSignIn, navigateTo, pendingAction } = useShop();
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
+  const googleButtonRef = useRef<HTMLDivElement | null>(null);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
   
   // Login fields
   const [loginEmail, setLoginEmail] = useState('');
@@ -17,9 +19,10 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
   
   // Signup fields
   const [signupStep, setSignupStep] = useState<'email' | 'otp' | 'details'>('email');
+  const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
   const [enteredOtp, setEnteredOtp] = useState('');
+  const [signupToken, setSignupToken] = useState('');
   const [signupUsername, setSignupUsername] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
 
@@ -27,6 +30,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const hasGoogleConfig = Boolean(googleClientId);
 
   useEffect(() => {
     setAuthMode(initialMode);
@@ -37,15 +41,86 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
     setLoginEmail('');
     setLoginPassword('');
     setSignupStep('email');
+    setSignupName('');
     setSignupEmail('');
-    setGeneratedOtp('');
     setEnteredOtp('');
+    setSignupToken('');
     setSignupUsername('');
     setSignupPassword('');
     setInfoMessage(null);
     setErrorMessage(null);
     setSuccessMessage(null);
   };
+
+  useEffect(() => {
+    if (!hasGoogleConfig) {
+      return;
+    }
+
+    const renderGoogleButton = () => {
+      const google = (window as Window & { google?: any }).google;
+      if (!googleButtonRef.current || !googleClientId || !google) {
+        return false;
+      }
+
+      googleButtonRef.current.innerHTML = '';
+      google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: async (response: { credential?: string }) => {
+          if (!response.credential) {
+            displayMessage('error', 'Google sign-in did not return a credential.');
+            return;
+          }
+
+          const result = await googleSignIn(response.credential);
+          if (result.success) {
+            displayMessage('success', result.message);
+            setTimeout(() => {
+              if (!pendingAction) {
+                navigateTo('home');
+              }
+            }, 1000);
+          } else {
+            displayMessage('error', result.message);
+          }
+        },
+      });
+
+      google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: 'outline',
+        size: 'large',
+        shape: 'pill',
+        text: 'continue_with',
+        width: 320,
+      });
+
+      return true;
+    };
+
+    if (renderGoogleButton()) {
+      return;
+    }
+
+    const script = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (!script) {
+      return;
+    }
+
+    const onLoad = () => renderGoogleButton();
+    script.addEventListener('load', onLoad);
+
+    const intervalId = window.setInterval(() => {
+      if (renderGoogleButton()) {
+        window.clearInterval(intervalId);
+        script.removeEventListener('load', onLoad);
+      }
+    }, 200);
+
+    return () => {
+      script.removeEventListener('load', onLoad);
+      window.clearInterval(intervalId);
+    };
+  }, [authMode, googleClientId, googleSignIn, pendingAction, navigateTo]);
 
   const displayMessage = (type: 'info' | 'error' | 'success', text: string) => {
     if (type === 'info') {
@@ -64,14 +139,14 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
   };
 
   // Login Handler
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail || !loginPassword) {
       displayMessage('error', 'Please fill in all fields.');
       return;
     }
     
-    const result = login(loginEmail, loginPassword);
+    const result = await login(loginEmail, loginPassword);
     if (result.success) {
       displayMessage('success', result.message);
       // Post-login redirect logic is automatically handled by the ShopContext useEffect!
@@ -87,10 +162,10 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
   };
 
   // Signup Step 1: Send Email -> Show OTP entry
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupEmail) {
-      displayMessage('error', 'Please enter a valid email address.');
+    if (!signupName || !signupEmail) {
+      displayMessage('error', 'Please enter your full name and email address.');
       return;
     }
 
@@ -101,34 +176,37 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
       return;
     }
 
-    // Generate simulated OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(code);
-    
-    // Simulate sending OTP from backend
-    // Since backend does the mailing, we display a gorgeous notification with the code for testing
-    setSignupStep('otp');
-    displayMessage('info', `Simulated Email Sent! Your OTP is ${code}. Please enter it below.`);
+    const result = await startSignup(signupName, signupEmail);
+    if (result.success) {
+      setSignupStep('otp');
+      displayMessage('info', result.message || 'OTP sent to your email.');
+      return;
+    }
+
+    displayMessage('error', result.message);
   };
 
   // Signup Step 2: Verify OTP
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!enteredOtp) {
       displayMessage('error', 'Please enter the 6-digit verification code.');
       return;
     }
 
-    if (enteredOtp === generatedOtp) {
+    const result = await verifySignupOtp(signupEmail, enteredOtp);
+    if (result.success && result.signupToken) {
+      setSignupToken(result.signupToken);
       setSignupStep('details');
-      displayMessage('success', 'Email verified successfully! Complete your profile.');
-    } else {
-      displayMessage('error', 'Invalid verification code. Please check your simulated OTP and try again.');
+      displayMessage('success', result.message || 'Email verified successfully! Complete your profile.');
+      return;
     }
+
+    displayMessage('error', result.message);
   };
 
   // Signup Step 3: Complete registration
-  const handleCompleteSignup = (e: React.FormEvent) => {
+  const handleCompleteSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signupUsername || !signupPassword) {
       displayMessage('error', 'Please enter your username and set a secure password.');
@@ -140,7 +218,12 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
       return;
     }
 
-    const result = signup(signupEmail, signupUsername, signupPassword);
+    if (!signupToken) {
+      displayMessage('error', 'Please verify your OTP before continuing.');
+      return;
+    }
+
+    const result = await completeSignup(signupToken, signupPassword);
     if (result.success) {
       displayMessage('success', result.message);
       // Redirect is handled by context useEffect or default to home
@@ -244,6 +327,32 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
               </button>
             </form>
 
+            <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-obsidian-300">
+              <span className="h-px flex-1 bg-gold-100"></span>
+              <span>Or continue with Google</span>
+              <span className="h-px flex-1 bg-gold-100"></span>
+            </div>
+
+            <div className="space-y-3">
+              {hasGoogleConfig ? (
+                <div ref={googleButtonRef} className="flex justify-center"></div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => displayMessage('error', 'Missing VITE_GOOGLE_CLIENT_ID in the frontend .env file. Put it in the project root, not backend/.env, then restart Vite.')}
+                  className="w-full border border-gold-200 bg-white hover:bg-ivory-50 text-crimson-950 font-semibold rounded-full py-3.5 flex items-center justify-center gap-2 transition-colors shadow-sm"
+                >
+                  <span className="text-lg">G</span>
+                  <span>Continue with Google</span>
+                </button>
+              )}
+              {!hasGoogleConfig && (
+                <p className="text-[10px] text-obsidian-400 text-center leading-relaxed">
+                  Add <span className="font-semibold">VITE_GOOGLE_CLIENT_ID</span> to the root <span className="font-semibold">.env</span> file and restart the frontend dev server.
+                </p>
+              )}
+            </div>
+
             {/* Switch Mode */}
             <div className="text-center pt-4 border-t border-gold-100 text-xs">
               <span className="text-obsidian-500 font-light">New to Ethnivaa? </span>
@@ -267,7 +376,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
 
             {/* Step Indicators */}
             <div className="flex items-center justify-center gap-4 text-[9px] font-bold uppercase tracking-wider font-sans text-obsidian-400 py-2 border-y border-gold-100/50">
-              <span className={signupStep === 'email' ? 'text-crimson-900' : 'opacity-60'}>1. Email</span>
+              <span className={signupStep === 'email' ? 'text-crimson-900' : 'opacity-60'}>1. Name + Email</span>
               <span className="opacity-30">/</span>
               <span className={signupStep === 'otp' ? 'text-crimson-900' : 'opacity-60'}>2. Verify OTP</span>
               <span className="opacity-30">/</span>
@@ -277,6 +386,21 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
             {/* STEP 1: ENTER EMAIL */}
             {signupStep === 'email' && (
               <form onSubmit={handleSendOtp} className="space-y-4 text-xs">
+                <div className="space-y-1.5">
+                  <label className="font-bold text-obsidian-850">Full Name</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={signupName}
+                      onChange={(e) => setSignupName(e.target.value)}
+                      placeholder="e.g. Aditi Sharma"
+                      className="w-full bg-ivory-50 border border-gold-200 focus:border-gold-500 rounded-xl py-3 pl-10 pr-4 text-obsidian-950 focus:outline-none transition-colors"
+                    />
+                    <User size={16} className="absolute left-3.5 top-3.5 text-gold-600" />
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="font-bold text-obsidian-850">Enter Email Address</label>
                   <div className="relative">
@@ -291,7 +415,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                     <Mail size={16} className="absolute left-3.5 top-3.5 text-gold-600" />
                   </div>
                   <p className="text-[10px] text-obsidian-400 font-light leading-normal mt-1">
-                    An verification code (OTP) will be simulated for frontend testing.
+                    An OTP will be sent to your email through the backend.
                   </p>
                 </div>
 
@@ -337,9 +461,8 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                     <button
                       type="button"
                       onClick={() => {
-                        const code = Math.floor(100000 + Math.random() * 900000).toString();
-                        setGeneratedOtp(code);
-                        displayMessage('info', `New code sent! Your OTP is ${code}. Please enter it above.`);
+                          setErrorMessage(null);
+                          setInfoMessage('Request a new OTP by submitting your email again.');
                       }}
                       className="font-semibold text-crimson-900 hover:text-gold-600 transition-colors uppercase"
                     >
@@ -400,6 +523,32 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                 </button>
               </form>
             )}
+
+            <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-obsidian-300">
+              <span className="h-px flex-1 bg-gold-100"></span>
+              <span>Or continue with Google</span>
+              <span className="h-px flex-1 bg-gold-100"></span>
+            </div>
+
+            <div className="space-y-3">
+              {hasGoogleConfig ? (
+                <div ref={googleButtonRef} className="flex justify-center"></div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => displayMessage('error', 'Missing VITE_GOOGLE_CLIENT_ID in the frontend .env file. Put it in the project root, not backend/.env, then restart Vite.')}
+                  className="w-full border border-gold-200 bg-white hover:bg-ivory-50 text-crimson-950 font-semibold rounded-full py-3.5 flex items-center justify-center gap-2 transition-colors shadow-sm"
+                >
+                  <span className="text-lg">G</span>
+                  <span>Continue with Google</span>
+                </button>
+              )}
+              {!hasGoogleConfig && (
+                <p className="text-[10px] text-obsidian-400 text-center leading-relaxed">
+                  Add <span className="font-semibold">VITE_GOOGLE_CLIENT_ID</span> to the root <span className="font-semibold">.env</span> file and restart the frontend dev server.
+                </p>
+              )}
+            </div>
 
             {/* Switch Mode */}
             <div className="text-center pt-4 border-t border-gold-100 text-xs">

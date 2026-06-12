@@ -23,6 +23,12 @@ export interface Profile {
   savedAddresses: ShippingAddress[];
 }
 
+type AuthResult = {
+  success: boolean;
+  message: string;
+  signupToken?: string;
+};
+
 export interface Order {
   id: string;
   date: string;
@@ -100,8 +106,11 @@ interface ShopContextType {
   currentUser: string | null;
   pendingAction: any;
   setPendingAction: (action: any) => void;
-  login: (email: string, password: string) => { success: boolean; message: string };
-  signup: (email: string, username: string, password: string) => { success: boolean; message: string };
+  login: (email: string, password: string) => Promise<AuthResult>;
+  startSignup: (name: string, email: string) => Promise<AuthResult>;
+  verifySignupOtp: (email: string, otp: string) => Promise<AuthResult>;
+  completeSignup: (signupToken: string, password: string) => Promise<AuthResult>;
+  googleSignIn: (idToken: string) => Promise<AuthResult>;
   logout: () => void;
 }
 
@@ -121,6 +130,24 @@ const safeParse = <T,>(key: string, defaultValue: T): T => {
     console.error(`Error parsing localStorage key "${key}":`, e);
     return defaultValue;
   }
+};
+
+const apiRequest = async <T,>(path: string, body: Record<string, unknown>): Promise<T> => {
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = typeof payload.message === 'string' ? payload.message : 'Request failed';
+    throw new Error(message);
+  }
+
+  return payload as T;
 };
 
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
@@ -180,22 +207,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdminView, setIsAdminViewState] = useState<boolean>(false);
   const [activeAccountTab, setActiveAccountTab] = useState<'orders' | 'wishlist' | 'addresses' | 'profile'>('orders');
 
-  const [users, setUsers] = useState<{ email: string; username: string; password: string }[]>(() => {
-    return safeParse('ethnivaa_registered_users', [
-      { email: 'aditi.sharma@gmail.com', username: 'Aditi Sharma', password: 'password123' }
-    ]);
-  });
-
   const [currentUser, setCurrentUser] = useState<string | null>(() => {
     return safeParse<string | null>('ethnivaa_current_user', null);
   });
 
-  const [pendingAction, setPendingAction] = useState<any>(null);
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    return safeParse<string | null>('ethnivaa_auth_token', null);
+  });
 
-  // Sync auth states to local storage
-  useEffect(() => {
-    localStorage.setItem('ethnivaa_registered_users', JSON.stringify(users));
-  }, [users]);
+  const [pendingAction, setPendingAction] = useState<any>(null);
 
   useEffect(() => {
     if (currentUser) {
@@ -204,6 +224,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('ethnivaa_current_user');
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (authToken) {
+      localStorage.setItem('ethnivaa_auth_token', JSON.stringify(authToken));
+    } else {
+      localStorage.removeItem('ethnivaa_auth_token');
+    }
+  }, [authToken]);
 
   useEffect(() => {
     if (currentUser && pendingAction) {
@@ -455,39 +483,80 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
-  const login = (email: string, password: string) => {
-    const matchedUser = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-    if (matchedUser) {
-      setCurrentUser(matchedUser.email);
-      setProfile(prev => ({
-        ...prev,
-        name: matchedUser.username,
-        email: matchedUser.email
-      }));
-      return { success: true, message: 'Welcome back, ' + matchedUser.username };
-    }
-    return { success: false, message: 'Invalid email or password' };
-  };
-
-  const signup = (email: string, username: string, password: string) => {
-    const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existing) {
-      return { success: false, message: 'Email already registered' };
-    }
-    const newUser = { email, username, password };
-    setUsers(prev => [...prev, newUser]);
-    setCurrentUser(email);
+  const applyAuthSession = (payload: { token: string; user: { email: string; name: string } }, successMessage: string) => {
+    setAuthToken(payload.token);
+    setCurrentUser(payload.user.email);
     setProfile(prev => ({
       ...prev,
-      name: username,
-      email: email,
-      savedAddresses: []
+      name: payload.user.name,
+      email: payload.user.email,
     }));
-    return { success: true, message: 'Account created successfully!' };
+    return { success: true, message: successMessage };
+  };
+
+  const login = async (email: string, password: string): Promise<AuthResult> => {
+    try {
+      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string } }>(
+        '/api/auth/login',
+        { email, password }
+      );
+      return applyAuthSession(response, response.message || 'Login successful');
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Login failed' };
+    }
+  };
+
+  const startSignup = async (name: string, email: string): Promise<AuthResult> => {
+    try {
+      const response = await apiRequest<{ message: string; expiresAt: string }>(
+        '/api/auth/signup/start',
+        { name, email }
+      );
+      return { success: true, message: response.message || 'OTP sent to email' };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Failed to send OTP' };
+    }
+  };
+
+  const verifySignupOtp = async (email: string, otp: string): Promise<AuthResult> => {
+    try {
+      const response = await apiRequest<{ message: string; signupToken: string }>(
+        '/api/auth/signup/verify',
+        { email, otp }
+      );
+      return { success: true, message: response.message || 'OTP verified successfully', signupToken: response.signupToken };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Failed to verify OTP' };
+    }
+  };
+
+  const completeSignup = async (signupToken: string, password: string): Promise<AuthResult> => {
+    try {
+      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string } }>(
+        '/api/auth/signup/complete',
+        { signupToken, password }
+      );
+      return applyAuthSession(response, response.message || 'Account created successfully');
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Failed to create account' };
+    }
+  };
+
+  const googleSignIn = async (idToken: string): Promise<AuthResult> => {
+    try {
+      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string } }>(
+        '/api/auth/google',
+        { idToken }
+      );
+      return applyAuthSession(response, response.message || 'Google sign-in successful');
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Google sign-in failed' };
+    }
   };
 
   const logout = () => {
     setCurrentUser(null);
+    setAuthToken(null);
     setPendingAction(null);
     setProfile({
       name: 'Aditi Sharma',
@@ -549,7 +618,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       pendingAction,
       setPendingAction,
       login,
-      signup,
+      startSignup,
+      verifySignupOtp,
+      completeSignup,
+      googleSignIn,
       logout
     }}>
       {children}
