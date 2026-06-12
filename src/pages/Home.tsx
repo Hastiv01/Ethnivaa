@@ -11,43 +11,49 @@ const HERO_SLIDES = [
     title: 'The Royal Kundan Collection',
     subtitle: 'Crafted for modern queens, inspired by Mughal heritage.',
     tagline: 'FEEL ROYAL • ETHNIVAA WEDDINGS',
-    cta: 'Explore Bridal Kundan',
-    category: 'Kundan'
+    cta: 'Explore Royal Combos',
+    category: 'Combo Sets'
   },
   {
     image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1600&auto=format&fit=crop&q=80',
     title: 'Navratri Oxidized Masterpieces',
     subtitle: 'Rustic silver ornaments detailed with handcarved peacock motifs.',
     tagline: 'FESTIVE RHYTHM • GARBA EXCLUSIVES',
-    cta: 'Shop Festive Silver',
-    category: 'Navratri'
+    cta: 'Shop Statement Earrings',
+    category: 'Earrings'
   }
 ];
 
 const COLLECTIONS = [
   {
-    name: 'Navratri Collection',
-    category: 'Navratri',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&auto=format&fit=crop&q=80',
-    tag: 'Garba Chokers & Jhumkas'
+    name: 'Bangles',
+    category: 'Bangles',
+    image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&auto=format&fit=crop&q=80',
+    tag: 'Bangles & Kada Sets'
   },
   {
-    name: 'Oxidized Jewelry',
-    category: 'Oxidized',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop&q=80',
-    tag: 'Bohemian Silver Statement pieces'
-  },
-  {
-    name: 'Kundan Collection',
-    category: 'Kundan',
-    image: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=600&auto=format&fit=crop&q=80',
-    tag: 'Traditional Jadau Gold Plating'
-  },
-  {
-    name: 'Temple Jewelry',
-    category: 'Temple',
+    name: 'Earrings',
+    category: 'Earrings',
     image: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=600&auto=format&fit=crop&q=80',
-    tag: 'Divine Kemp Accents & Motifs'
+    tag: 'Stunning Chandbalis & Jhumkas'
+  },
+  {
+    name: 'Hair Accessories',
+    category: 'Hair Accessories',
+    image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=600&auto=format&fit=crop&q=80',
+    tag: 'Tikkas & Hair Ornaments'
+  },
+  {
+    name: 'Necklaces',
+    category: 'Necklaces',
+    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&auto=format&fit=crop&q=80',
+    tag: 'Royal Chokers & Long Haars'
+  },
+  {
+    name: 'Combo Sets',
+    category: 'Combo Sets',
+    image: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=600&auto=format&fit=crop&q=80',
+    tag: 'Complete Matching Jewelry Sets'
   }
 ];
 
@@ -170,7 +176,7 @@ export const Home: React.FC = () => {
           <div className="w-16 h-0.5 bg-gold-400 mx-auto mt-2"></div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {COLLECTIONS.map((col, idx) => (
             <div
               key={idx}
@@ -232,36 +238,6 @@ export const Home: React.FC = () => {
               onQuickView={(p) => setQuickViewProduct(p)} 
             />
           ))}
-        </div>
-      </section>
-
-      {/* Promo Middle Section */}
-      <section className="w-full bg-luxury-gradient text-white py-16 px-4 border-y border-gold-400 relative overflow-hidden flex flex-col items-center justify-center text-center">
-        {/* Subtle background graphic details */}
-        <div className="absolute -left-16 -top-16 w-64 h-64 border border-gold-400/10 rounded-full"></div>
-        <div className="absolute -right-16 -bottom-16 w-64 h-64 border border-gold-400/10 rounded-full"></div>
-
-        <div className="max-w-3xl space-y-6 relative z-10 px-4">
-          <span className="text-gold-400 text-xs sm:text-sm font-bold tracking-[0.4em] uppercase font-sans">
-            Limited Edition Treasures
-          </span>
-          <h2 className="font-serif text-3xl sm:text-5xl font-extrabold leading-tight">
-            Celebrate Festive Splendor
-          </h2>
-          <p className="font-sans text-sm sm:text-base text-ivory-300 font-light max-w-xl mx-auto leading-relaxed">
-            Adorn yourself in divine traditions. Order handcrafted, gold-plated temple sets and authentic oxidized silver jewelry designed for elegance and legacy.
-          </p>
-          <div className="pt-2">
-            <button
-              onClick={() => {
-                setSelectedCategoryFilter(null);
-                navigateTo('shop');
-              }}
-              className="bg-gold-400 hover:bg-gold-500 text-crimson-950 font-bold uppercase tracking-wider text-xs px-8 py-3.5 rounded-full transition-colors duration-300 shadow-gold"
-            >
-              Shop the Festive Sale
-            </button>
-          </div>
         </div>
       </section>
 

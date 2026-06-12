@@ -14,7 +14,7 @@ export interface Product {
   originalPrice?: number;
   rating: number;
   reviewsCount: number;
-  category: 'Navratri' | 'Oxidized' | 'Kundan' | 'Temple';
+  category: 'Bangles' | 'Earrings' | 'Hair Accessories' | 'Necklaces' | 'Combo Sets';
   material: '22K Gold' | 'Sterling Silver' | 'Gold Plated' | 'Oxidized Silver' | 'Brass';
   occasion: 'Festive' | 'Bridal' | 'Casual Wear' | 'Party Wear';
   images: string[];
@@ -35,7 +35,7 @@ export const mockProducts: Product[] = [
     originalPrice: 2499,
     rating: 4.8,
     reviewsCount: 124,
-    category: 'Navratri',
+    category: 'Combo Sets',
     material: 'Oxidized Silver',
     occasion: 'Festive',
     images: [
@@ -61,7 +61,7 @@ export const mockProducts: Product[] = [
     originalPrice: 10999,
     rating: 4.9,
     reviewsCount: 88,
-    category: 'Kundan',
+    category: 'Combo Sets',
     material: 'Gold Plated',
     occasion: 'Bridal',
     images: [
@@ -86,7 +86,7 @@ export const mockProducts: Product[] = [
     originalPrice: 15500,
     rating: 4.7,
     reviewsCount: 42,
-    category: 'Temple',
+    category: 'Combo Sets',
     material: '22K Gold',
     occasion: 'Bridal',
     images: [
@@ -110,7 +110,7 @@ export const mockProducts: Product[] = [
     originalPrice: 1499,
     rating: 4.6,
     reviewsCount: 205,
-    category: 'Oxidized',
+    category: 'Earrings',
     material: 'Oxidized Silver',
     occasion: 'Casual Wear',
     images: [
@@ -135,7 +135,7 @@ export const mockProducts: Product[] = [
     originalPrice: 8999,
     rating: 4.8,
     reviewsCount: 56,
-    category: 'Temple',
+    category: 'Necklaces',
     material: 'Gold Plated',
     occasion: 'Festive',
     images: [
@@ -159,7 +159,7 @@ export const mockProducts: Product[] = [
     originalPrice: 1999,
     rating: 4.5,
     reviewsCount: 79,
-    category: 'Navratri',
+    category: 'Bangles',
     material: 'Oxidized Silver',
     occasion: 'Festive',
     images: [
@@ -183,7 +183,7 @@ export const mockProducts: Product[] = [
     originalPrice: 22000,
     rating: 5.0,
     reviewsCount: 31,
-    category: 'Temple',
+    category: 'Necklaces',
     material: '22K Gold',
     occasion: 'Bridal',
     images: [
@@ -207,7 +207,7 @@ export const mockProducts: Product[] = [
     originalPrice: 3499,
     rating: 4.7,
     reviewsCount: 64,
-    category: 'Kundan',
+    category: 'Hair Accessories',
     material: 'Gold Plated',
     occasion: 'Bridal',
     images: [

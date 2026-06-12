@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { Search, Heart, ShoppingBag, User, ShieldAlert, Sparkles, Menu, X, ArrowRight } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, ShieldAlert, Sparkles, Menu, X, ArrowRight, LogOut } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { 
@@ -11,7 +11,11 @@ export const Navbar: React.FC = () => {
     searchQuery, 
     setSearchQuery,
     isAdminView,
-    setIsAdminView
+    setIsAdminView,
+    setActiveAccountTab,
+    currentUser,
+    profile,
+    logout
   } = useShop();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -67,7 +71,12 @@ export const Navbar: React.FC = () => {
             {menuItems.map((item) => (
               <button
                 key={item.page}
-                onClick={() => navigateTo(item.page)}
+                onClick={() => {
+                  if (item.page === 'account') {
+                    setActiveAccountTab('orders');
+                  }
+                  navigateTo(item.page);
+                }}
                 className={`font-sans text-sm font-semibold tracking-wider uppercase transition-colors duration-200 ${
                   currentPage === item.page 
                     ? 'text-crimson-800 border-b-2 border-gold-400 pb-1' 
@@ -127,7 +136,10 @@ export const Navbar: React.FC = () => {
 
             {/* Wishlist Icon */}
             <button 
-              onClick={() => navigateTo('account')} 
+              onClick={() => {
+                setActiveAccountTab('wishlist');
+                navigateTo('account');
+              }}
               className="text-crimson-950 hover:text-gold-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200 relative"
               title="Wishlist"
             >
@@ -153,14 +165,40 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* User Icon */}
-            <button 
-              onClick={() => navigateTo('account')} 
-              className="text-crimson-950 hover:text-gold-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200"
-              title="User Account"
-            >
-              <User size={20} />
-            </button>
+            {/* User Account / Logout */}
+            {currentUser ? (
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => {
+                    setActiveAccountTab('orders');
+                    navigateTo('account');
+                  }}
+                  className="text-crimson-950 hover:text-gold-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200 flex items-center gap-1.5"
+                  title="My Profile"
+                >
+                  <User size={20} />
+                  <span className="hidden lg:inline text-xs font-semibold uppercase tracking-wider text-crimson-950 truncate max-w-[80px]">
+                    {profile.name.split(' ')[0]}
+                  </span>
+                </button>
+                <button
+                  onClick={logout}
+                  className="text-crimson-950 hover:text-crimson-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200"
+                  title="Log Out"
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => navigateTo('login')}
+                className="text-crimson-950 hover:text-gold-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200 flex items-center gap-1"
+                title="Log In"
+              >
+                <User size={20} />
+                <span className="hidden lg:inline text-xs font-bold uppercase tracking-wider">Log In</span>
+              </button>
+            )}
 
             {/* Elegant Admin Switch */}
             <button
@@ -203,6 +241,9 @@ export const Navbar: React.FC = () => {
               <button
                 key={item.page}
                 onClick={() => {
+                  if (item.page === 'account') {
+                    setActiveAccountTab('orders');
+                  }
                   navigateTo(item.page);
                   setIsMobileMenuOpen(false);
                 }}
@@ -214,6 +255,36 @@ export const Navbar: React.FC = () => {
               </button>
             ))}
             
+            {currentUser ? (
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex items-center justify-between w-full border-t border-gold-200 pt-3 text-left font-sans text-sm font-semibold tracking-wider uppercase text-crimson-800"
+              >
+                <span className="flex items-center gap-2">
+                  <LogOut size={16} />
+                  <span>Log Out ({profile.name.split(' ')[0]})</span>
+                </span>
+                <ArrowRight size={16} />
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  navigateTo('login');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex items-center justify-between w-full border-t border-gold-200 pt-3 text-left font-sans text-sm font-semibold tracking-wider uppercase text-crimson-800"
+              >
+                <span className="flex items-center gap-2">
+                  <User size={16} />
+                  <span>Log In / Sign Up</span>
+                </span>
+                <ArrowRight size={16} />
+              </button>
+            )}
+
             <button
               onClick={() => {
                 setIsAdminView(!isAdminView);

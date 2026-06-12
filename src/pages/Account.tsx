@@ -13,10 +13,10 @@ export const Account: React.FC = () => {
     wishlist, 
     products, 
     saveProfileAddress,
-    navigateTo 
+    navigateTo,
+    activeAccountTab: activeTab,
+    setActiveAccountTab: setActiveTab
   } = useShop();
-
-  const [activeTab, setActiveTab] = useState<'orders' | 'wishlist' | 'addresses' | 'profile'>('orders');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 

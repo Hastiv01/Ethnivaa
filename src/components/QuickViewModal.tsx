@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { Product } from '../data/products';
 import { useShop } from '../context/ShopContext';
 import { X, Heart, ShoppingBag, ArrowRight, Minus, Plus } from 'lucide-react';
@@ -12,6 +13,17 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
   const { addToCart, toggleWishlist, isInWishlist, navigateTo } = useShop();
   const [quantity, setQuantity] = useState(1);
   const [addedMessage, setAddedMessage] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [product]);
 
   if (!product) return null;
 
@@ -31,7 +43,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
 
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-obsidian-950/60 backdrop-blur-sm animate-fadeIn">
       {/* Modal Card */}
       <div className="relative w-full max-w-4xl bg-white border border-gold-300 rounded-3xl overflow-hidden shadow-gold-xl animate-scaleIn max-h-[90vh] overflow-y-auto custom-scrollbar">
@@ -178,6 +190,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

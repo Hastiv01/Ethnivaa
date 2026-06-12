@@ -59,23 +59,28 @@ export const Footer: React.FC = () => {
             <h3 className="font-serif text-lg text-gold-400 font-semibold tracking-wider">Collections</h3>
             <ul className="space-y-3 text-sm font-light text-ivory-400">
               <li>
-                <button onClick={() => selectCategory('Navratri')} className="hover:text-gold-300 transition-colors duration-200">
-                  Navratri (Oxidized Silver)
+                <button onClick={() => selectCategory('Bangles')} className="hover:text-gold-300 transition-colors duration-200">
+                  Bangles
                 </button>
               </li>
               <li>
-                <button onClick={() => selectCategory('Kundan')} className="hover:text-gold-300 transition-colors duration-200">
-                  Kundan Jadau
+                <button onClick={() => selectCategory('Earrings')} className="hover:text-gold-300 transition-colors duration-200">
+                  Earrings
                 </button>
               </li>
               <li>
-                <button onClick={() => selectCategory('Temple')} className="hover:text-gold-300 transition-colors duration-200">
-                  Deity Temple Jewelry
+                <button onClick={() => selectCategory('Hair Accessories')} className="hover:text-gold-300 transition-colors duration-200">
+                  Hair Accessories
                 </button>
               </li>
               <li>
-                <button onClick={() => selectCategory('Oxidized')} className="hover:text-gold-300 transition-colors duration-200">
-                  Antique Oxidized
+                <button onClick={() => selectCategory('Necklaces')} className="hover:text-gold-300 transition-colors duration-200">
+                  Necklaces
+                </button>
+              </li>
+              <li>
+                <button onClick={() => selectCategory('Combo Sets')} className="hover:text-gold-300 transition-colors duration-200">
+                  Combo Sets
                 </button>
               </li>
             </ul>

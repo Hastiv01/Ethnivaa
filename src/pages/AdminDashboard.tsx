@@ -26,7 +26,7 @@ export const AdminDashboard: React.FC = () => {
     name: '',
     price: 0,
     originalPrice: 0,
-    category: 'Navratri' as Product['category'],
+    category: 'Necklaces' as Product['category'],
     material: 'Oxidized Silver' as Product['material'],
     occasion: 'Festive' as Product['occasion'],
     description: '',
@@ -99,7 +99,7 @@ export const AdminDashboard: React.FC = () => {
       name: '',
       price: 1500,
       originalPrice: 2000,
-      category: 'Navratri',
+      category: 'Necklaces',
       material: 'Oxidized Silver',
       occasion: 'Festive',
       description: 'Handcrafted luxury traditional ornament for special occasions.',
@@ -428,10 +428,11 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-1.5">
                   <label className="font-semibold text-obsidian-800">Collection Category</label>
                   <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-                    <option value="Navratri">Navratri Collection</option>
-                    <option value="Oxidized">Oxidized Jewelry</option>
-                    <option value="Kundan">Kundan Collection</option>
-                    <option value="Temple">Temple Jewelry</option>
+                    <option value="Bangles">Bangles</option>
+                    <option value="Earrings">Earrings</option>
+                    <option value="Hair Accessories">Hair Accessories</option>
+                    <option value="Necklaces">Necklaces</option>
+                    <option value="Combo Sets">Combo Sets</option>
                   </select>
                 </div>
                 
@@ -525,10 +526,11 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-1.5">
                   <label className="font-semibold text-obsidian-800">Collection Category</label>
                   <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-                    <option value="Navratri">Navratri Collection</option>
-                    <option value="Oxidized">Oxidized Jewelry</option>
-                    <option value="Kundan">Kundan Collection</option>
-                    <option value="Temple">Temple Jewelry</option>
+                    <option value="Bangles">Bangles</option>
+                    <option value="Earrings">Earrings</option>
+                    <option value="Hair Accessories">Hair Accessories</option>
+                    <option value="Necklaces">Necklaces</option>
+                    <option value="Combo Sets">Combo Sets</option>
                   </select>
                 </div>
                 

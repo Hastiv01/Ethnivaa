@@ -5,9 +5,7 @@ import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
 import { SlidersHorizontal, ArrowUpDown, RotateCcw, X, Search } from 'lucide-react';
 
-const CATEGORIES = ['Navratri', 'Oxidized', 'Kundan', 'Temple'];
-const OCCASIONS = ['Festive', 'Bridal', 'Casual Wear', 'Party Wear'];
-const MATERIALS = ['22K Gold', 'Sterling Silver', 'Gold Plated', 'Oxidized Silver', 'Brass'];
+const CATEGORIES = ['Bangles', 'Earrings', 'Hair Accessories', 'Necklaces', 'Combo Sets'];
 const PRICE_RANGES = [
   { label: 'All Prices', min: 0, max: 999999 },
   { label: 'Under ₹2,000', min: 0, max: 2000 },
@@ -25,8 +23,6 @@ export const ProductListing: React.FC = () => {
     setSelectedCategoryFilter 
   } = useShop();
 
-  const [selectedOccasion, setSelectedOccasion] = useState<string | null>(null);
-  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState<number>(0); // Index of range
   const [sortBy, setSortBy] = useState<string>('popular');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
@@ -51,16 +47,6 @@ export const ProductListing: React.FC = () => {
       result = result.filter(p => p.category === selectedCategoryFilter);
     }
 
-    // Occasion filter
-    if (selectedOccasion) {
-      result = result.filter(p => p.occasion === selectedOccasion);
-    }
-
-    // Material filter
-    if (selectedMaterial) {
-      result = result.filter(p => p.material === selectedMaterial);
-    }
-
     // Price range filter
     const range = PRICE_RANGES[selectedPriceRange];
     result = result.filter(p => p.price >= range.min && p.price <= range.max);
@@ -79,13 +65,11 @@ export const ProductListing: React.FC = () => {
     }
 
     return result;
-  }, [products, searchQuery, selectedCategoryFilter, selectedOccasion, selectedMaterial, selectedPriceRange, sortBy]);
+  }, [products, searchQuery, selectedCategoryFilter, selectedPriceRange, sortBy]);
 
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCategoryFilter(null);
-    setSelectedOccasion(null);
-    setSelectedMaterial(null);
     setSelectedPriceRange(0);
     setSortBy('popular');
   };
@@ -169,62 +153,6 @@ export const ProductListing: React.FC = () => {
               ))}
             </div>
           </div>
-
-          {/* Filter: Material */}
-          <div className="space-y-2.5 pt-4 border-t border-gold-100">
-            <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
-              Material
-            </span>
-            <div className="flex flex-col space-y-1.5 font-sans text-xs">
-              <button
-                onClick={() => setSelectedMaterial(null)}
-                className={`text-left py-1 hover:text-crimson-900 transition-colors ${
-                  !selectedMaterial ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
-                }`}
-              >
-                All Materials
-              </button>
-              {MATERIALS.map(mat => (
-                <button
-                  key={mat}
-                  onClick={() => setSelectedMaterial(mat)}
-                  className={`text-left py-1 hover:text-crimson-900 transition-colors ${
-                    selectedMaterial === mat ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
-                  }`}
-                >
-                  {mat}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Filter: Occasion */}
-          <div className="space-y-2.5 pt-4 border-t border-gold-100">
-            <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
-              Occasion
-            </span>
-            <div className="flex flex-col space-y-1.5 font-sans text-xs">
-              <button
-                onClick={() => setSelectedOccasion(null)}
-                className={`text-left py-1 hover:text-crimson-900 transition-colors ${
-                  !selectedOccasion ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
-                }`}
-              >
-                All Occasions
-              </button>
-              {OCCASIONS.map(occ => (
-                <button
-                  key={occ}
-                  onClick={() => setSelectedOccasion(occ)}
-                  className={`text-left py-1 hover:text-crimson-900 transition-colors ${
-                    selectedOccasion === occ ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
-                  }`}
-                >
-                  {occ}
-                </button>
-              ))}
-            </div>
-          </div>
         </aside>
 
         {/* Right column: Toolbar + Product Grid */}
@@ -246,22 +174,6 @@ export const ProductListing: React.FC = () => {
                 <span className="bg-gold-50 text-crimson-950 text-xs px-3.5 py-1.5 rounded-full border border-gold-200 flex items-center gap-1.5 font-sans font-medium">
                   <span>Collection: {selectedCategoryFilter}</span>
                   <button onClick={() => setSelectedCategoryFilter(null)} className="hover:text-crimson-600">
-                    <X size={12} />
-                  </button>
-                </span>
-              )}
-              {selectedMaterial && (
-                <span className="bg-gold-50 text-crimson-950 text-xs px-3.5 py-1.5 rounded-full border border-gold-200 flex items-center gap-1.5 font-sans font-medium">
-                  <span>Material: {selectedMaterial}</span>
-                  <button onClick={() => setSelectedMaterial(null)} className="hover:text-crimson-600">
-                    <X size={12} />
-                  </button>
-                </span>
-              )}
-              {selectedOccasion && (
-                <span className="bg-gold-50 text-crimson-950 text-xs px-3.5 py-1.5 rounded-full border border-gold-200 flex items-center gap-1.5 font-sans font-medium">
-                  <span>Occasion: {selectedOccasion}</span>
-                  <button onClick={() => setSelectedOccasion(null)} className="hover:text-crimson-600">
                     <X size={12} />
                   </button>
                 </span>
@@ -407,71 +319,7 @@ export const ProductListing: React.FC = () => {
                     ))}
                   </div>
                 </div>
-
-                {/* Material Filter */}
-                <div className="space-y-2.5 border-t border-gold-100 pt-4">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
-                    Material
-                  </span>
-                  <div className="flex flex-wrap gap-2 text-xs font-sans">
-                    <button
-                      onClick={() => setSelectedMaterial(null)}
-                      className={`px-3 py-1.5 rounded-full border transition-all ${
-                        !selectedMaterial 
-                          ? 'bg-crimson-950 text-gold-100 border-crimson-950' 
-                          : 'bg-white border-gold-300 text-obsidian-800'
-                      }`}
-                    >
-                      All
-                    </button>
-                    {MATERIALS.map(mat => (
-                      <button
-                        key={mat}
-                        onClick={() => setSelectedMaterial(mat)}
-                        className={`px-3 py-1.5 rounded-full border transition-all ${
-                          selectedMaterial === mat 
-                            ? 'bg-crimson-950 text-gold-100 border-crimson-950' 
-                            : 'bg-white border-gold-300 text-obsidian-800'
-                        }`}
-                      >
-                        {mat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Occasion Filter */}
-                <div className="space-y-2.5 border-t border-gold-100 pt-4">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
-                    Occasion
-                  </span>
-                  <div className="flex flex-wrap gap-2 text-xs font-sans">
-                    <button
-                      onClick={() => setSelectedOccasion(null)}
-                      className={`px-3 py-1.5 rounded-full border transition-all ${
-                        !selectedOccasion 
-                          ? 'bg-crimson-950 text-gold-100 border-crimson-950' 
-                          : 'bg-white border-gold-300 text-obsidian-800'
-                      }`}
-                    >
-                      All
-                    </button>
-                    {OCCASIONS.map(occ => (
-                      <button
-                        key={occ}
-                        onClick={() => setSelectedOccasion(occ)}
-                        className={`px-3 py-1.5 rounded-full border transition-all ${
-                          selectedOccasion === occ 
-                            ? 'bg-crimson-950 text-gold-100 border-crimson-950' 
-                            : 'bg-white border-gold-300 text-obsidian-800'
-                        }`}
-                      >
-                        {occ}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
+                {/* End of Filters */}
               </div>
             </div>
 

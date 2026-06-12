@@ -13,6 +13,7 @@ import { OrderSuccess } from './pages/OrderSuccess';
 import { Account } from './pages/Account';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Welcome } from './pages/Welcome';
+import { Auth } from './pages/Auth';
 
 const AppContent: React.FC = () => {
   const { currentPage } = useShop();
@@ -37,6 +38,10 @@ const AppContent: React.FC = () => {
         return <Account />;
       case 'admin':
         return <AdminDashboard />;
+      case 'login':
+        return <Auth mode="login" />;
+      case 'signup':
+        return <Auth mode="signup" />;
       default:
         return <Home />;
     }

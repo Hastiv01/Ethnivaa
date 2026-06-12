@@ -41,7 +41,7 @@ export interface Order {
   total: number;
 }
 
-export type PageType = 'welcome' | 'home' | 'shop' | 'details' | 'cart' | 'checkout' | 'success' | 'account' | 'admin';
+export type PageType = 'welcome' | 'home' | 'shop' | 'details' | 'cart' | 'checkout' | 'success' | 'account' | 'admin' | 'login' | 'signup';
 
 interface ShopContextType {
   // Routing State
@@ -91,6 +91,18 @@ interface ShopContextType {
   // Admin View State
   isAdminView: boolean;
   setIsAdminView: (val: boolean) => void;
+
+  // Account Tab State
+  activeAccountTab: 'orders' | 'wishlist' | 'addresses' | 'profile';
+  setActiveAccountTab: (tab: 'orders' | 'wishlist' | 'addresses' | 'profile') => void;
+
+  // Auth State
+  currentUser: string | null;
+  pendingAction: any;
+  setPendingAction: (action: any) => void;
+  login: (email: string, password: string) => { success: boolean; message: string };
+  signup: (email: string, username: string, password: string) => { success: boolean; message: string };
+  logout: () => void;
 }
 
 const safeParse = <T,>(key: string, defaultValue: T): T => {
@@ -124,7 +136,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load initial products from localStorage or use mockProducts
   const [products, setProducts] = useState<Product[]>(() => {
-    return safeParse('ethnivaa_products', mockProducts);
+    return safeParse('ethnivaa_products_v2', mockProducts);
   });
 
   // Load Cart from localStorage
@@ -166,10 +178,66 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [isAdminView, setIsAdminViewState] = useState<boolean>(false);
+  const [activeAccountTab, setActiveAccountTab] = useState<'orders' | 'wishlist' | 'addresses' | 'profile'>('orders');
+
+  const [users, setUsers] = useState<{ email: string; username: string; password: string }[]>(() => {
+    return safeParse('ethnivaa_registered_users', [
+      { email: 'aditi.sharma@gmail.com', username: 'Aditi Sharma', password: 'password123' }
+    ]);
+  });
+
+  const [currentUser, setCurrentUser] = useState<string | null>(() => {
+    return safeParse<string | null>('ethnivaa_current_user', null);
+  });
+
+  const [pendingAction, setPendingAction] = useState<any>(null);
+
+  // Sync auth states to local storage
+  useEffect(() => {
+    localStorage.setItem('ethnivaa_registered_users', JSON.stringify(users));
+  }, [users]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('ethnivaa_current_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('ethnivaa_current_user');
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser && pendingAction) {
+      const { type, fromPage } = pendingAction;
+      if (type === 'cart') {
+        setCartItems(prev => {
+          const existing = prev.find(item => item.product.id === pendingAction.product.id);
+          if (existing) {
+            return prev.map(item =>
+              item.product.id === pendingAction.product.id
+                ? { ...item, quantity: item.quantity + pendingAction.quantity }
+                : item
+            );
+          }
+          return [...prev, { product: pendingAction.product, quantity: pendingAction.quantity }];
+        });
+        if (fromPage) navigateTo(fromPage);
+      } else if (type === 'wishlist') {
+        setWishlist(prev =>
+          prev.includes(pendingAction.productId)
+            ? prev.filter(id => id !== pendingAction.productId)
+            : [...prev, pendingAction.productId]
+        );
+        if (fromPage) navigateTo(fromPage);
+      } else if (type === 'navigation') {
+        navigateTo(pendingAction.page, pendingAction.productId);
+      }
+      setPendingAction(null);
+    }
+  }, [currentUser, pendingAction]);
 
   // Sync state to localStorage
   useEffect(() => {
-    localStorage.setItem('ethnivaa_products', JSON.stringify(products));
+    localStorage.setItem('ethnivaa_products_v2', JSON.stringify(products));
   }, [products]);
 
   useEffect(() => {
@@ -198,6 +266,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Navigation controller
   const navigateTo = (page: PageType, productId: string | null = null) => {
+    if ((page === 'checkout' || page === 'account' || page === 'admin') && !currentUser) {
+      setPendingAction({ type: 'navigation', page, productId, fromPage: currentPage });
+      setCurrentPage('login');
+      return;
+    }
     setCurrentPage(page);
     setSelectedProductId(productId);
     window.scrollTo(0, 0);
@@ -270,6 +343,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Cart operations
   const addToCart = (product: Product, quantity: number = 1) => {
+    if (!currentUser) {
+      setPendingAction({ type: 'cart', product, quantity, fromPage: currentPage });
+      navigateTo('login');
+      return;
+    }
     setCartItems(prev => {
       const existing = prev.find(item => item.product.id === product.id);
       if (existing) {
@@ -309,6 +387,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Wishlist operations
   const toggleWishlist = (productId: string) => {
+    if (!currentUser) {
+      setPendingAction({ type: 'wishlist', productId, fromPage: currentPage });
+      navigateTo('login');
+      return;
+    }
     setWishlist(prev =>
       prev.includes(productId)
         ? prev.filter(id => id !== productId)
@@ -372,6 +455,60 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
+  const login = (email: string, password: string) => {
+    const matchedUser = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+    if (matchedUser) {
+      setCurrentUser(matchedUser.email);
+      setProfile(prev => ({
+        ...prev,
+        name: matchedUser.username,
+        email: matchedUser.email
+      }));
+      return { success: true, message: 'Welcome back, ' + matchedUser.username };
+    }
+    return { success: false, message: 'Invalid email or password' };
+  };
+
+  const signup = (email: string, username: string, password: string) => {
+    const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (existing) {
+      return { success: false, message: 'Email already registered' };
+    }
+    const newUser = { email, username, password };
+    setUsers(prev => [...prev, newUser]);
+    setCurrentUser(email);
+    setProfile(prev => ({
+      ...prev,
+      name: username,
+      email: email,
+      savedAddresses: []
+    }));
+    return { success: true, message: 'Account created successfully!' };
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    setPendingAction(null);
+    setProfile({
+      name: 'Aditi Sharma',
+      email: 'aditi.sharma@gmail.com',
+      mobile: '+91 98765 43210',
+      savedAddresses: [
+        {
+          fullName: 'Aditi Sharma',
+          mobileNumber: '9876543210',
+          address: '402, Royal Residency, Linking Road, Santacruz West',
+          city: 'Mumbai',
+          state: 'Maharashtra',
+          pincode: '400054'
+        }
+      ]
+    });
+    setCartItems([]);
+    setWishlist([]);
+    navigateTo('home');
+  };
+
   return (
     <ShopContext.Provider value={{
       currentPage,
@@ -405,7 +542,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       profile,
       saveProfileAddress,
       isAdminView,
-      setIsAdminView
+      setIsAdminView,
+      activeAccountTab,
+      setActiveAccountTab,
+      currentUser,
+      pendingAction,
+      setPendingAction,
+      login,
+      signup,
+      logout
     }}>
       {children}
     </ShopContext.Provider>
