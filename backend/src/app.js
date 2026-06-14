@@ -6,6 +6,7 @@ const adminProductRoutes = require('./routes/adminProducts');
 const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/orders');
 const adminOrderRoutes = require('./routes/adminOrders');
+const addressRoutes = require('./routes/addresses');
 const { notFound, errorHandler } = require('./middleware/errors');
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api/admin/products', adminProductRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin/orders', adminOrderRoutes);
+app.use('/api/addresses', addressRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

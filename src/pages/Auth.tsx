@@ -7,7 +7,7 @@ interface AuthProps {
 }
 
 export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
-  const { login, startSignup, verifySignupOtp, completeSignup, googleSignIn, navigateTo, pendingAction } = useShop();
+  const { login, startSignup, verifySignupOtp, completeSignup, googleSignIn, navigateTo, pendingAction, currentUserRole } = useShop();
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
@@ -52,6 +52,16 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
     setSuccessMessage(null);
   };
 
+  const checkAndRedirectHome = () => {
+    if (!pendingAction) {
+      const role = localStorage.getItem('ethnivaa_current_user_role');
+      const isRoleAdmin = role ? JSON.parse(role) === 'ADMIN' : false;
+      if (!isRoleAdmin) {
+        navigateTo('home');
+      }
+    }
+  };
+
   useEffect(() => {
     if (!hasGoogleConfig) {
       return;
@@ -76,9 +86,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
           if (result.success) {
             displayMessage('success', result.message);
             setTimeout(() => {
-              if (!pendingAction) {
-                navigateTo('home');
-              }
+              checkAndRedirectHome();
             }, 1000);
           } else {
             displayMessage('error', result.message);
@@ -152,9 +160,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
       // Post-login redirect logic is automatically handled by the ShopContext useEffect!
       // But if there is no pending action, let's navigate to home
       setTimeout(() => {
-        if (!pendingAction) {
-          navigateTo('home');
-        }
+        checkAndRedirectHome();
       }, 1000);
     } else {
       displayMessage('error', result.message);
@@ -228,9 +234,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
       displayMessage('success', result.message);
       // Redirect is handled by context useEffect or default to home
       setTimeout(() => {
-        if (!pendingAction) {
-          navigateTo('home');
-        }
+        checkAndRedirectHome();
       }, 1000);
     } else {
       displayMessage('error', result.message);

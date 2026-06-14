@@ -182,9 +182,20 @@ export const Account: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-0 pt-2 sm:pt-0">
+                        <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-0 pt-2 sm:pt-0">
                           <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider text-[9px]">
-                            {order.paymentStatus}
+                            Payment: {order.paymentStatus}
+                          </span>
+                          <span className={`font-bold border px-3 py-1 rounded-full uppercase tracking-wider text-[9px] ${
+                            order.status === 'Delivered'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : order.status === 'Shipped'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : order.status === 'Cancelled'
+                                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200'
+                          }`}>
+                            Shipping: {order.status}
                           </span>
                           {expandedOrderId === order.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </div>

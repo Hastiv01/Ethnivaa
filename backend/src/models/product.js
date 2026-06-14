@@ -33,6 +33,46 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
+    originalPrice: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    },
+    material: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    occasion: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    images: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    materialsDetail: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    careInstructions: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    isBestSeller: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isNewArrival: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    rating: {
+      type: DataTypes.DECIMAL(3, 2),
+      defaultValue: 5.0,
+    },
+    reviewsCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   });
 
   return Product;

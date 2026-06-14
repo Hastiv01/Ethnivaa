@@ -145,10 +145,7 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const toggleOrderStatus = (orderId: string, currentStatus: Order['paymentStatus']) => {
-    const newStatus = currentStatus === 'Success' ? 'Processing' : 'Success';
-    updateOrderStatus(orderId, newStatus);
-  };
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fadeIn min-h-screen">
@@ -357,7 +354,8 @@ export const AdminDashboard: React.FC = () => {
                       <th className="p-4">Order Date</th>
                       <th className="p-4">Paid Total</th>
                       <th className="p-4">Billing Status</th>
-                      <th className="p-4 text-right">Toggle Status</th>
+                      <th className="p-4">Shipping Status</th>
+                      <th className="p-4 text-right">Toggle Bill</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gold-100 text-obsidian-850">
@@ -377,13 +375,29 @@ export const AdminDashboard: React.FC = () => {
                             {order.paymentStatus}
                           </span>
                         </td>
+
+                        <td className="p-4">
+                          <select
+                            value={order.status || 'Pending'}
+                            onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                            className="bg-ivory-50 border border-gold-300 text-obsidian-950 text-xs rounded-xl py-1.5 px-3 focus:outline-none focus:border-gold-500 font-sans"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                          </select>
+                        </td>
                         
                         <td className="p-4 text-right">
                           <button
-                            onClick={() => toggleOrderStatus(order.id, order.paymentStatus)}
+                            onClick={() => updateOrderStatus(order.id, order.status, order.paymentStatus === 'Success' ? 'Processing' : 'Success')}
                             className="text-[10px] font-bold uppercase border border-gold-300 hover:bg-gold-50 text-crimson-950 px-3 py-1.5 rounded-full transition-all"
                           >
-                            Toggle Status
+                            Toggle Pay
                           </button>
                         </td>
                       </tr>

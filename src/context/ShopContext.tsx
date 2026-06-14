@@ -5,6 +5,7 @@ import type { Product, Review } from '../data/products';
 export interface CartItem {
   product: Product;
   quantity: number;
+  backendItemId?: number; // stored for backend syncing
 }
 
 export interface ShippingAddress {
@@ -42,6 +43,7 @@ export interface Order {
   shippingAddress: ShippingAddress;
   paymentMethod: string;
   paymentStatus: 'Success' | 'Processing' | 'Failed';
+  status: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
   subtotal: number;
   shipping: number;
   total: number;
@@ -86,9 +88,9 @@ interface ShopContextType {
 
   // Order State
   orders: Order[];
-  placeOrder: (shippingAddress: ShippingAddress, paymentMethod: string) => Order;
+  placeOrder: (shippingAddress: ShippingAddress, paymentMethod: string) => Promise<Order>;
   latestOrder: Order | null;
-  updateOrderStatus: (orderId: string, status: Order['paymentStatus']) => void;
+  updateOrderStatus: (orderId: string, status: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled', paymentStatus?: 'Success' | 'Processing' | 'Failed') => void;
 
   // Profile State
   profile: Profile;
@@ -104,6 +106,7 @@ interface ShopContextType {
 
   // Auth State
   currentUser: string | null;
+  currentUserRole: string | null;
   pendingAction: any;
   setPendingAction: (action: any) => void;
   login: (email: string, password: string) => Promise<AuthResult>;
@@ -161,7 +164,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [searchQuery, setSearchQueryState] = useState<string>('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
 
-  // Load initial products from localStorage or use mockProducts
+  // Categories list from database
+  const [categories, setCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
+
+  // Load initial products (will be hydrated from backend on load)
   const [products, setProducts] = useState<Product[]>(() => {
     return safeParse('ethnivaa_products_v2', mockProducts);
   });
@@ -204,19 +210,181 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   });
 
-  const [isAdminView, setIsAdminViewState] = useState<boolean>(false);
   const [activeAccountTab, setActiveAccountTab] = useState<'orders' | 'wishlist' | 'addresses' | 'profile'>('orders');
 
   const [currentUser, setCurrentUser] = useState<string | null>(() => {
     return safeParse<string | null>('ethnivaa_current_user', null);
   });
 
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(() => {
+    return safeParse<string | null>('ethnivaa_current_user_role', null);
+  });
+
   const [authToken, setAuthToken] = useState<string | null>(() => {
     return safeParse<string | null>('ethnivaa_auth_token', null);
   });
 
+  const [isAdminView, setIsAdminViewState] = useState<boolean>(() => {
+    const role = safeParse<string | null>('ethnivaa_current_user_role', null);
+    return role === 'ADMIN';
+  });
+
   const [pendingAction, setPendingAction] = useState<any>(null);
 
+  // Helper mapper function
+  const mapBackendProductToFrontend = (p: any): Product => {
+    let imagesArr: string[] = [];
+    if (p.images) {
+      if (Array.isArray(p.images)) {
+        imagesArr = p.images;
+      } else {
+        try {
+          imagesArr = JSON.parse(p.images);
+        } catch (e) {
+          imagesArr = [p.image || ''];
+        }
+      }
+    } else if (p.image) {
+      imagesArr = [p.image];
+    }
+
+    return {
+      id: String(p.id),
+      name: p.title || '',
+      price: Number(p.price) || 0,
+      originalPrice: p.originalPrice ? Number(p.originalPrice) : undefined,
+      rating: Number(p.rating) || 5.0,
+      reviewsCount: Number(p.reviewsCount) || 0,
+      category: p.Category?.name || p.category || 'Necklaces',
+      material: p.material || 'Oxidized Silver',
+      occasion: p.occasion || 'Festive',
+      images: imagesArr.length > 0 ? imagesArr : ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800'],
+      description: p.description || '',
+      materialsDetail: p.materialsDetail || '',
+      careInstructions: p.careInstructions || '',
+      stock: Number(p.inventory) || 0,
+      reviews: Array.isArray(p.Reviews) ? p.Reviews.map((r: any) => ({
+        id: String(r.id),
+        userName: r.User?.name || 'Customer',
+        rating: Number(r.rating) || 5,
+        date: r.createdAt ? new Date(r.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        comment: r.comment || '',
+        verified: true
+      })) : [],
+      isBestSeller: Boolean(p.isBestSeller),
+      isNewArrival: Boolean(p.isNewArrival)
+    };
+  };
+
+  // 1. Fetch categories and products from backend on load
+  const loadBackendData = async () => {
+    try {
+      // Load categories
+      const catRes = await fetch('/api/products/categories');
+      if (catRes.ok) {
+        const catData = await catRes.json();
+        setCategories(catData.categories || []);
+      }
+
+      // Load products
+      const prodRes = await fetch('/api/products');
+      if (prodRes.ok) {
+        const prodData = await prodRes.json();
+        if (Array.isArray(prodData.products)) {
+          const mapped = prodData.products.map(mapBackendProductToFrontend);
+          setProducts(mapped);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load initial data from backend:', e);
+    }
+  };
+
+  useEffect(() => {
+    loadBackendData();
+  }, []);
+
+  // 2. Fetch customer/admin orders from backend
+  useEffect(() => {
+    const loadOrders = async () => {
+      if (!currentUser || !authToken) {
+        setOrders([]);
+        return;
+      }
+      try {
+        const url = currentUserRole === 'ADMIN' ? '/api/admin/orders' : '/api/orders/me';
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const mapped = (data.orders || []).map((o: any) => {
+            const items = (o.OrderItems || []).map((item: any) => ({
+              productId: String(item.productId),
+              name: item.Product?.title || 'Jewelry Item',
+              price: Number(item.unitPrice) || 0,
+              image: item.Product?.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800',
+              quantity: Number(item.quantity) || 1
+            }));
+            const addr = o.Address || {};
+            return {
+              id: String(o.id || o.orderNumber),
+              date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-IN'),
+              items,
+              shippingAddress: {
+                fullName: addr.recipientName || 'Customer',
+                mobileNumber: addr.phone || '',
+                address: `${addr.line1 || ''} ${addr.line2 || ''}`.trim(),
+                city: addr.city || '',
+                state: addr.state || '',
+                pincode: addr.postalCode || ''
+              },
+              paymentMethod: 'Prepaid / Card',
+              paymentStatus: o.paymentStatus === 'SUCCESS' ? 'Success' : 'Processing',
+              status: o.status === 'CONFIRMED' ? 'Confirmed' : o.status === 'PROCESSING' ? 'Processing' : o.status === 'SHIPPED' ? 'Shipped' : o.status === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : o.status === 'DELIVERED' ? 'Delivered' : o.status === 'CANCELLED' ? 'Cancelled' : 'Pending',
+              subtotal: Number(o.subtotal) || 0,
+              shipping: Number(o.shippingCost) || 0,
+              total: Number(o.total) || 0
+            };
+          });
+          setOrders(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to load orders:', err);
+      }
+    };
+    loadOrders();
+  }, [currentUser, currentUserRole, authToken]);
+
+  // 3. Load customer cart from backend
+  useEffect(() => {
+    const loadCart = async () => {
+      if (!currentUser || !authToken) {
+        return;
+      }
+      try {
+        const response = await fetch('/api/cart', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.cart && Array.isArray(data.cart.items)) {
+            const mapped = data.cart.items.map((item: any) => ({
+              product: mapBackendProductToFrontend(item.product),
+              quantity: Number(item.quantity),
+              backendItemId: item.id
+            }));
+            setCartItems(mapped);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load cart:', err);
+      }
+    };
+    loadCart();
+  }, [currentUser, authToken]);
+
+  // Sync state to local storage
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem('ethnivaa_current_user', JSON.stringify(currentUser));
@@ -224,6 +392,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('ethnivaa_current_user');
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUserRole) {
+      localStorage.setItem('ethnivaa_current_user_role', JSON.stringify(currentUserRole));
+    } else {
+      localStorage.removeItem('ethnivaa_current_user_role');
+    }
+  }, [currentUserRole]);
 
   useEffect(() => {
     if (authToken) {
@@ -237,24 +413,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (currentUser && pendingAction) {
       const { type, fromPage } = pendingAction;
       if (type === 'cart') {
-        setCartItems(prev => {
-          const existing = prev.find(item => item.product.id === pendingAction.product.id);
-          if (existing) {
-            return prev.map(item =>
-              item.product.id === pendingAction.product.id
-                ? { ...item, quantity: item.quantity + pendingAction.quantity }
-                : item
-            );
-          }
-          return [...prev, { product: pendingAction.product, quantity: pendingAction.quantity }];
-        });
+        addToCart(pendingAction.product, pendingAction.quantity);
         if (fromPage) navigateTo(fromPage);
       } else if (type === 'wishlist') {
-        setWishlist(prev =>
-          prev.includes(pendingAction.productId)
-            ? prev.filter(id => id !== pendingAction.productId)
-            : [...prev, pendingAction.productId]
-        );
+        toggleWishlist(pendingAction.productId);
         if (fromPage) navigateTo(fromPage);
       } else if (type === 'navigation') {
         navigateTo(pendingAction.page, pendingAction.productId);
@@ -262,11 +424,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPendingAction(null);
     }
   }, [currentUser, pendingAction]);
-
-  // Sync state to localStorage
-  useEffect(() => {
-    localStorage.setItem('ethnivaa_products_v2', JSON.stringify(products));
-  }, [products]);
 
   useEffect(() => {
     localStorage.setItem('ethnivaa_cart', JSON.stringify(cartItems));
@@ -318,33 +475,122 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Admin CRUD Operations
-  const addProduct = (newProd: Omit<Product, 'id' | 'rating' | 'reviewsCount' | 'reviews'>) => {
-    const id = `eth-${Date.now()}`;
-    const product: Product = {
-      ...newProd,
-      id,
-      rating: 5.0,
-      reviewsCount: 0,
-      reviews: []
-    };
-    setProducts(prev => [product, ...prev]);
-  };
+  const addProduct = async (newProd: Omit<Product, 'id' | 'rating' | 'reviewsCount' | 'reviews'>) => {
+    try {
+      const categoryObj = categories.find(c => c.name.toLowerCase() === newProd.category.toLowerCase()) 
+                          || categories[0] 
+                          || { id: 1 };
+      
+      const response = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          title: newProd.name,
+          description: newProd.description,
+          price: newProd.price,
+          originalPrice: newProd.originalPrice,
+          material: newProd.material,
+          occasion: newProd.occasion,
+          images: newProd.images,
+          materialsDetail: newProd.materialsDetail,
+          careInstructions: newProd.careInstructions,
+          stock: newProd.stock,
+          categoryId: categoryObj.id,
+          isBestSeller: newProd.isBestSeller,
+          isNewArrival: newProd.isNewArrival
+        })
+      });
 
-  const editProduct = (id: string, updatedFields: Partial<Product>) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedFields } : p));
-    // If details page is currently looking at this, check it
-  };
-
-  const deleteProduct = (id: string) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
-    if (selectedProductId === id) {
-      setSelectedProductId(null);
-      setCurrentPage('shop');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.product) {
+          const mapped = mapBackendProductToFrontend(data.product);
+          setProducts(prev => [mapped, ...prev]);
+        }
+      } else {
+        const err = await response.json();
+        alert(`Failed to add product: ${err.message || 'Unknown error'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error creating product');
     }
-    // Also remove from cart
-    setCartItems(prev => prev.filter(item => item.product.id !== id));
-    // Also remove from wishlist
-    setWishlist(prev => prev.filter(wishId => wishId !== id));
+  };
+
+  const editProduct = async (id: string, updatedFields: Partial<Product>) => {
+    try {
+      const categoryObj = updatedFields.category 
+        ? (categories.find(c => c.name.toLowerCase() === updatedFields.category?.toLowerCase()) || categories[0])
+        : undefined;
+
+      const body: any = {};
+      if (updatedFields.name !== undefined) body.title = updatedFields.name;
+      if (updatedFields.description !== undefined) body.description = updatedFields.description;
+      if (updatedFields.price !== undefined) body.price = updatedFields.price;
+      if (updatedFields.originalPrice !== undefined) body.originalPrice = updatedFields.originalPrice;
+      if (updatedFields.material !== undefined) body.material = updatedFields.material;
+      if (updatedFields.occasion !== undefined) body.occasion = updatedFields.occasion;
+      if (updatedFields.images !== undefined) body.images = updatedFields.images;
+      if (updatedFields.materialsDetail !== undefined) body.materialsDetail = updatedFields.materialsDetail;
+      if (updatedFields.careInstructions !== undefined) body.careInstructions = updatedFields.careInstructions;
+      if (updatedFields.stock !== undefined) body.stock = updatedFields.stock;
+      if (categoryObj) body.categoryId = categoryObj.id;
+      if (updatedFields.isBestSeller !== undefined) body.isBestSeller = updatedFields.isBestSeller;
+      if (updatedFields.isNewArrival !== undefined) body.isNewArrival = updatedFields.isNewArrival;
+
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.product) {
+          const mapped = mapBackendProductToFrontend(data.product);
+          setProducts(prev => prev.map(p => p.id === id ? mapped : p));
+        }
+      } else {
+        const err = await response.json();
+        alert(`Failed to update product: ${err.message || 'Unknown error'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error editing product');
+    }
+  };
+
+  const deleteProduct = async (id: string) => {
+    try {
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+
+      if (response.ok) {
+        setProducts(prev => prev.filter(p => p.id !== id));
+        if (selectedProductId === id) {
+          setSelectedProductId(null);
+          setCurrentPage('shop');
+        }
+        setCartItems(prev => prev.filter(item => item.product.id !== id));
+        setWishlist(prev => prev.filter(wishId => wishId !== id));
+      } else {
+        const err = await response.json();
+        alert(`Failed to delete product: ${err.message || 'Unknown error'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting product');
+    }
   };
 
   const addReview = (productId: string, newReview: Omit<Review, 'id' | 'date' | 'verified'>) => {
@@ -369,42 +615,119 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
-  // Cart operations
-  const addToCart = (product: Product, quantity: number = 1) => {
+  // Cart operations (backend synced)
+  const addToCart = async (product: Product, quantity: number = 1) => {
     if (!currentUser) {
       setPendingAction({ type: 'cart', product, quantity, fromPage: currentPage });
       navigateTo('login');
       return;
     }
-    setCartItems(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
+    try {
+      const response = await fetch('/api/cart/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ productId: Number(product.id), quantity })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.cart && Array.isArray(data.cart.items)) {
+          const mapped = data.cart.items.map((item: any) => ({
+            product: mapBackendProductToFrontend(item.product),
+            quantity: Number(item.quantity),
+            backendItemId: item.id
+          }));
+          setCartItems(mapped);
+        }
       }
-      return [...prev, { product, quantity }];
-    });
+    } catch (err) {
+      console.error('Failed to add item to backend cart:', err);
+    }
   };
 
-  const updateCartQuantity = (productId: string, quantity: number) => {
+  const updateCartQuantity = async (productId: string, quantity: number) => {
+    const existing = cartItems.find(item => item.product.id === productId);
+    if (!existing) return;
+    
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
     }
-    setCartItems(prev => prev.map(item =>
-      item.product.id === productId ? { ...item, quantity } : item
-    ));
+    
+    const backendItemId = existing.backendItemId;
+    if (!backendItemId) return;
+
+    try {
+      const response = await fetch(`/api/cart/items/${backendItemId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ quantity })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.cart && Array.isArray(data.cart.items)) {
+          const mapped = data.cart.items.map((item: any) => ({
+            product: mapBackendProductToFrontend(item.product),
+            quantity: Number(item.quantity),
+            backendItemId: item.id
+          }));
+          setCartItems(mapped);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update cart item:', err);
+    }
   };
 
-  const removeFromCart = (productId: string) => {
-    setCartItems(prev => prev.filter(item => item.product.id !== productId));
+  const removeFromCart = async (productId: string) => {
+    const existing = cartItems.find(item => item.product.id === productId);
+    if (!existing) return;
+
+    const backendItemId = existing.backendItemId;
+    if (!backendItemId) return;
+
+    try {
+      const response = await fetch(`/api/cart/items/${backendItemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.cart && Array.isArray(data.cart.items)) {
+          const mapped = data.cart.items.map((item: any) => ({
+            product: mapBackendProductToFrontend(item.product),
+            quantity: Number(item.quantity),
+            backendItemId: item.id
+          }));
+          setCartItems(mapped);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to remove cart item:', err);
+    }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  const clearCart = async () => {
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (response.ok) {
+        setCartItems([]);
+      }
+    } catch (err) {
+      console.error('Failed to clear cart:', err);
+    }
   };
 
   // Calculated properties
@@ -430,49 +753,132 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
   // Order Operations
-  const placeOrder = (address: ShippingAddress, paymentMethod: string) => {
-    const orderId = `ETH-${Math.floor(100000 + Math.random() * 900000)}`;
-    const newOrder: Order = {
-      id: orderId,
-      date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
-      items: cartItems.map(item => ({
-        productId: item.product.id,
-        name: item.product.name,
-        price: item.product.price,
-        image: item.product.images[0],
-        quantity: item.quantity
-      })),
-      shippingAddress: address,
-      paymentMethod,
-      paymentStatus: 'Success',
-      subtotal: cartSubtotal,
-      shipping: cartShippingCost,
-      total: cartTotal
-    };
+  const placeOrder = async (address: ShippingAddress, paymentMethod: string): Promise<Order> => {
+    try {
+      // 1. Create the address in database
+      const addrResponse = await fetch('/api/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          recipientName: address.fullName,
+          phone: address.mobileNumber,
+          line1: address.address,
+          city: address.city,
+          state: address.state,
+          postalCode: address.pincode,
+          country: 'India',
+          isDefault: true
+        })
+      });
 
-    setOrders(prev => [newOrder, ...prev]);
-    setLatestOrder(newOrder);
-
-    // Update stock levels
-    setProducts(prev => prev.map(p => {
-      const cartItem = cartItems.find(item => item.product.id === p.id);
-      if (cartItem) {
-        return {
-          ...p,
-          stock: Math.max(0, p.stock - cartItem.quantity)
-        };
+      if (!addrResponse.ok) {
+        const err = await addrResponse.json();
+        throw new Error(err.message || 'Failed to save shipping address');
       }
-      return p;
-    }));
 
-    clearCart();
-    return newOrder;
+      const addrData = await addrResponse.json();
+      const addressId = addrData.address.id;
+
+      // 2. Call checkout
+      const checkResponse = await fetch('/api/orders/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ addressId })
+      });
+
+      if (!checkResponse.ok) {
+        const err = await checkResponse.json();
+        throw new Error(err.message || 'Failed to place order');
+      }
+
+      const orderData = await checkResponse.json();
+      const o = orderData.order;
+
+      // 3. Local Cart reset
+      setCartItems([]);
+
+      // 4. Map backend order response
+      const items = (o.OrderItems || []).map((item: any) => ({
+        productId: String(item.productId),
+        name: item.Product?.title || 'Jewelry Item',
+        price: Number(item.unitPrice) || 0,
+        image: item.Product?.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800',
+        quantity: Number(item.quantity) || 1
+      }));
+      const addr = o.Address || {};
+      const newOrder: Order = {
+        id: String(o.id || o.orderNumber),
+        date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-IN'),
+        items,
+        shippingAddress: {
+          fullName: addr.recipientName || 'Customer',
+          mobileNumber: addr.phone || '',
+          address: `${addr.line1 || ''} ${addr.line2 || ''}`.trim(),
+          city: addr.city || '',
+          state: addr.state || '',
+          pincode: addr.postalCode || ''
+        },
+        paymentMethod: 'Prepaid / Card',
+        paymentStatus: o.paymentStatus === 'SUCCESS' ? 'Success' : 'Processing',
+        status: o.status === 'CONFIRMED' ? 'Confirmed' : o.status === 'PROCESSING' ? 'Processing' : o.status === 'SHIPPED' ? 'Shipped' : o.status === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : o.status === 'DELIVERED' ? 'Delivered' : o.status === 'CANCELLED' ? 'Cancelled' : 'Pending',
+        subtotal: Number(o.subtotal) || 0,
+        shipping: Number(o.shippingCost) || 0,
+        total: Number(o.total) || 0
+      };
+
+      setLatestOrder(newOrder);
+      setOrders(prev => [newOrder, ...prev]);
+
+      return newOrder;
+    } catch (e: any) {
+      console.error(e);
+      alert(e.message || 'Failed to place order');
+      throw e;
+    }
   };
 
-  const updateOrderStatus = (orderId: string, status: Order['paymentStatus']) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, paymentStatus: status } : o));
-    if (latestOrder && latestOrder.id === orderId) {
-      setLatestOrder(prev => prev ? { ...prev, paymentStatus: status } : null);
+  const updateOrderStatus = async (
+    orderId: string, 
+    status: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled', 
+    paymentStatus?: 'Success' | 'Processing' | 'Failed'
+  ) => {
+    try {
+      const body: any = {};
+      if (status) {
+        body.status = status.toUpperCase().replace(/ /g, '_');
+      }
+      if (paymentStatus) {
+        body.paymentStatus = paymentStatus === 'Success' ? 'SUCCESS' : 'PENDING';
+      }
+
+      const response = await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        setOrders(prev => prev.map(o => o.id === orderId ? { 
+          ...o, 
+          status: status || o.status,
+          paymentStatus: paymentStatus || o.paymentStatus 
+        } : o));
+      } else {
+        const err = await response.json();
+        alert(`Failed to update order status: ${err.message || 'Unknown error'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error updating order status');
     }
   };
 
@@ -483,20 +889,32 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
-  const applyAuthSession = (payload: { token: string; user: { email: string; name: string } }, successMessage: string) => {
+  const applyAuthSession = (payload: { token: string; user: { email: string; name: string; role?: string } }, successMessage: string) => {
     setAuthToken(payload.token);
     setCurrentUser(payload.user.email);
+    const role = payload.user.role || 'CUSTOMER';
+    setCurrentUserRole(role);
     setProfile(prev => ({
       ...prev,
       name: payload.user.name,
       email: payload.user.email,
     }));
+
+    if (role === 'ADMIN') {
+      setIsAdminViewState(true);
+      setTimeout(() => {
+        navigateTo('admin');
+      }, 100);
+    } else {
+      setIsAdminViewState(false);
+    }
+
     return { success: true, message: successMessage };
   };
 
   const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
-      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string } }>(
+      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string; role?: string } }>(
         '/api/auth/login',
         { email, password }
       );
@@ -532,7 +950,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const completeSignup = async (signupToken: string, password: string): Promise<AuthResult> => {
     try {
-      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string } }>(
+      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string; role?: string } }>(
         '/api/auth/signup/complete',
         { signupToken, password }
       );
@@ -544,7 +962,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const googleSignIn = async (idToken: string): Promise<AuthResult> => {
     try {
-      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string } }>(
+      const response = await apiRequest<{ message: string; token: string; user: { email: string; name: string; role?: string } }>(
         '/api/auth/google',
         { idToken }
       );
@@ -556,7 +974,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setCurrentUser(null);
+    setCurrentUserRole(null);
     setAuthToken(null);
+    setIsAdminViewState(false);
     setPendingAction(null);
     setProfile({
       name: 'Aditi Sharma',
@@ -615,6 +1035,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       activeAccountTab,
       setActiveAccountTab,
       currentUser,
+      currentUserRole,
       pendingAction,
       setPendingAction,
       login,

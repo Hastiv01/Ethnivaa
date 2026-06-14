@@ -23,6 +23,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await Category.findAll({
+      order: [['name', 'ASC']],
+    });
+    return res.json({ categories });
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to load categories' });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id, {

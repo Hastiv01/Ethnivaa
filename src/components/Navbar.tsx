@@ -14,6 +14,7 @@ export const Navbar: React.FC = () => {
     setIsAdminView,
     setActiveAccountTab,
     currentUser,
+    currentUserRole,
     profile,
     logout
   } = useShop();
@@ -201,18 +202,16 @@ export const Navbar: React.FC = () => {
             )}
 
             {/* Elegant Admin Switch */}
-            <button
-              onClick={() => setIsAdminView(!isAdminView)}
-              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
-                isAdminView 
-                  ? 'bg-crimson-950 text-gold-400 border border-gold-400' 
-                  : 'bg-gold-50 text-crimson-900 border border-crimson-200 hover:bg-gold-100'
-              }`}
-              title="Toggle Admin View"
-            >
-              <ShieldAlert size={14} />
-              <span>{isAdminView ? 'Admin Dashboard' : 'Client Mode'}</span>
-            </button>
+            {currentUserRole === 'ADMIN' && (
+              <button
+                onClick={() => navigateTo('admin')}
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-crimson-950 text-gold-400 border border-gold-400 transition-all duration-300 hover:bg-crimson-900"
+                title="Go to Admin Panel"
+              >
+                <ShieldAlert size={14} />
+                <span>Admin Panel</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -285,19 +284,21 @@ export const Navbar: React.FC = () => {
               </button>
             )}
 
-            <button
-              onClick={() => {
-                setIsAdminView(!isAdminView);
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center justify-between w-full border-t border-gold-200 pt-3 text-left font-sans text-sm font-semibold tracking-wider uppercase text-crimson-800"
-            >
-              <span className="flex items-center gap-2">
-                <ShieldAlert size={16} />
-                {isAdminView ? 'Switch to Client Mode' : 'Go to Admin Dashboard'}
-              </span>
-              <ArrowRight size={16} />
-            </button>
+            {currentUserRole === 'ADMIN' && (
+              <button
+                onClick={() => {
+                  navigateTo('admin');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex items-center justify-between w-full border-t border-gold-200 pt-3 text-left font-sans text-sm font-semibold tracking-wider uppercase text-crimson-800"
+              >
+                <span className="flex items-center gap-2">
+                  <ShieldAlert size={16} />
+                  <span>Admin Panel</span>
+                </span>
+                <ArrowRight size={16} />
+              </button>
+            )}
           </div>
         </div>
       )}

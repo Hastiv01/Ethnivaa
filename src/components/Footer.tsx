@@ -3,7 +3,7 @@ import { useShop } from '../context/ShopContext';
 import { Mail, Phone, MapPin, ShieldAlert, Sparkles } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { navigateTo, setSelectedCategoryFilter, isAdminView, setIsAdminView } = useShop();
+  const { navigateTo, setSelectedCategoryFilter, currentUserRole } = useShop();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -144,14 +144,15 @@ export const Footer: React.FC = () => {
           </p>
           
           <div className="flex items-center gap-6">
-            {/* Footer Admin Toggle */}
-            <button
-              onClick={() => setIsAdminView(!isAdminView)}
-              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold-400 hover:text-gold-200 transition-colors duration-200"
-            >
-              <ShieldAlert size={14} />
-              <span>{isAdminView ? 'Switch to Customer View' : 'Demo Admin Dashboard'}</span>
-            </button>
+            {currentUserRole === 'ADMIN' && (
+              <button
+                onClick={() => navigateTo('admin')}
+                className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold-400 hover:text-gold-200 transition-colors duration-200"
+              >
+                <ShieldAlert size={14} />
+                <span>Admin Panel</span>
+              </button>
+            )}
             
             <div className="flex gap-4 text-xs text-ivory-600">
               <a href="#" className="hover:text-gold-400" onClick={(e) => e.preventDefault()}>Terms</a>
