@@ -14,7 +14,7 @@ export interface Product {
   originalPrice?: number;
   rating: number;
   reviewsCount: number;
-  category: 'Bangles' | 'Earrings' | 'Hair Accessories' | 'Necklaces' | 'Combo Sets';
+  category: 'Earrings' | 'Hair Accessories' | 'Necklaces' | 'Combo Sets';
   material: '22K Gold' | 'Sterling Silver' | 'Gold Plated' | 'Oxidized Silver' | 'Brass';
   occasion: 'Festive' | 'Bridal' | 'Casual Wear' | 'Party Wear';
   images: string[];
@@ -159,7 +159,7 @@ export const mockProducts: Product[] = [
     originalPrice: 1999,
     rating: 4.5,
     reviewsCount: 79,
-    category: 'Bangles',
+    category: 'Combo Sets',
     material: 'Oxidized Silver',
     occasion: 'Festive',
     images: [

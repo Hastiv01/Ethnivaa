@@ -10,8 +10,6 @@ export const Navbar: React.FC = () => {
     wishlist, 
     searchQuery, 
     setSearchQuery,
-    isAdminView,
-    setIsAdminView,
     setActiveAccountTab,
     currentUser,
     currentUserRole,

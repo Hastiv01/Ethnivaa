@@ -824,7 +824,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           state: addr.state || '',
           pincode: addr.postalCode || ''
         },
-        paymentMethod: 'Prepaid / Card',
+        paymentMethod: paymentMethod,
         paymentStatus: o.paymentStatus === 'SUCCESS' ? 'Success' : 'Processing',
         status: o.status === 'CONFIRMED' ? 'Confirmed' : o.status === 'PROCESSING' ? 'Processing' : o.status === 'SHIPPED' ? 'Shipped' : o.status === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : o.status === 'DELIVERED' ? 'Delivered' : o.status === 'CANCELLED' ? 'Cancelled' : 'Pending',
         subtotal: Number(o.subtotal) || 0,

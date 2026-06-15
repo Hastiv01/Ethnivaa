@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { useShop } from '../context/ShopContext';
-import type { Order } from '../context/ShopContext';
 import type { Product } from '../data/products';
 import { ShieldCheck, Plus, Pencil, Trash2, IndianRupee, ShoppingBag, Users, AlertTriangle, X, Check, Save } from 'lucide-react';
 
@@ -279,7 +278,7 @@ export const AdminDashboard: React.FC = () => {
                     <tr key={prod.id} className="hover:bg-gold-50/10 transition-colors">
                       {/* Image + Title */}
                       <td className="p-4 sm:p-5 flex items-center gap-3">
-                        <img src={prod.images[0]} alt={prod.name} className="w-10 h-10 rounded-lg object-cover border border-gold-100 flex-shrink-0" />
+                        <img src={prod.images[0]} alt={prod.name} className="w-10 h-10 rounded-lg object-contain bg-white border border-gold-100 flex-shrink-0" />
                         <div>
                           <div className="font-bold text-crimson-950 text-sm line-clamp-1">{prod.name}</div>
                           <div className="text-[10px] text-obsidian-400 font-mono">{prod.id}</div>
@@ -442,7 +441,6 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-1.5">
                   <label className="font-semibold text-obsidian-800">Collection Category</label>
                   <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-                    <option value="Bangles">Bangles</option>
                     <option value="Earrings">Earrings</option>
                     <option value="Hair Accessories">Hair Accessories</option>
                     <option value="Necklaces">Necklaces</option>
@@ -540,7 +538,6 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-1.5">
                   <label className="font-semibold text-obsidian-800">Collection Category</label>
                   <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-                    <option value="Bangles">Bangles</option>
                     <option value="Earrings">Earrings</option>
                     <option value="Hair Accessories">Hair Accessories</option>
                     <option value="Necklaces">Necklaces</option>

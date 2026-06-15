@@ -26,12 +26,6 @@ const HERO_SLIDES = [
 
 const COLLECTIONS = [
   {
-    name: 'Bangles',
-    category: 'Bangles',
-    image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&auto=format&fit=crop&q=80',
-    tag: 'Bangles & Kada Sets'
-  },
-  {
     name: 'Earrings',
     category: 'Earrings',
     image: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=600&auto=format&fit=crop&q=80',

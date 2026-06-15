@@ -7,7 +7,7 @@ interface AuthProps {
 }
 
 export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
-  const { login, startSignup, verifySignupOtp, completeSignup, googleSignIn, navigateTo, pendingAction, currentUserRole } = useShop();
+  const { login, startSignup, verifySignupOtp, completeSignup, googleSignIn, navigateTo, pendingAction } = useShop();
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);

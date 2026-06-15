@@ -73,7 +73,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
         <img 
           src={product.images[0]} 
           alt={product.name} 
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+          className="w-full h-full object-contain bg-white object-center group-hover:scale-105 transition-transform duration-700"
         />
 
         {/* Quick View Drawer Hover Overlay (Desktop only) */}

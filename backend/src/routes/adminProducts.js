@@ -85,6 +85,7 @@ router.post('/', async (req, res) => {
 
     return res.status(201).json({ product: createdProduct });
   } catch (error) {
+    console.error('Create product error:', error);
     return res.status(500).json({ message: 'Failed to create product' });
   }
 });
@@ -150,6 +151,7 @@ router.put('/:id', async (req, res) => {
 
     return res.json({ product: updatedProduct });
   } catch (error) {
+    console.error('Update product error:', error);
     return res.status(500).json({ message: 'Failed to update product' });
   }
 });

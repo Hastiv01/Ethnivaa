@@ -30,7 +30,6 @@ async function seed() {
   }
 
   const categories = [
-    { name: 'Bangles', slug: 'bangles', description: 'Handcrafted heritage bangles' },
     { name: 'Earrings', slug: 'earrings', description: 'Traditional and casual earrings' },
     { name: 'Hair Accessories', slug: 'hair-accessories', description: 'Bridal and festive hair ornaments' },
     { name: 'Necklaces', slug: 'necklaces', description: 'Intricate necklaces and choker sets' },
@@ -44,7 +43,6 @@ async function seed() {
     });
   }
 
-  const banglesCat = await Category.findOne({ where: { slug: 'bangles' } });
   const earringsCat = await Category.findOne({ where: { slug: 'earrings' } });
   const hairAccessoriesCat = await Category.findOne({ where: { slug: 'hair-accessories' } });
   const necklacesCat = await Category.findOne({ where: { slug: 'necklaces' } });

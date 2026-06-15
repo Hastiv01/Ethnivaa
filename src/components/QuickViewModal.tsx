@@ -60,11 +60,11 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8">
           
           {/* Left: Image display */}
-          <div className="relative aspect-square md:h-full overflow-hidden rounded-2xl bg-ivory-50 border border-gold-100 flex items-center justify-center">
+          <div className="relative aspect-square md:aspect-auto md:h-full w-full overflow-hidden rounded-2xl bg-ivory-50 border border-gold-100 flex items-center justify-center">
             <img 
               src={product.images[0]} 
               alt={product.name} 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain bg-white"
             />
             {product.isBestSeller && (
               <span className="absolute top-4 left-4 bg-crimson-950 text-gold-100 text-[9px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-md font-sans">

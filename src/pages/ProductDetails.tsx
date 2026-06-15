@@ -122,7 +122,7 @@ export const ProductDetails: React.FC = () => {
             <img 
               src={product.images[activeImageIdx]} 
               alt={product.name} 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain bg-white"
             />
             {/* Zoom magnifier Overlay */}
             <div 
@@ -147,7 +147,7 @@ export const ProductDetails: React.FC = () => {
                   idx === activeImageIdx ? 'border-gold-400' : 'border-gold-100 hover:border-gold-300'
                 }`}
               >
-                <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-contain bg-white" />
               </button>
             ))}
           </div>
