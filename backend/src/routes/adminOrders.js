@@ -1,5 +1,6 @@
 const express = require('express');
-const { Order, OrderItem, Product, Category } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize, Order, OrderItem, Product, Category, User, Address } = require('../models');
 const { authenticate, requireRole } = require('../middleware/auth');
 const { positiveInteger } = require('../middleware/validate');
 
@@ -21,10 +22,45 @@ const orderItemInclude = [
   },
 ];
 
+// GET /api/admin/dashboard — real stats
+router.get('/dashboard', async (req, res) => {
+  try {
+    const totalOrders = await Order.count();
+    const totalProducts = await Product.count();
+    const totalCustomers = await User.count({ where: { role: 'CUSTOMER' } });
+    const lowStockCount = await Product.count({ where: { inventory: { [Op.lt]: 10 } } });
+
+    const revenueResult = await Order.findOne({
+      attributes: [[sequelize.fn('SUM', sequelize.col('total')), 'totalRevenue']],
+      raw: true,
+    });
+    const totalRevenue = Number(revenueResult?.totalRevenue) || 0;
+
+    const recentOrders = await Order.findAll({
+      include: [
+        { model: User, attributes: ['id', 'name', 'email'] },
+        { model: Address },
+        { model: OrderItem, include: orderItemInclude },
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: 10,
+    });
+
+    return res.json({ totalOrders, totalProducts, totalCustomers, totalRevenue, lowStockCount, recentOrders });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    return res.status(500).json({ message: 'Failed to load dashboard stats' });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const orders = await Order.findAll({
-      include: [{ model: OrderItem, include: orderItemInclude }],
+      include: [
+        { model: User, attributes: ['id', 'name', 'email'] },
+        { model: Address },
+        { model: OrderItem, include: orderItemInclude },
+      ],
       order: [['createdAt', 'DESC']],
     });
 
@@ -59,7 +95,11 @@ router.patch('/:id/status', async (req, res) => {
     await order.update(updates);
 
     const updatedOrder = await Order.findByPk(order.id, {
-      include: [{ model: OrderItem, include: orderItemInclude }],
+      include: [
+        { model: User, attributes: ['id', 'name', 'email'] },
+        { model: Address },
+        { model: OrderItem, include: orderItemInclude },
+      ],
     });
 
     return res.json({ order: updatedOrder });
@@ -68,4 +108,4 @@ router.patch('/:id/status', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;

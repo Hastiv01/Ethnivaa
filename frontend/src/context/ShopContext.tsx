@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { mockProducts } from '../data/products';
 import type { Product, Review } from '../data/products';
 
@@ -51,6 +51,20 @@ export interface Order {
 
 export type PageType = 'welcome' | 'home' | 'shop' | 'details' | 'cart' | 'checkout' | 'success' | 'account' | 'admin' | 'login' | 'signup';
 
+export interface BackendAddress {
+  id: number;
+  label: string;
+  recipientName: string;
+  phone: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+}
+
 interface ShopContextType {
   // Routing State
   currentPage: PageType;
@@ -97,6 +111,12 @@ interface ShopContextType {
   profile: Profile;
   saveProfileAddress: (address: ShippingAddress) => void;
 
+  // Backend Addresses (synced to DB)
+  addresses: BackendAddress[];
+  addAddress: (address: Omit<BackendAddress, 'id'>) => Promise<void>;
+  deleteAddress: (id: number) => Promise<void>;
+  fetchAddresses: () => Promise<void>;
+
   // Admin View State
   isAdminView: boolean;
   setIsAdminView: (val: boolean) => void;
@@ -116,6 +136,7 @@ interface ShopContextType {
   completeSignup: (signupToken: string, password: string) => Promise<AuthResult>;
   googleSignIn: (idToken: string) => Promise<AuthResult>;
   logout: () => void;
+  visitorCount: number;
 }
 
 const safeParse = <T,>(key: string, defaultValue: T): T => {
@@ -195,19 +216,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Profile State
   const [profile, setProfile] = useState<Profile>(() => {
     return safeParse<Profile>('ethnivaa_profile', {
-      name: 'Aditi Sharma',
-      email: 'aditi.sharma@gmail.com',
-      mobile: '+91 98765 43210',
-      savedAddresses: [
-        {
-          fullName: 'Aditi Sharma',
-          mobileNumber: '9876543210',
-          address: '402, Royal Residency, Linking Road, Santacruz West',
-          city: 'Mumbai',
-          state: 'Maharashtra',
-          pincode: '400054'
-        }
-      ]
+      name: '',
+      email: '',
+      mobile: '',
+      savedAddresses: []
     });
   });
 
@@ -231,6 +243,34 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [pendingAction, setPendingAction] = useState<any>(null);
+
+  // Backend-synced addresses state (separate from localStorage profile)
+  const [addresses, setAddresses] = useState<BackendAddress[]>([]);
+
+  // Visitor count state
+  const [visitorCount, setVisitorCount] = useState<number>(12480);
+
+  // Ping visitor route on mount to count this visit, and get latest count
+  useEffect(() => {
+    const recordVisitor = async () => {
+      try {
+        const res = await fetch('/api/visitors/ping', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          setVisitorCount(data.count);
+        } else {
+          const fallback = await fetch('/api/visitors/count');
+          if (fallback.ok) {
+            const data = await fallback.json();
+            setVisitorCount(data.count);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to update visitor count:', e);
+      }
+    };
+    recordVisitor();
+  }, []);
 
   // Helper mapper function
   const mapBackendProductToFrontend = (p: any): Product => {
@@ -278,6 +318,27 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // 1. Fetch categories and products from backend on load
+  // Fetch profile from backend
+  const fetchProfile = useCallback(async (token: string) => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const u = data.user;
+        setProfile(prev => ({
+          ...prev,
+          name: u.name || prev.name,
+          email: u.email || prev.email,
+        }));
+      }
+    } catch (e) {
+      console.error('Failed to fetch profile:', e);
+    }
+  }, []);
+
+  // 1. Fetch categories and products from backend on load
   const loadBackendData = async () => {
     try {
       // Load categories
@@ -304,6 +365,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     loadBackendData();
   }, []);
+
+  // Fetch profile on mount if token exists
+  useEffect(() => {
+    const storedToken = safeParse<string | null>('ethnivaa_auth_token', null);
+    if (storedToken) {
+      fetchProfile(storedToken);
+    }
+  }, [fetchProfile]);
 
   // 2. Fetch customer/admin orders from backend
   useEffect(() => {
@@ -384,6 +453,86 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     loadCart();
   }, [currentUser, authToken]);
+
+  // 4. Load backend addresses when logged in
+  const fetchAddresses = useCallback(async () => {
+    const token = safeParse<string | null>('ethnivaa_auth_token', null);
+    if (!token) return;
+    try {
+      const res = await fetch('/api/addresses', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAddresses(data.addresses || []);
+      }
+    } catch (err) {
+      console.error('Failed to load addresses:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentUser && authToken) {
+      fetchAddresses();
+    } else {
+      setAddresses([]);
+    }
+  }, [currentUser, authToken, fetchAddresses]);
+
+  const addAddress = async (address: Omit<BackendAddress, 'id'>) => {
+    if (!authToken) return;
+    try {
+      const res = await fetch('/api/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          label: address.label || 'Shipping Address',
+          recipientName: address.recipientName,
+          phone: address.phone,
+          line1: address.line1,
+          line2: address.line2 || null,
+          city: address.city,
+          state: address.state,
+          postalCode: address.postalCode,
+          country: address.country || 'India',
+          isDefault: address.isDefault || false,
+        })
+      });
+      if (res.ok) {
+        await fetchAddresses();
+      } else {
+        const err = await res.json();
+        alert(`Failed to save address: ${err.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Failed to add address:', err);
+      alert('Error saving address');
+    }
+  };
+
+  const deleteAddress = async (id: number) => {
+    if (!authToken) {
+      setAddresses(prev => prev.filter(a => a.id !== id));
+      return;
+    }
+    try {
+      const res = await fetch(`/api/addresses/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      if (res.ok) {
+        setAddresses(prev => prev.filter(a => a.id !== id));
+      } else {
+        const err = await res.json();
+        alert(`Failed to delete address: ${err.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Failed to delete address:', err);
+    }
+  };
 
   // Sync state to local storage
   useEffect(() => {
@@ -639,8 +788,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addReview = (productId: string, newReview: Omit<Review, 'id' | 'date' | 'verified'>) => {
-    const review: Review = {
+  const addReview = async (productId: string, newReview: Omit<Review, 'id' | 'date' | 'verified'>) => {
+    // Optimistically update local state first
+    const localReview: Review = {
       ...newReview,
       id: `rev-${Date.now()}`,
       date: new Date().toISOString().split('T')[0],
@@ -648,17 +798,31 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setProducts(prev => prev.map(p => {
       if (p.id === productId) {
-        const updatedReviews = [review, ...p.reviews];
+        const updatedReviews = [localReview, ...p.reviews];
         const avgRating = Number((updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length).toFixed(1));
-        return {
-          ...p,
-          reviews: updatedReviews,
-          reviewsCount: updatedReviews.length,
-          rating: avgRating
-        };
+        return { ...p, reviews: updatedReviews, reviewsCount: updatedReviews.length, rating: avgRating };
       }
       return p;
     }));
+
+    // Then persist to backend
+    if (!authToken) return;
+    try {
+      await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          productId: Number(productId),
+          rating: newReview.rating,
+          comment: newReview.comment,
+        })
+      });
+    } catch (err) {
+      console.error('Failed to save review to backend:', err);
+    }
   };
 
   // Cart operations (backend synced)
@@ -929,6 +1093,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const saveProfileAddress = (address: ShippingAddress) => {
+    // Keep local profile savedAddresses in sync for Checkout autofill
     setProfile(prev => ({
       ...prev,
       savedAddresses: [...prev.savedAddresses, address]
@@ -1024,23 +1189,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthToken(null);
     setIsAdminViewState(false);
     setPendingAction(null);
-    setProfile({
-      name: 'Aditi Sharma',
-      email: 'aditi.sharma@gmail.com',
-      mobile: '+91 98765 43210',
-      savedAddresses: [
-        {
-          fullName: 'Aditi Sharma',
-          mobileNumber: '9876543210',
-          address: '402, Royal Residency, Linking Road, Santacruz West',
-          city: 'Mumbai',
-          state: 'Maharashtra',
-          pincode: '400054'
-        }
-      ]
-    });
+    setAddresses([]);
+    setOrders([]);
     setCartItems([]);
     setWishlist([]);
+    setProfile({
+      name: '',
+      email: '',
+      mobile: '',
+      savedAddresses: []
+    });
     navigateTo('home');
   };
 
@@ -1077,6 +1235,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateOrderStatus,
       profile,
       saveProfileAddress,
+      addresses,
+      addAddress,
+      deleteAddress,
+      fetchAddresses,
       isAdminView,
       setIsAdminView,
       activeAccountTab,
@@ -1090,7 +1252,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       verifySignupOtp,
       completeSignup,
       googleSignIn,
-      logout
+      logout,
+      visitorCount
     }}>
       {children}
     </ShopContext.Provider>

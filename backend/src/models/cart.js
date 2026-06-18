@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'ACTIVE',
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   });
 
   return Cart;

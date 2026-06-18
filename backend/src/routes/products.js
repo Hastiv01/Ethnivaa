@@ -1,5 +1,5 @@
 const express = require('express');
-const { Product, Category } = require('../models');
+const { Product, Category, Review, User } = require('../models');
 
 const router = express.Router();
 
@@ -37,7 +37,14 @@ router.get('/categories', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id, {
-      include: productInclude,
+      include: [
+        ...productInclude,
+        {
+          model: Review,
+          include: [{ model: User, attributes: ['id', 'name'] }],
+          order: [['createdAt', 'DESC']],
+        },
+      ],
     });
 
     if (!product) {

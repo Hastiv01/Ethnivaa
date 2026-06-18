@@ -61,4 +61,20 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    const address = await Address.findOne({
+      where: { id: req.params.id, userId: req.user.id },
+    });
+    if (!address) {
+      return res.status(404).json({ message: 'Address not found' });
+    }
+    await address.destroy();
+    return res.json({ message: 'Address deleted' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to delete address' });
+  }
+});
+
 module.exports = router;
+

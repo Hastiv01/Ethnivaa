@@ -6,7 +6,11 @@ const adminProductRoutes = require('./routes/adminProducts');
 const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/orders');
 const adminOrderRoutes = require('./routes/adminOrders');
+const adminUserRoutes = require('./routes/adminUsers');
+const adminCategoryRoutes = require('./routes/adminCategories');
+const reviewRoutes = require('./routes/reviews');
 const addressRoutes = require('./routes/addresses');
+const visitorRoutes = require('./routes/visitors');
 const { notFound, errorHandler } = require('./middleware/errors');
 
 const app = express();
@@ -24,14 +28,18 @@ app.use(
 );
 app.use(express.json());
 
-app.get('/health', (req, res) => res.json({status: 'ok'}));
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/admin/products', adminProductRoutes);
+app.use('/api/admin/orders', adminOrderRoutes);
+app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/admin/categories', adminCategoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/admin/orders', adminOrderRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use('/api/visitors', visitorRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

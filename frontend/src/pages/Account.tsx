@@ -15,7 +15,10 @@ export const Account: React.FC = () => {
     saveProfileAddress,
     navigateTo,
     activeAccountTab: activeTab,
-    setActiveAccountTab: setActiveTab
+    setActiveAccountTab: setActiveTab,
+    addresses,
+    addAddress,
+    currentUser,
   } = useShop();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
@@ -35,11 +38,24 @@ export const Account: React.FC = () => {
     setExpandedOrderId(prev => (prev === orderId ? null : orderId));
   };
 
-  const handleAddAddressSubmit = (e: React.FormEvent) => {
+  const handleAddAddressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAddress.fullName || !newAddress.mobileNumber || !newAddress.address || !newAddress.city || !newAddress.state || !newAddress.pincode) {
       return;
     }
+    // Save to backend
+    await addAddress({
+      label: 'Shipping Address',
+      recipientName: newAddress.fullName,
+      phone: newAddress.mobileNumber,
+      line1: newAddress.address,
+      city: newAddress.city,
+      state: newAddress.state,
+      postalCode: newAddress.pincode,
+      country: 'India',
+      isDefault: addresses.length === 0,
+    });
+    // Also keep local profile in sync for Checkout autofill
     saveProfileAddress(newAddress);
     setNewAddress({
       fullName: '',
@@ -295,26 +311,34 @@ export const Account: React.FC = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {profile.savedAddresses.map((addr, idx) => (
-                  <div 
-                    key={idx} 
-                    className="bg-white border border-gold-200/50 p-5 rounded-2xl shadow-gold shadow-sm space-y-2 relative"
-                  >
-                    <div className="font-bold text-crimson-950 text-sm">{addr.fullName}</div>
-                    <p className="font-light text-obsidian-700 leading-normal">
-                      {addr.address}, {addr.city}, {addr.state} - {addr.pincode}
-                    </p>
-                    <div className="text-[10px] font-semibold text-obsidian-400">Mobile: {addr.mobileNumber}</div>
-                    
-                    {idx === 0 && (
-                      <span className="absolute top-4 right-4 bg-gold-400 text-crimson-950 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-sans scale-90">
-                        Default
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {addresses.length === 0 ? (
+                <div className="bg-white border border-gold-200/50 rounded-2xl p-10 text-center space-y-4 shadow-sm">
+                  <MapPin size={32} className="text-gold-500 mx-auto" />
+                  <p className="text-obsidian-500 font-light">No saved addresses yet. Add one to speed up checkout.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {addresses.map((addr, idx) => (
+                    <div 
+                      key={addr.id} 
+                      className="bg-white border border-gold-200/50 p-5 rounded-2xl shadow-gold shadow-sm space-y-2 relative"
+                    >
+                      <div className="font-bold text-crimson-950 text-sm">{addr.recipientName}</div>
+                      <p className="font-light text-obsidian-700 leading-normal">
+                        {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}, {addr.city}, {addr.state} - {addr.postalCode}
+                      </p>
+                      <div className="text-[10px] font-semibold text-obsidian-400">Mobile: {addr.phone}</div>
+                      <div className="text-[10px] font-semibold text-obsidian-300">{addr.label}</div>
+                      
+                      {(addr.isDefault || idx === 0) && (
+                        <span className="absolute top-4 right-4 bg-gold-400 text-crimson-950 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-sans scale-90">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -328,22 +352,22 @@ export const Account: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <span className="text-obsidian-400 text-[10px] uppercase tracking-wider block">Full Name</span>
-                  <span className="text-sm font-bold text-obsidian-950 block">{profile.name}</span>
+                  <span className="text-sm font-bold text-obsidian-950 block">{profile.name || currentUser || '—'}</span>
                 </div>
                 
                 <div className="space-y-1">
                   <span className="text-obsidian-400 text-[10px] uppercase tracking-wider block">Email Address</span>
-                  <span className="text-sm font-bold text-obsidian-950 block">{profile.email}</span>
+                  <span className="text-sm font-bold text-obsidian-950 block">{profile.email || currentUser || '—'}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-obsidian-400 text-[10px] uppercase tracking-wider block">Mobile Number</span>
-                  <span className="text-sm font-bold text-obsidian-950 block">{profile.mobile}</span>
+                  <span className="text-obsidian-400 text-[10px] uppercase tracking-wider block">Total Orders</span>
+                  <span className="text-sm font-bold text-obsidian-950 block">{orders.length} order{orders.length !== 1 ? 's' : ''}</span>
                 </div>
                 
                 <div className="space-y-1">
-                  <span className="text-obsidian-400 text-[10px] uppercase tracking-wider block">Member Since</span>
-                  <span className="text-sm font-bold text-obsidian-950 block">August 2025</span>
+                  <span className="text-obsidian-400 text-[10px] uppercase tracking-wider block">Wishlist Items</span>
+                  <span className="text-sm font-bold text-obsidian-950 block">{wishlist.length} item{wishlist.length !== 1 ? 's' : ''}</span>
                 </div>
               </div>
             </div>

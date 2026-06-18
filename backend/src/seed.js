@@ -53,7 +53,7 @@ async function seed() {
     const old = await Category.findOne({ where: { slug } });
     if (old) {
       if (fallbackCat) {
-        const moved = await Product.update({ CategoryId: fallbackCat.id }, { where: { CategoryId: old.id } });
+        const moved = await Product.update({ categoryId: fallbackCat.id }, { where: { categoryId: old.id } });
         console.log(`Reassigned ${moved[0]} product(s) from ${slug} → traditional-jewellery-sets`);
       }
       await old.destroy({ force: true });
@@ -88,7 +88,7 @@ async function seed() {
       isNewArrival: false,
       rating: 4.8,
       reviewsCount: 2,
-      CategoryId: comboSetsCat.id,
+      categoryId: comboSetsCat.id,
     },
   });
 
@@ -114,7 +114,7 @@ async function seed() {
       isNewArrival: false,
       rating: 4.9,
       reviewsCount: 2,
-      CategoryId: comboSetsCat.id,
+      categoryId: comboSetsCat.id,
     },
   });
 
@@ -140,14 +140,14 @@ async function seed() {
       isNewArrival: false,
       rating: 4.6,
       reviewsCount: 2,
-      CategoryId: comboSetsCat.id,
+      categoryId: comboSetsCat.id,
     },
   });
 
   await Address.findOrCreate({
     where: { label: 'Default Shipping' },
     defaults: {
-      UserId: adminUser.id,
+      userId: adminUser.id,
       label: 'Default Shipping',
       recipientName: adminName,
       phone: '0000000000',

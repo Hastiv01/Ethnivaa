@@ -3,7 +3,7 @@ import { useShop } from '../context/ShopContext';
 import { Mail, Phone, MapPin, ShieldAlert, Sparkles } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { navigateTo, setSelectedCategoryFilter, currentUserRole } = useShop();
+  const { navigateTo, setSelectedCategoryFilter, currentUserRole, visitorCount } = useShop();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -124,9 +124,19 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-gold-950/40 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-ivory-600 font-light">
-            &copy; {new Date().getFullYear()} Ethnivaa Jewelry. Handcrafted with pride in India. All Rights Reserved.
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <p className="text-xs text-ivory-600 font-light">
+              &copy; {new Date().getFullYear()} Ethnivaa Jewelry. Handcrafted with pride in India. All Rights Reserved.
+            </p>
+            <span className="hidden md:inline text-gold-950/40 font-light">|</span>
+            <span className="flex items-center gap-1.5 text-xs text-gold-400/80 font-light bg-gold-950/20 px-3 py-1 rounded-full border border-gold-950/30 w-fit">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gold-500"></span>
+              </span>
+              <span>{visitorCount.toLocaleString()} patrons welcomed</span>
+            </span>
+          </div>
           
           <div className="flex items-center gap-6">
             {currentUserRole === 'ADMIN' && (

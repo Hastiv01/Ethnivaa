@@ -23,38 +23,38 @@ const Review = ReviewFactory(sequelize, DataTypes);
 const Address = AddressFactory(sequelize, DataTypes);
 const SignupChallenge = SignupChallengeFactory(sequelize, DataTypes);
 
-User.hasMany(Address, { foreignKey: { allowNull: false }, onDelete: 'RESTRICT' });
-Address.belongsTo(User);
+User.hasMany(Address, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'RESTRICT' });
+Address.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false } });
 
-User.hasMany(Cart, { foreignKey: { allowNull: false }, onDelete: 'RESTRICT' });
-Cart.belongsTo(User);
+User.hasMany(Cart, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'RESTRICT' });
+Cart.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false } });
 
-Cart.hasMany(CartItem, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-CartItem.belongsTo(Cart);
+Cart.hasMany(CartItem, { foreignKey: { name: 'cartId', allowNull: false }, onDelete: 'CASCADE' });
+CartItem.belongsTo(Cart, { foreignKey: { name: 'cartId', allowNull: false } });
 
-Product.hasMany(CartItem, { foreignKey: { allowNull: false }, onDelete: 'RESTRICT' });
-CartItem.belongsTo(Product);
+Product.hasMany(CartItem, { foreignKey: { name: 'productId', allowNull: false }, onDelete: 'RESTRICT' });
+CartItem.belongsTo(Product, { foreignKey: { name: 'productId', allowNull: false } });
 
-Category.hasMany(Product, { foreignKey: { allowNull: false }, onDelete: 'RESTRICT' });
-Product.belongsTo(Category);
+Category.hasMany(Product, { foreignKey: { name: 'categoryId', allowNull: false }, onDelete: 'RESTRICT' });
+Product.belongsTo(Category, { foreignKey: { name: 'categoryId', allowNull: false } });
 
-User.hasMany(Order, { foreignKey: { allowNull: false }, onDelete: 'RESTRICT' });
-Order.belongsTo(User);
+User.hasMany(Order, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'RESTRICT' });
+Order.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false } });
 
-Address.hasMany(Order, { foreignKey: { allowNull: false }, onDelete: 'RESTRICT' });
-Order.belongsTo(Address);
+Address.hasMany(Order, { foreignKey: { name: 'addressId', allowNull: false }, onDelete: 'RESTRICT' });
+Order.belongsTo(Address, { foreignKey: { name: 'addressId', allowNull: false } });
 
-Order.hasMany(OrderItem, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-OrderItem.belongsTo(Order);
+Order.hasMany(OrderItem, { foreignKey: { name: 'orderId', allowNull: false }, onDelete: 'CASCADE' });
+OrderItem.belongsTo(Order, { foreignKey: { name: 'orderId', allowNull: false } });
 
-Product.hasMany(OrderItem, { foreignKey: { allowNull: false }, onDelete: 'RESTRICT' });
-OrderItem.belongsTo(Product);
+Product.hasMany(OrderItem, { foreignKey: { name: 'productId', allowNull: false }, onDelete: 'RESTRICT' });
+OrderItem.belongsTo(Product, { foreignKey: { name: 'productId', allowNull: false } });
 
-User.hasMany(Review, { foreignKey: { allowNull: false }, onDelete: 'RESTRICT' });
-Review.belongsTo(User);
+User.hasMany(Review, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'RESTRICT' });
+Review.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false } });
 
-Product.hasMany(Review, { foreignKey: { allowNull: false }, onDelete: 'CASCADE' });
-Review.belongsTo(Product);
+Product.hasMany(Review, { foreignKey: { name: 'productId', allowNull: false }, onDelete: 'CASCADE' });
+Review.belongsTo(Product, { foreignKey: { name: 'productId', allowNull: false } });
 
 module.exports = {
   sequelize,
