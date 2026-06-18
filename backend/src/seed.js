@@ -29,23 +29,40 @@ async function seed() {
     await adminUser.update({ emailVerifiedAt: new Date() });
   }
 
+  // STEP 1: Upsert the correct current categories first
   const categories = [
-    { name: 'Earrings', slug: 'earrings', description: 'Traditional and casual earrings' },
-    { name: 'Hair Accessories', slug: 'hair-accessories', description: 'Bridal and festive hair ornaments' },
-    { name: 'Necklaces', slug: 'necklaces', description: 'Intricate necklaces and choker sets' },
+    { name: 'Traditional Jewellery Sets', slug: 'traditional-jewellery-sets', description: 'Intricate necklaces, choker sets and traditional ornaments' },
     { name: 'Combo Sets', slug: 'combo-sets', description: 'Complete matched jewelry combinations' },
   ];
 
   for (const categoryData of categories) {
-    await Category.findOrCreate({
+    const [cat, created] = await Category.findOrCreate({
       where: { slug: categoryData.slug },
       defaults: categoryData,
     });
+    if (!created && cat.name !== categoryData.name) {
+      await cat.update({ name: categoryData.name, description: categoryData.description });
+      console.log(`Updated category: ${categoryData.slug}`);
+    }
   }
 
-  const earringsCat = await Category.findOne({ where: { slug: 'earrings' } });
-  const hairAccessoriesCat = await Category.findOne({ where: { slug: 'hair-accessories' } });
-  const necklacesCat = await Category.findOne({ where: { slug: 'necklaces' } });
+  // STEP 2: Now safely remove stale old categories
+  // First reassign all their products to 'traditional-jewellery-sets', then delete
+  const fallbackCat = await Category.findOne({ where: { slug: 'traditional-jewellery-sets' } });
+  for (const slug of ['earrings', 'hair-accessories', 'necklaces']) {
+    const old = await Category.findOne({ where: { slug } });
+    if (old) {
+      if (fallbackCat) {
+        const moved = await Product.update({ CategoryId: fallbackCat.id }, { where: { CategoryId: old.id } });
+        console.log(`Reassigned ${moved[0]} product(s) from ${slug} → traditional-jewellery-sets`);
+      }
+      await old.destroy({ force: true });
+      console.log(`Removed stale category: ${slug}`);
+    }
+  }
+
+
+  const traditionalCat = await Category.findOne({ where: { slug: 'traditional-jewellery-sets' } });
   const comboSetsCat = await Category.findOne({ where: { slug: 'combo-sets' } });
 
   await Product.findOrCreate({
@@ -123,7 +140,7 @@ async function seed() {
       isNewArrival: false,
       rating: 4.6,
       reviewsCount: 2,
-      CategoryId: earringsCat.id,
+      CategoryId: comboSetsCat.id,
     },
   });
 

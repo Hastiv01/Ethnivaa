@@ -14,7 +14,7 @@ export interface Product {
   originalPrice?: number;
   rating: number;
   reviewsCount: number;
-  category: 'Earrings' | 'Hair Accessories' | 'Necklaces' | 'Combo Sets';
+  category: 'Traditional Jewellery Sets' | 'Combo Sets';
   material: '22K Gold' | 'Sterling Silver' | 'Gold Plated' | 'Oxidized Silver' | 'Brass';
   occasion: 'Festive' | 'Bridal' | 'Casual Wear' | 'Party Wear';
   images: string[];
@@ -110,7 +110,7 @@ export const mockProducts: Product[] = [
     originalPrice: 1499,
     rating: 4.6,
     reviewsCount: 205,
-    category: 'Earrings',
+    category: 'Combo Sets',
     material: 'Oxidized Silver',
     occasion: 'Casual Wear',
     images: [
@@ -135,7 +135,7 @@ export const mockProducts: Product[] = [
     originalPrice: 8999,
     rating: 4.8,
     reviewsCount: 56,
-    category: 'Necklaces',
+    category: 'Traditional Jewellery Sets',
     material: 'Gold Plated',
     occasion: 'Festive',
     images: [
@@ -183,7 +183,7 @@ export const mockProducts: Product[] = [
     originalPrice: 22000,
     rating: 5.0,
     reviewsCount: 31,
-    category: 'Necklaces',
+    category: 'Traditional Jewellery Sets',
     material: '22K Gold',
     occasion: 'Bridal',
     images: [
@@ -207,7 +207,7 @@ export const mockProducts: Product[] = [
     originalPrice: 3499,
     rating: 4.7,
     reviewsCount: 64,
-    category: 'Hair Accessories',
+    category: 'Combo Sets',
     material: 'Gold Plated',
     occasion: 'Bridal',
     images: [

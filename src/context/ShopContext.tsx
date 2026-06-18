@@ -65,6 +65,7 @@ interface ShopContextType {
 
   // Products state (supports Admin CRUD)
   products: Product[];
+  categories: { id: number; name: string; slug: string }[];
   addProduct: (product: Omit<Product, 'id' | 'rating' | 'reviewsCount' | 'reviews'>) => void;
   editProduct: (id: string, updatedFields: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
@@ -255,7 +256,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       originalPrice: p.originalPrice ? Number(p.originalPrice) : undefined,
       rating: Number(p.rating) || 5.0,
       reviewsCount: Number(p.reviewsCount) || 0,
-      category: p.Category?.name || p.category || 'Necklaces',
+      category: p.Category?.name || p.category || 'Traditional Jewellery Sets',
       material: p.material || 'Oxidized Silver',
       occasion: p.occasion || 'Festive',
       images: imagesArr.length > 0 ? imagesArr : ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800'],
@@ -477,10 +478,31 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Admin CRUD Operations
   const addProduct = async (newProd: Omit<Product, 'id' | 'rating' | 'reviewsCount' | 'reviews'>) => {
     try {
-      const categoryObj = categories.find(c => c.name.toLowerCase() === newProd.category.toLowerCase()) 
-                          || categories[0] 
-                          || { id: 1 };
-      
+      // Find category from DB list first
+      let categoryObj = categories.find(
+        c => c.name.toLowerCase() === newProd.category.toLowerCase()
+      );
+
+      // If not found in loaded list, try to fetch fresh categories from backend
+      if (!categoryObj) {
+        try {
+          const catRes = await fetch('/api/products/categories');
+          if (catRes.ok) {
+            const catData = await catRes.json();
+            const freshCats: { id: number; name: string; slug: string }[] = catData.categories || [];
+            setCategories(freshCats);
+            categoryObj = freshCats.find(
+              c => c.name.toLowerCase() === newProd.category.toLowerCase()
+            );
+          }
+        } catch (_) { /* ignore */ }
+      }
+
+      if (!categoryObj) {
+        alert(`Category "${newProd.category}" does not exist in the database yet.\n\nPlease run the backend seed script first:\n  npm run seed\n\nOr ask your admin to create this category in the database.`);
+        return;
+      }
+
       const response = await fetch('/api/admin/products', {
         method: 'POST',
         headers: {
@@ -521,6 +543,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const editProduct = async (id: string, updatedFields: Partial<Product>) => {
+    // Mock/seed products have non-numeric IDs (e.g. "eth-008") — update locally only
+    const isDbProduct = /^\d+$/.test(id);
+
+    if (!isDbProduct) {
+      setProducts(prev => prev.map(p =>
+        p.id === id ? { ...p, ...updatedFields } : p
+      ));
+      return;
+    }
+
     try {
       const categoryObj = updatedFields.category 
         ? (categories.find(c => c.name.toLowerCase() === updatedFields.category?.toLowerCase()) || categories[0])
@@ -567,6 +599,20 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteProduct = async (id: string) => {
+    // Mock/seed products have non-numeric IDs (e.g. "eth-008") — delete locally only
+    const isDbProduct = /^\d+$/.test(id);
+
+    if (!isDbProduct) {
+      setProducts(prev => prev.filter(p => p.id !== id));
+      if (selectedProductId === id) {
+        setSelectedProductId(null);
+        setCurrentPage('shop');
+      }
+      setCartItems(prev => prev.filter(item => item.product.id !== id));
+      setWishlist(prev => prev.filter(wishId => wishId !== id));
+      return;
+    }
+
     try {
       const response = await fetch(`/api/admin/products/${id}`, {
         method: 'DELETE',
@@ -1008,6 +1054,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       selectedCategoryFilter,
       setSelectedCategoryFilter,
       products,
+      categories,
       addProduct,
       editProduct,
       deleteProduct,

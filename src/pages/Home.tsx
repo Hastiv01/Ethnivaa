@@ -19,27 +19,15 @@ const HERO_SLIDES = [
     title: 'Navratri Oxidized Masterpieces',
     subtitle: 'Rustic silver ornaments detailed with handcarved peacock motifs.',
     tagline: 'FESTIVE RHYTHM • GARBA EXCLUSIVES',
-    cta: 'Shop Statement Earrings',
-    category: 'Earrings'
+    cta: 'Shop Traditional Sets',
+    category: 'Traditional Jewellery Sets'
   }
 ];
 
 const COLLECTIONS = [
   {
-    name: 'Earrings',
-    category: 'Earrings',
-    image: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=600&auto=format&fit=crop&q=80',
-    tag: 'Stunning Chandbalis & Jhumkas'
-  },
-  {
-    name: 'Hair Accessories',
-    category: 'Hair Accessories',
-    image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=600&auto=format&fit=crop&q=80',
-    tag: 'Tikkas & Hair Ornaments'
-  },
-  {
-    name: 'Necklaces',
-    category: 'Necklaces',
+    name: 'Traditional Jewellery Sets',
+    category: 'Traditional Jewellery Sets',
     image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&auto=format&fit=crop&q=80',
     tag: 'Royal Chokers & Long Haars'
   },

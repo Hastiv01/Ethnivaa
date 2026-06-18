@@ -3,15 +3,24 @@ import { useShop } from '../context/ShopContext';
 import type { Product } from '../data/products';
 import { ShieldCheck, Plus, Pencil, Trash2, IndianRupee, ShoppingBag, Users, AlertTriangle, X, Check, Save } from 'lucide-react';
 
+// Only these two categories should ever appear in the admin panel
+const VALID_CATEGORIES = ['Traditional Jewellery Sets', 'Combo Sets'] as const;
+
 export const AdminDashboard: React.FC = () => {
   const { 
     products, 
     orders, 
+    categories,
     addProduct, 
     editProduct, 
     deleteProduct, 
     updateOrderStatus 
   } = useShop();
+
+  // Filter to only show the valid categories — ignores stale DB entries
+  const validCategories = categories.length > 0
+    ? categories.filter(c => VALID_CATEGORIES.includes(c.name as typeof VALID_CATEGORIES[number]))
+    : VALID_CATEGORIES.map((name, i) => ({ id: i + 1, name, slug: name.toLowerCase().replace(/ /g, '-') }));
 
   const [activeSubTab, setActiveSubTab] = useState<'products' | 'orders'>('products');
   
@@ -25,7 +34,7 @@ export const AdminDashboard: React.FC = () => {
     name: '',
     price: 0,
     originalPrice: 0,
-    category: 'Necklaces' as Product['category'],
+    category: 'Traditional Jewellery Sets' as Product['category'],
     material: 'Oxidized Silver' as Product['material'],
     occasion: 'Festive' as Product['occasion'],
     description: '',
@@ -94,11 +103,12 @@ export const AdminDashboard: React.FC = () => {
 
   // Open Add Modal
   const openAddModal = () => {
+    const defaultCategory = validCategories.length > 0 ? validCategories[0].name : 'Traditional Jewellery Sets';
     setFormFields({
       name: '',
       price: 1500,
       originalPrice: 2000,
-      category: 'Necklaces',
+      category: defaultCategory as Product['category'],
       material: 'Oxidized Silver',
       occasion: 'Festive',
       description: 'Handcrafted luxury traditional ornament for special occasions.',
@@ -440,12 +450,17 @@ export const AdminDashboard: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="font-semibold text-obsidian-800">Collection Category</label>
-                  <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-                    <option value="Earrings">Earrings</option>
-                    <option value="Hair Accessories">Hair Accessories</option>
-                    <option value="Necklaces">Necklaces</option>
-                    <option value="Combo Sets">Combo Sets</option>
-                  </select>
+                  {validCategories.length === 0 ? (
+                    <div className="w-full bg-amber-50 border border-amber-300 text-amber-700 rounded-xl p-2.5 text-[11px]">
+                      ⚠ No categories loaded from DB. Check backend connection.
+                    </div>
+                  ) : (
+                    <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
+                      {validCategories.map(cat => (
+                        <option key={cat.id} value={cat.name}>{cat.name}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 
                 <div className="space-y-1.5">
@@ -537,12 +552,17 @@ export const AdminDashboard: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="font-semibold text-obsidian-800">Collection Category</label>
-                  <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-                    <option value="Earrings">Earrings</option>
-                    <option value="Hair Accessories">Hair Accessories</option>
-                    <option value="Necklaces">Necklaces</option>
-                    <option value="Combo Sets">Combo Sets</option>
-                  </select>
+                  {validCategories.length === 0 ? (
+                    <div className="w-full bg-amber-50 border border-amber-300 text-amber-700 rounded-xl p-2.5 text-[11px]">
+                      ⚠ No categories loaded from DB. Check backend connection.
+                    </div>
+                  ) : (
+                    <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
+                      {validCategories.map(cat => (
+                        <option key={cat.id} value={cat.name}>{cat.name}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 
                 <div className="space-y-1.5">
