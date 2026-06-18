@@ -31,45 +31,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// PATCH /api/admin/users/:id/role — change user role
-router.patch('/:id/role', async (req, res) => {
-  try {
-    const userId = positiveInteger(req.params.id);
-    const { role } = req.body;
 
-    if (!userId) {
-      return res.status(400).json({ message: 'id must be a positive integer' });
-    }
-
-    const validRoles = ['CUSTOMER', 'ADMIN'];
-    if (!role || !validRoles.includes(role)) {
-      return res.status(400).json({ message: `role must be one of: ${validRoles.join(', ')}` });
-    }
-
-    // Prevent admin from demoting themselves
-    if (Number(userId) === req.user.id) {
-      return res.status(400).json({ message: 'You cannot change your own role' });
-    }
-
-    const user = await User.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    await user.update({ role });
-
-    return res.json({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    console.error('Failed to update user role:', error);
-    return res.status(500).json({ message: 'Failed to update user role' });
-  }
-});
 
 module.exports = router;

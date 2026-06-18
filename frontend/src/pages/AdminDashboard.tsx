@@ -147,28 +147,7 @@ export const AdminDashboard: React.FC = () => {
     if (activeSubTab === 'categories') fetchAdminCategories();
   }, [activeSubTab, fetchUsers, fetchAdminCategories]);
 
-  // Change user role
-  const handleChangeRole = async (userId: number, newRole: string) => {
-    if (!authToken) return;
-    try {
-      const res = await fetch(`/api/admin/users/${userId}/role`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ role: newRole })
-      });
-      if (res.ok) {
-        setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
-      } else {
-        const err = await res.json();
-        alert(err.message || 'Failed to change role');
-      }
-    } catch (err) {
-      alert('Error changing role');
-    }
-  };
+
 
   // Add category
   const handleAddCategory = async (e: React.FormEvent) => {
@@ -622,8 +601,7 @@ export const AdminDashboard: React.FC = () => {
                       <th className="p-4">Email</th>
                       <th className="p-4">Role</th>
                       <th className="p-4">Orders</th>
-                      <th className="p-4">Provider</th>
-                      <th className="p-4 text-right">Change Role</th>
+                      <th className="p-4 font-normal">Provider</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gold-100 text-obsidian-850">
@@ -639,20 +617,10 @@ export const AdminDashboard: React.FC = () => {
                         </td>
                         <td className="p-4 text-obsidian-600">{user.orderCount ?? 0}</td>
                         <td className="p-4 text-obsidian-400">{user.authProvider || 'EMAIL'}</td>
-                        <td className="p-4 text-right">
-                          <select
-                            value={user.role}
-                            onChange={(e) => handleChangeRole(user.id, e.target.value)}
-                            className="bg-ivory-50 border border-gold-300 text-obsidian-950 text-xs rounded-xl py-1.5 px-3 focus:outline-none font-sans"
-                          >
-                            <option value="CUSTOMER">Customer</option>
-                            <option value="ADMIN">Admin</option>
-                          </select>
-                        </td>
                       </tr>
                     ))}
                     {filteredUsers.length === 0 && (
-                      <tr><td colSpan={7} className="p-8 text-center text-obsidian-400 italic">No users found.</td></tr>
+                      <tr><td colSpan={6} className="p-8 text-center text-obsidian-400 italic">No users found.</td></tr>
                     )}
                   </tbody>
                 </table>

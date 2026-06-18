@@ -11,6 +11,7 @@ const OrderItemFactory = require('./orderItem');
 const ReviewFactory = require('./review');
 const AddressFactory = require('./address');
 const SignupChallengeFactory = require('./signupChallenge');
+const VisitorCountFactory = require('./visitorCount');
 
 const User = UserFactory(sequelize, DataTypes);
 const Category = CategoryFactory(sequelize, DataTypes);
@@ -22,6 +23,7 @@ const OrderItem = OrderItemFactory(sequelize, DataTypes);
 const Review = ReviewFactory(sequelize, DataTypes);
 const Address = AddressFactory(sequelize, DataTypes);
 const SignupChallenge = SignupChallengeFactory(sequelize, DataTypes);
+const VisitorCount = VisitorCountFactory(sequelize, DataTypes);
 
 User.hasMany(Address, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'RESTRICT' });
 Address.belongsTo(User, { foreignKey: { name: 'userId', allowNull: false } });
@@ -68,4 +70,5 @@ module.exports = {
   OrderItem,
   Review,
   Address,
+  VisitorCount,
 };

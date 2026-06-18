@@ -122,21 +122,28 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
+        {/* Patrons Welcome Counter Banner */}
+        <div className="border-t border-gold-950/20 pt-12 pb-8 text-center font-serif">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-gold-500/80 mb-2">
+            Royal Boutique Connoisseurs
+          </p>
+          <h2 className="text-5xl sm:text-6xl font-black text-gold-gradient tracking-widest leading-none my-4 drop-shadow-md select-none">
+            {visitorCount.toLocaleString()}
+          </h2>
+          <p className="text-xs uppercase tracking-[0.15em] text-ivory-400/80 font-sans font-light flex items-center justify-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-500"></span>
+            </span>
+            <span>Patrons welcomed to our digital boutique</span>
+          </p>
+        </div>
+
         {/* Bottom Bar */}
         <div className="border-t border-gold-950/40 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <p className="text-xs text-ivory-600 font-light">
-              &copy; {new Date().getFullYear()} Ethnivaa Jewelry. Handcrafted with pride in India. All Rights Reserved.
-            </p>
-            <span className="hidden md:inline text-gold-950/40 font-light">|</span>
-            <span className="flex items-center gap-1.5 text-xs text-gold-400/80 font-light bg-gold-950/20 px-3 py-1 rounded-full border border-gold-950/30 w-fit">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gold-500"></span>
-              </span>
-              <span>{visitorCount.toLocaleString()} patrons welcomed</span>
-            </span>
-          </div>
+          <p className="text-xs text-ivory-600 font-light">
+            &copy; {new Date().getFullYear()} Ethnivaa Jewelry. Handcrafted with pride in India. All Rights Reserved.
+          </p>
           
           <div className="flex items-center gap-6">
             {currentUserRole === 'ADMIN' && (
