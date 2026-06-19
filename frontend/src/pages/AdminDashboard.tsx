@@ -3,7 +3,7 @@ import { useShop } from '../context/ShopContext';
 import type { Product } from '../data/products';
 import {
   ShieldCheck, Plus, Pencil, Trash2, IndianRupee, ShoppingBag, Users, AlertTriangle,
-  X, Check, Save, Tag, RefreshCw, ChevronDown, ChevronUp, Package, Eye
+  X, Check, Save, Tag, RefreshCw, Package, Eye
 } from 'lucide-react';
 
 // Backend address type for admin orders
