@@ -7,7 +7,7 @@ const router = express.Router();
 async function getOrCreateVisitorRecord() {
   const [record] = await VisitorCount.findOrCreate({
     where: { id: 1 },
-    defaults: { count: 12480 },
+    defaults: { count: 0 },
   });
   return record;
 }
@@ -21,7 +21,7 @@ router.post('/ping', async (req, res) => {
     return res.json({ count: updated.count });
   } catch (error) {
     console.error('Failed to increment visitor count:', error);
-    return res.json({ count: 12480 });
+    return res.status(500).json({ error: 'Failed to increment count' });
   }
 });
 
@@ -32,7 +32,7 @@ router.get('/count', async (req, res) => {
     return res.json({ count: record.count });
   } catch (error) {
     console.error('Failed to fetch visitor count:', error);
-    return res.json({ count: 12480 });
+    return res.status(500).json({ error: 'Failed to fetch count' });
   }
 });
 

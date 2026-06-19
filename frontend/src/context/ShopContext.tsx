@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { mockProducts } from '../data/products';
 import type { Product, Review } from '../data/products';
 
@@ -137,6 +138,7 @@ interface ShopContextType {
   googleSignIn: (idToken: string) => Promise<AuthResult>;
   logout: () => void;
   visitorCount: number;
+  recordVisit: () => Promise<void>;
 }
 
 const safeParse = <T,>(key: string, defaultValue: T): T => {
@@ -178,11 +180,53 @@ const apiRequest = async <T,>(path: string, body: Record<string, unknown>): Prom
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Navigation State
-  const [currentPage, setCurrentPage] = useState<PageType>('welcome');
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  // Navigation State — derived from URL, not useState
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Search & Filters State
+  // Map URL path → PageType
+  const pathToPage = (path: string): PageType => {
+    if (path === '/' || path === '/welcome') return 'welcome';
+    if (path === '/home') return 'home';
+    if (path === '/shop') return 'shop';
+    if (path.startsWith('/details')) return 'details';
+    if (path === '/cart') return 'cart';
+    if (path === '/checkout') return 'checkout';
+    if (path === '/success') return 'success';
+    if (path === '/account') return 'account';
+    if (path === '/admin') return 'admin';
+    if (path === '/login') return 'login';
+    if (path === '/signup') return 'signup';
+    return 'home';
+  };
+
+  // Map PageType → URL path
+  const pageToPath = (page: PageType, productId?: string | null): string => {
+    switch (page) {
+      case 'welcome': return '/';
+      case 'home': return '/home';
+      case 'shop': return '/shop';
+      case 'details': return productId ? `/details/${productId}` : '/shop';
+      case 'cart': return '/cart';
+      case 'checkout': return '/checkout';
+      case 'success': return '/success';
+      case 'account': return '/account';
+      case 'admin': return '/admin';
+      case 'login': return '/login';
+      case 'signup': return '/signup';
+      default: return '/home';
+    }
+  };
+
+  // currentPage is always derived from the current URL
+  const currentPage: PageType = pathToPage(location.pathname);
+
+
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(() => {
+    // Extract product ID from URL on first load e.g. /details/123
+    const match = window.location.pathname.match(/^\/details\/(.+)/);
+    return match ? match[1] : null;
+  });
   const [searchQuery, setSearchQueryState] = useState<string>('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
 
@@ -248,29 +292,40 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [addresses, setAddresses] = useState<BackendAddress[]>([]);
 
   // Visitor count state
-  const [visitorCount, setVisitorCount] = useState<number>(12480);
+  const [visitorCount, setVisitorCount] = useState<number>(0);
 
-  // Ping visitor route on mount to count this visit, and get latest count
+  // On mount: fetch the current count (read-only, no increment)
   useEffect(() => {
-    const recordVisitor = async () => {
+    const fetchCount = async () => {
       try {
-        const res = await fetch('/api/visitors/ping', { method: 'POST' });
+        const res = await fetch('/api/visitors/count');
         if (res.ok) {
           const data = await res.json();
-          setVisitorCount(data.count);
-        } else {
-          const fallback = await fetch('/api/visitors/count');
-          if (fallback.ok) {
-            const data = await fallback.json();
+          if (typeof data.count === 'number') {
             setVisitorCount(data.count);
           }
         }
       } catch (e) {
-        console.error('Failed to update visitor count:', e);
+        console.error('Failed to fetch visitor count:', e);
       }
     };
-    recordVisitor();
+    fetchCount();
   }, []);
+
+  // Call this explicitly when a user intentionally enters the boutique
+  const recordVisit = async () => {
+    try {
+      const res = await fetch('/api/visitors/ping', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.count === 'number') {
+          setVisitorCount(data.count);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to record visit:', e);
+    }
+  };
 
   // Helper mapper function
   const mapBackendProductToFrontend = (p: any): Product => {
@@ -599,15 +654,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('ethnivaa_profile', JSON.stringify(profile));
   }, [profile]);
 
-  // Navigation controller
+  // Navigation controller — URL is the source of truth
   const navigateTo = (page: PageType, productId: string | null = null) => {
     if ((page === 'checkout' || page === 'account' || page === 'admin') && !currentUser) {
       setPendingAction({ type: 'navigation', page, productId, fromPage: currentPage });
-      setCurrentPage('login');
+      navigate('/login');
       return;
     }
-    setCurrentPage(page);
-    setSelectedProductId(productId);
+    if (productId !== null) setSelectedProductId(productId);
+    navigate(pageToPath(page, productId));
     window.scrollTo(0, 0);
   };
 
@@ -755,7 +810,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProducts(prev => prev.filter(p => p.id !== id));
       if (selectedProductId === id) {
         setSelectedProductId(null);
-        setCurrentPage('shop');
+        navigate('/shop');
       }
       setCartItems(prev => prev.filter(item => item.product.id !== id));
       setWishlist(prev => prev.filter(wishId => wishId !== id));
@@ -774,7 +829,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProducts(prev => prev.filter(p => p.id !== id));
         if (selectedProductId === id) {
           setSelectedProductId(null);
-          setCurrentPage('shop');
+          navigate('/shop');
         }
         setCartItems(prev => prev.filter(item => item.product.id !== id));
         setWishlist(prev => prev.filter(wishId => wishId !== id));
@@ -1253,7 +1308,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       completeSignup,
       googleSignIn,
       logout,
-      visitorCount
+      visitorCount,
+      recordVisit
     }}>
       {children}
     </ShopContext.Provider>

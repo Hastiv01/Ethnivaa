@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
@@ -6,6 +7,7 @@ import type { Product } from '../data/products';
 import { Star, Shield, Truck, RefreshCw, ShoppingBag, Heart, ArrowLeft, Plus, Minus, Send } from 'lucide-react';
 
 export const ProductDetails: React.FC = () => {
+  const { id: urlProductId } = useParams<{ id: string }>();
   const { 
     selectedProductId, 
     products, 
@@ -15,6 +17,9 @@ export const ProductDetails: React.FC = () => {
     navigateTo,
     addReview
   } = useShop();
+
+  // URL param takes priority; fall back to context selectedProductId
+  const activeProductId = urlProductId || selectedProductId;
 
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -30,8 +35,8 @@ export const ProductDetails: React.FC = () => {
 
   // Retrieve current product
   const product = useMemo(() => {
-    return products.find(p => p.id === selectedProductId) || products[0];
-  }, [products, selectedProductId]);
+    return products.find(p => p.id === activeProductId) || products[0];
+  }, [products, activeProductId]);
 
   // Fallback if no product exists
   if (!product) {

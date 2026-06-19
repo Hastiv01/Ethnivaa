@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { Mail, Lock, User, KeyRound, Sparkles, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -8,6 +9,7 @@ interface AuthProps {
 
 export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
   const { login, startSignup, verifySignupOtp, completeSignup, googleSignIn, navigateTo, pendingAction } = useShop();
+  const navigate = useNavigate();
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
@@ -361,7 +363,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
             <div className="text-center pt-4 border-t border-gold-100 text-xs">
               <span className="text-obsidian-500 font-light">New to Ethnivaa? </span>
               <button
-                onClick={() => { setAuthMode('signup'); resetForms(); }}
+                onClick={() => { navigate('/signup'); resetForms(); }}
                 className="font-bold text-crimson-900 hover:text-gold-600 transition-colors uppercase tracking-wider"
               >
                 Sign Up Now
@@ -558,7 +560,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
             <div className="text-center pt-4 border-t border-gold-100 text-xs">
               <span className="text-obsidian-500 font-light">Already have an account? </span>
               <button
-                onClick={() => { setAuthMode('login'); resetForms(); }}
+                onClick={() => { navigate('/login'); resetForms(); }}
                 className="font-bold text-crimson-900 hover:text-gold-600 transition-colors uppercase tracking-wider"
               >
                 Log In

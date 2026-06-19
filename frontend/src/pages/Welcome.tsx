@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { Sparkles, ArrowRight, Gift, Gem, Compass, Crown } from 'lucide-react';
 
@@ -89,20 +90,29 @@ const MandalaBackground: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 export const Welcome: React.FC = () => {
-  const { navigateTo } = useShop();
+  const { recordVisit } = useShop();
+  const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
+    // If this browser session already entered, skip the splash screen
+    if (sessionStorage.getItem('ethnivaa_session_entered')) {
+      navigate('/home', { replace: true });
+      return;
+    }
     // Trigger entry animations
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
   const handleEnter = () => {
+    // Mark session as entered so Welcome won't show again until tab is closed
+    sessionStorage.setItem('ethnivaa_session_entered', 'true');
     setIsExiting(true);
+    recordVisit(); // Increment visitor count when user enters the boutique
     setTimeout(() => {
-      navigateTo('home');
+      navigate('/home');
     }, 600); // Wait for fade-out animation to complete
   };
 

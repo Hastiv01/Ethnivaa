@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { Search, Heart, ShoppingBag, User, ShieldAlert, Sparkles, Menu, X, ArrowRight, LogOut } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
+  const location = useLocation();
   const { 
-    currentPage, 
     navigateTo, 
     cartCount, 
     wishlist, 
@@ -22,7 +23,7 @@ export const Navbar: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    if (currentPage !== 'shop') {
+    if (location.pathname !== '/shop') {
       navigateTo('shop');
     }
   };
@@ -77,7 +78,7 @@ export const Navbar: React.FC = () => {
                   navigateTo(item.page);
                 }}
                 className={`font-sans text-sm font-semibold tracking-wider uppercase transition-colors duration-200 ${
-                  currentPage === item.page 
+                  location.pathname === `/${item.page}`
                     ? 'text-crimson-800 border-b-2 border-gold-400 pb-1' 
                     : 'text-obsidian-800 hover:text-gold-600 pb-1'
                 }`}
@@ -245,7 +246,7 @@ export const Navbar: React.FC = () => {
                   setIsMobileMenuOpen(false);
                 }}
                 className={`text-left font-sans text-sm font-semibold tracking-wider uppercase transition-colors duration-200 py-1 ${
-                  currentPage === item.page ? 'text-crimson-800 pl-2 border-l-2 border-gold-400' : 'text-obsidian-800'
+                  location.pathname === `/${item.page}` ? 'text-crimson-800 pl-2 border-l-2 border-gold-400' : 'text-obsidian-800'
                 }`}
               >
                 {item.label}
