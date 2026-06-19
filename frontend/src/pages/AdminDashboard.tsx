@@ -216,12 +216,12 @@ export const AdminDashboard: React.FC = () => {
     };
   }, [dashboardStats, orders, products]);
 
-  const validCategories = categories.length > 0
-    ? categories
-    : [
-        { id: 1, name: 'Traditional Jewellery Sets', slug: 'traditional-jewellery-sets' },
-        { id: 2, name: 'Combo Sets', slug: 'combo-sets' }
-      ];
+  // Always restrict the dropdown to exactly these two categories
+  const ALLOWED_CATEGORIES = ['Traditional Jewellery Sets', 'Combo Sets'] as const;
+  const validCategories = ALLOWED_CATEGORIES.map(name => {
+    const found = categories.find(c => c.name === name);
+    return found ?? { id: 0, name, slug: name.toLowerCase().replace(/\s+/g, '-') };
+  });
 
   const filteredProducts = useMemo(() => {
     if (!productSearch.trim()) return products;
@@ -262,7 +262,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const openAddModal = () => {
-    const defaultCategory = validCategories.length > 0 ? validCategories[0].name : 'Traditional Jewellery Sets';
+    const defaultCategory = 'Traditional Jewellery Sets';
     setFormFields({
       name: '',
       price: 1500,
@@ -307,24 +307,39 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const ProductFormFields = ({ onSubmit, submitLabel, icon }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string; icon: React.ReactNode }) => (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label className="font-semibold text-obsidian-800">Ornament Title</label>
-          <input type="text" name="name" required value={formFields.name} onChange={handleFormChange} placeholder="e.g. Royal Ruby Necklace Set" className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
+  const ProductFormFields = ({ onSubmit, submitLabel, icon }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string; icon: React.ReactNode }) => {
+    const calculatedDiscount = formFields.originalPrice > 0 ? Math.round(((formFields.originalPrice - formFields.price) / formFields.originalPrice) * 100) : 0;
+    
+    const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const discount = Number(e.target.value);
+      if (formFields.originalPrice > 0) {
+        const newPrice = Math.round(formFields.originalPrice * (1 - discount / 100));
+        setFormFields(prev => ({ ...prev, price: Math.max(0, newPrice) }));
+      }
+    };
+
+    return (
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="font-semibold text-obsidian-800">Boutique Price</label>
-            <input type="number" name="price" required min={0} value={formFields.price} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+            <label className="font-semibold text-obsidian-800">Ornament Title</label>
+            <input type="text" name="name" required value={formFields.name} onChange={handleFormChange} placeholder="e.g. Royal Ruby Necklace Set" className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
           </div>
-          <div className="space-y-1.5">
-            <label className="font-semibold text-obsidian-800">Original Price</label>
-            <input type="number" name="originalPrice" min={0} value={formFields.originalPrice} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1.5">
+              <label className="font-semibold text-obsidian-800 text-xs">Original Price</label>
+              <input type="number" name="originalPrice" min={0} value={formFields.originalPrice} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="font-semibold text-obsidian-800 text-xs">Discount %</label>
+              <input type="number" name="discountPercentage" min={0} max={100} value={Math.max(0, calculatedDiscount)} onChange={handleDiscountChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="font-semibold text-obsidian-800 text-xs">Selling Price</label>
+              <input type="number" name="price" required min={0} value={formFields.price} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+            </div>
           </div>
         </div>
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-1.5">
           <label className="font-semibold text-obsidian-800">Collection Category</label>
@@ -373,11 +388,13 @@ export const AdminDashboard: React.FC = () => {
         {icon}
         <span>{submitLabel}</span>
       </button>
-    </form>
-  );
+      </form>
+    );
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fadeIn min-h-screen">
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fadeIn min-h-screen">
 
       {/* Dashboard Title */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-gold-200/40">
@@ -726,6 +743,8 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
+      </div>
+
       {/* ADD MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-obsidian-950/60 backdrop-blur-sm animate-fadeIn">
@@ -747,6 +766,6 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
