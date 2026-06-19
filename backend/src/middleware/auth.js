@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
 
 function getTokenFromHeader(header) {
   if (!header) {
@@ -14,7 +13,7 @@ function getTokenFromHeader(header) {
   return token;
 }
 
-async function authenticate(req, res, next) {
+function authenticate(req, res, next) {
   try {
     const token = getTokenFromHeader(req.headers.authorization);
     if (!token) {
@@ -22,15 +21,20 @@ async function authenticate(req, res, next) {
     }
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findByPk(payload.userId, {
-      attributes: ['id', 'email', 'name', 'role', 'authProvider', 'emailVerifiedAt', 'googleSub'],
-    });
 
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+    if (!payload.userId) {
+      return res.status(401).json({ message: 'Invalid token payload' });
     }
 
-    req.user = user;
+    // Build req.user from JWT payload — no DB round-trip needed per request.
+    // Token expiry is the security boundary (typically 7d).
+    req.user = {
+      id: payload.userId,
+      email: payload.email || null,
+      name: payload.name || null,
+      role: payload.role || 'CUSTOMER',
+    };
+
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid or expired token' });

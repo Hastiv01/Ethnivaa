@@ -394,6 +394,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // 1. Fetch categories and products from backend on load
+  const PRODUCTS_CACHE_KEY = 'ethnivaa_products_cache';
+  const PRODUCTS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
   const loadBackendData = async () => {
     try {
       // Load categories
@@ -403,13 +406,27 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCategories(catData.categories || []);
       }
 
-      // Load products
+      // Check product cache before fetching
+      const cacheRaw = localStorage.getItem(PRODUCTS_CACHE_KEY);
+      if (cacheRaw) {
+        try {
+          const cache = JSON.parse(cacheRaw);
+          if (cache.ts && Date.now() - cache.ts < PRODUCTS_CACHE_TTL && Array.isArray(cache.data)) {
+            setProducts(cache.data);
+            return; // Cache hit — skip network request
+          }
+        } catch (_) { /* ignore corrupt cache */ }
+      }
+
+      // Cache miss — fetch fresh products
       const prodRes = await fetch('/api/products');
       if (prodRes.ok) {
         const prodData = await prodRes.json();
         if (Array.isArray(prodData.products)) {
           const mapped = prodData.products.map(mapBackendProductToFrontend);
           setProducts(mapped);
+          // Store in cache with timestamp
+          localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: mapped }));
         }
       }
     } catch (e) {
@@ -880,13 +897,27 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Cart operations (backend synced)
+  // Cart operations (backend synced, optimistic updates)
   const addToCart = async (product: Product, quantity: number = 1) => {
     if (!currentUser) {
       setPendingAction({ type: 'cart', product, quantity, fromPage: currentPage });
       navigateTo('login');
       return;
     }
+
+    // --- OPTIMISTIC UPDATE: update UI immediately ---
+    setCartItems(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
+      if (existing) {
+        return prev.map(item =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...prev, { product, quantity }];
+    });
+
     try {
       const response = await fetch('/api/cart/items', {
         method: 'POST',
@@ -899,6 +930,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.ok) {
         const data = await response.json();
         if (data.cart && Array.isArray(data.cart.items)) {
+          // Sync with server-confirmed state
           const mapped = data.cart.items.map((item: any) => ({
             product: mapBackendProductToFrontend(item.product),
             quantity: Number(item.quantity),
@@ -906,8 +938,34 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }));
           setCartItems(mapped);
         }
+      } else {
+        // Rollback on server failure
+        setCartItems(prev => {
+          const existing = prev.find(item => item.product.id === product.id);
+          if (existing && existing.quantity > quantity) {
+            return prev.map(item =>
+              item.product.id === product.id
+                ? { ...item, quantity: item.quantity - quantity }
+                : item
+            );
+          }
+          return prev.filter(item => item.product.id !== product.id);
+        });
+        console.error('Failed to add item to backend cart');
       }
     } catch (err) {
+      // Rollback on network error
+      setCartItems(prev => {
+        const existing = prev.find(item => item.product.id === product.id);
+        if (existing && existing.quantity > quantity) {
+          return prev.map(item =>
+            item.product.id === product.id
+              ? { ...item, quantity: item.quantity - quantity }
+              : item
+          );
+        }
+        return prev.filter(item => item.product.id !== product.id);
+      });
       console.error('Failed to add item to backend cart:', err);
     }
   };
@@ -923,6 +981,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const backendItemId = existing.backendItemId;
     if (!backendItemId) return;
+
+    // --- OPTIMISTIC UPDATE ---
+    const previousQuantity = existing.quantity;
+    setCartItems(prev =>
+      prev.map(item =>
+        item.product.id === productId ? { ...item, quantity } : item
+      )
+    );
 
     try {
       const response = await fetch(`/api/cart/items/${backendItemId}`, {
@@ -943,8 +1009,21 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }));
           setCartItems(mapped);
         }
+      } else {
+        // Rollback
+        setCartItems(prev =>
+          prev.map(item =>
+            item.product.id === productId ? { ...item, quantity: previousQuantity } : item
+          )
+        );
       }
     } catch (err) {
+      // Rollback
+      setCartItems(prev =>
+        prev.map(item =>
+          item.product.id === productId ? { ...item, quantity: previousQuantity } : item
+        )
+      );
       console.error('Failed to update cart item:', err);
     }
   };
@@ -955,6 +1034,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const backendItemId = existing.backendItemId;
     if (!backendItemId) return;
+
+    // --- OPTIMISTIC UPDATE ---
+    const removedItem = existing;
+    setCartItems(prev => prev.filter(item => item.product.id !== productId));
 
     try {
       const response = await fetch(`/api/cart/items/${backendItemId}`, {
@@ -973,8 +1056,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }));
           setCartItems(mapped);
         }
+      } else {
+        // Rollback — re-insert the removed item
+        setCartItems(prev => [...prev, removedItem]);
       }
     } catch (err) {
+      // Rollback
+      setCartItems(prev => [...prev, removedItem]);
       console.error('Failed to remove cart item:', err);
     }
   };
@@ -1020,41 +1108,24 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Order Operations
   const placeOrder = async (address: ShippingAddress, paymentMethod: string): Promise<Order> => {
     try {
-      // 1. Create the address in database
-      const addrResponse = await fetch('/api/addresses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({
-          recipientName: address.fullName,
-          phone: address.mobileNumber,
-          line1: address.address,
-          city: address.city,
-          state: address.state,
-          postalCode: address.pincode,
-          country: 'India',
-          isDefault: true
-        })
-      });
-
-      if (!addrResponse.ok) {
-        const err = await addrResponse.json();
-        throw new Error(err.message || 'Failed to save shipping address');
-      }
-
-      const addrData = await addrResponse.json();
-      const addressId = addrData.address.id;
-
-      // 2. Call checkout
+      // Single API call — sends address inline, no separate address creation step
       const checkResponse = await fetch('/api/orders/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ addressId })
+        body: JSON.stringify({
+          address: {
+            recipientName: address.fullName,
+            phone: address.mobileNumber,
+            line1: address.address,
+            city: address.city,
+            state: address.state,
+            postalCode: address.pincode,
+            country: 'India',
+          }
+        })
       });
 
       if (!checkResponse.ok) {
@@ -1065,10 +1136,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const orderData = await checkResponse.json();
       const o = orderData.order;
 
-      // 3. Local Cart reset
+      // Local Cart reset
       setCartItems([]);
 
-      // 4. Map backend order response
+      // Map backend order response
       const items = (o.OrderItems || []).map((item: any) => ({
         productId: String(item.productId),
         name: item.Product?.title || 'Jewelry Item',

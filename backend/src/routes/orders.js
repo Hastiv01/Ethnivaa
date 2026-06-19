@@ -1,7 +1,7 @@
 const express = require('express');
 const { sequelize, Cart, CartItem, Order, OrderItem, Product, Address, Category } = require('../models');
 const { authenticate } = require('../middleware/auth');
-const { requireFields, positiveInteger } = require('../middleware/validate');
+const { positiveInteger } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -58,17 +58,43 @@ router.get('/me', async (req, res) => {
   }
 });
 
-router.post('/checkout', requireFields(['addressId']), async (req, res) => {
+/**
+ * POST /api/orders/checkout
+ * Accepts either:
+ *   - { addressId: number }  — use an existing saved address
+ *   - { address: { recipientName, phone, line1, line2?, city, state, postalCode, country? } }  — create inline
+ * Both paths complete the order in a single request.
+ */
+router.post('/checkout', async (req, res) => {
   try {
-    const addressId = positiveInteger(req.body.addressId);
+    const { addressId: rawAddressId, address: inlineAddress } = req.body;
+    const addressId = positiveInteger(rawAddressId);
 
-    if (!addressId) {
-      return res.status(400).json({ message: 'addressId must be a positive integer' });
-    }
+    let address;
 
-    const address = await Address.findOne({ where: { id: addressId, userId: req.user.id } });
-    if (!address) {
-      return res.status(400).json({ message: 'Invalid addressId' });
+    if (addressId) {
+      // Use existing address
+      address = await Address.findOne({ where: { id: addressId, userId: req.user.id } });
+      if (!address) {
+        return res.status(400).json({ message: 'Invalid addressId' });
+      }
+    } else if (inlineAddress && inlineAddress.recipientName && inlineAddress.line1) {
+      // Create address inline — no extra round-trip needed from frontend
+      address = await Address.create({
+        userId: req.user.id,
+        label: inlineAddress.label || 'Shipping Address',
+        recipientName: inlineAddress.recipientName,
+        phone: inlineAddress.phone || '',
+        line1: inlineAddress.line1,
+        line2: inlineAddress.line2 || null,
+        city: inlineAddress.city || '',
+        state: inlineAddress.state || '',
+        postalCode: inlineAddress.postalCode || '',
+        country: inlineAddress.country || 'India',
+        isDefault: false,
+      });
+    } else {
+      return res.status(400).json({ message: 'Either addressId or inline address fields are required' });
     }
 
     const result = await sequelize.transaction(async (transaction) => {
@@ -99,18 +125,17 @@ router.post('/checkout', requireFields(['addressId']), async (req, res) => {
         { transaction }
       );
 
-      for (const item of items) {
-        await OrderItem.create(
-          {
-            orderId: order.id,
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            lineTotal: toMoney(Number(item.unitPrice) * Number(item.quantity)),
-          },
-          { transaction }
-        );
-      }
+      // Bulk create order items for better performance
+      await OrderItem.bulkCreate(
+        items.map((item) => ({
+          orderId: order.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          lineTotal: toMoney(Number(item.unitPrice) * Number(item.quantity)),
+        })),
+        { transaction }
+      );
 
       await CartItem.destroy({ where: { cartId: cart.id }, transaction });
       await cart.update({ status: 'ORDERED' }, { transaction });
@@ -128,4 +153,4 @@ router.post('/checkout', requireFields(['addressId']), async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;

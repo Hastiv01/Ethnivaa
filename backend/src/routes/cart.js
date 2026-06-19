@@ -100,8 +100,10 @@ router.post('/items', requireFields(['productId']), async (req, res) => {
 
     const unitPrice = product.discountPrice ? Number(product.discountPrice) : Number(product.price);
 
-    const result = await sequelize.transaction(async (transaction) => {
+    let cartId;
+    await sequelize.transaction(async (transaction) => {
       const cart = await getOrCreateActiveCart(req.user.id, transaction);
+      cartId = cart.id;
       const existingItem = await CartItem.findOne({
         where: { cartId: cart.id, productId: product.id },
         transaction,
@@ -122,11 +124,11 @@ router.post('/items', requireFields(['productId']), async (req, res) => {
           { transaction }
         );
       }
-
-      return fetchCart(req.user.id);
     });
 
-    return res.status(201).json({ cart: serializeCart(result) });
+    // Single fetch after transaction (instead of fetching inside + outside)
+    const updatedCart = await fetchCart(req.user.id);
+    return res.status(201).json({ cart: serializeCart(updatedCart) });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to add item to cart' });
   }
@@ -158,8 +160,8 @@ router.patch('/items/:itemId', async (req, res) => {
     item.quantity = quantity;
     await item.save();
 
-    const updatedCart = await fetchCart(req.user.id);
-    return res.json({ cart: serializeCart(updatedCart) });
+    const refreshedCart = await fetchCart(req.user.id);
+    return res.json({ cart: serializeCart(refreshedCart) });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to update cart item' });
   }
