@@ -26,6 +26,115 @@ interface DashboardStats {
   lowStockCount: number;
 }
 
+interface ProductFormFieldsProps {
+  onSubmit: (e: React.FormEvent) => void;
+  submitLabel: string;
+  icon: React.ReactNode;
+  formFields: {
+    name: string;
+    price: number;
+    originalPrice: number;
+    category: Product['category'] | string;
+    material: Product['material'] | string;
+    occasion: Product['occasion'] | string;
+    description: string;
+    materialsDetail: string;
+    careInstructions: string;
+    stock: number;
+    images: string[];
+  };
+  setFormFields: React.Dispatch<React.SetStateAction<any>>;
+  handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  validCategories: any[];
+}
+
+const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
+  onSubmit, submitLabel, icon, formFields, setFormFields, handleFormChange, validCategories
+}) => {
+  const calculatedDiscount = formFields.originalPrice > 0 ? Math.round(((formFields.originalPrice - formFields.price) / formFields.originalPrice) * 100) : 0;
+  
+  const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const discount = Number(e.target.value);
+    if (formFields.originalPrice > 0) {
+      const newPrice = Math.round(formFields.originalPrice * (1 - discount / 100));
+      setFormFields((prev: any) => ({ ...prev, price: Math.max(0, newPrice) }));
+    }
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="font-semibold text-obsidian-800">Ornament Title</label>
+          <input type="text" name="name" required value={formFields.name} onChange={handleFormChange} placeholder="e.g. Royal Ruby Necklace Set" className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-obsidian-800 text-xs">Original Price</label>
+            <input type="number" name="originalPrice" min={0} value={formFields.originalPrice} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-obsidian-800 text-xs">Discount %</label>
+            <input type="number" name="discountPercentage" min={0} max={100} value={Math.max(0, calculatedDiscount)} onChange={handleDiscountChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-obsidian-800 text-xs">Selling Price</label>
+            <input type="number" name="price" required min={0} value={formFields.price} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+          </div>
+        </div>
+      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="space-y-1.5">
+        <label className="font-semibold text-obsidian-800">Collection Category</label>
+        <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
+          {validCategories.map(cat => (<option key={cat.id} value={cat.name}>{cat.name}</option>))}
+        </select>
+      </div>
+      <div className="space-y-1.5">
+        <label className="font-semibold text-obsidian-800">Base Metal / Material</label>
+        <select name="material" value={formFields.material} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
+          <option>22K Gold</option><option>Sterling Silver</option><option>Gold Plated</option><option>Oxidized Silver</option><option>Brass</option>
+        </select>
+      </div>
+      <div className="space-y-1.5">
+        <label className="font-semibold text-obsidian-800">Recommended Occasion</label>
+        <select name="occasion" value={formFields.occasion} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
+          <option>Festive</option><option>Bridal</option><option>Casual Wear</option><option>Party Wear</option>
+        </select>
+      </div>
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-1.5">
+        <label className="font-semibold text-obsidian-800">Boutique Stock Level</label>
+        <input type="number" name="stock" required min={0} value={formFields.stock} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+      </div>
+      <div className="space-y-1.5">
+        <label className="font-semibold text-obsidian-800">Showcase Image URL</label>
+        <input type="text" value={formFields.images[0]} onChange={(e) => setFormFields((prev: any) => ({ ...prev, images: [e.target.value] }))} placeholder="https://images.unsplash.com/..." className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+      </div>
+    </div>
+    <div className="space-y-1.5">
+      <label className="font-semibold text-obsidian-800">Description</label>
+      <textarea name="description" rows={3} value={formFields.description} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none resize-none"></textarea>
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-1.5">
+        <label className="font-semibold text-obsidian-800">Materials Detail</label>
+        <input type="text" name="materialsDetail" value={formFields.materialsDetail} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+      </div>
+      <div className="space-y-1.5">
+        <label className="font-semibold text-obsidian-800">Care Instructions</label>
+        <input type="text" name="careInstructions" value={formFields.careInstructions} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+      </div>
+    </div>
+    <button type="submit" className="w-full bg-crimson-950 hover:bg-crimson-900 text-gold-100 font-bold uppercase tracking-wider py-3 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md">
+      {icon}
+      <span>{submitLabel}</span>
+    </button>
+    </form>
+  );
+};
+
 export const AdminDashboard: React.FC = () => {
   const {
     products,
@@ -307,90 +416,7 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const ProductFormFields = ({ onSubmit, submitLabel, icon }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string; icon: React.ReactNode }) => {
-    const calculatedDiscount = formFields.originalPrice > 0 ? Math.round(((formFields.originalPrice - formFields.price) / formFields.originalPrice) * 100) : 0;
-    
-    const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const discount = Number(e.target.value);
-      if (formFields.originalPrice > 0) {
-        const newPrice = Math.round(formFields.originalPrice * (1 - discount / 100));
-        setFormFields(prev => ({ ...prev, price: Math.max(0, newPrice) }));
-      }
-    };
 
-    return (
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="font-semibold text-obsidian-800">Ornament Title</label>
-            <input type="text" name="name" required value={formFields.name} onChange={handleFormChange} placeholder="e.g. Royal Ruby Necklace Set" className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="space-y-1.5">
-              <label className="font-semibold text-obsidian-800 text-xs">Original Price</label>
-              <input type="number" name="originalPrice" min={0} value={formFields.originalPrice} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-semibold text-obsidian-800 text-xs">Discount %</label>
-              <input type="number" name="discountPercentage" min={0} max={100} value={Math.max(0, calculatedDiscount)} onChange={handleDiscountChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-semibold text-obsidian-800 text-xs">Selling Price</label>
-              <input type="number" name="price" required min={0} value={formFields.price} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-            </div>
-          </div>
-        </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="space-y-1.5">
-          <label className="font-semibold text-obsidian-800">Collection Category</label>
-          <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-            {validCategories.map(cat => (<option key={cat.id} value={cat.name}>{cat.name}</option>))}
-          </select>
-        </div>
-        <div className="space-y-1.5">
-          <label className="font-semibold text-obsidian-800">Base Metal / Material</label>
-          <select name="material" value={formFields.material} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-            <option>22K Gold</option><option>Sterling Silver</option><option>Gold Plated</option><option>Oxidized Silver</option><option>Brass</option>
-          </select>
-        </div>
-        <div className="space-y-1.5">
-          <label className="font-semibold text-obsidian-800">Recommended Occasion</label>
-          <select name="occasion" value={formFields.occasion} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-            <option>Festive</option><option>Bridal</option><option>Casual Wear</option><option>Party Wear</option>
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label className="font-semibold text-obsidian-800">Boutique Stock Level</label>
-          <input type="number" name="stock" required min={0} value={formFields.stock} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-        </div>
-        <div className="space-y-1.5">
-          <label className="font-semibold text-obsidian-800">Showcase Image URL</label>
-          <input type="text" value={formFields.images[0]} onChange={(e) => setFormFields(prev => ({ ...prev, images: [e.target.value] }))} placeholder="https://images.unsplash.com/..." className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        <label className="font-semibold text-obsidian-800">Description</label>
-        <textarea name="description" rows={3} value={formFields.description} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none resize-none"></textarea>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label className="font-semibold text-obsidian-800">Materials Detail</label>
-          <input type="text" name="materialsDetail" value={formFields.materialsDetail} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-        </div>
-        <div className="space-y-1.5">
-          <label className="font-semibold text-obsidian-800">Care Instructions</label>
-          <input type="text" name="careInstructions" value={formFields.careInstructions} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-        </div>
-      </div>
-      <button type="submit" className="w-full bg-crimson-950 hover:bg-crimson-900 text-gold-100 font-bold uppercase tracking-wider py-3 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md">
-        {icon}
-        <span>{submitLabel}</span>
-      </button>
-      </form>
-    );
-  };
 
   return (
     <>
@@ -751,7 +777,15 @@ export const AdminDashboard: React.FC = () => {
           <div className="relative w-full max-w-2xl bg-white border border-gold-300 rounded-3xl overflow-hidden p-6 sm:p-8 shadow-gold-xl animate-scaleIn max-h-[90vh] overflow-y-auto custom-scrollbar font-sans text-xs">
             <button onClick={() => setShowAddModal(false)} className="absolute top-4 right-4 p-2 rounded-full bg-ivory-100 text-crimson-950 hover:bg-gold-100"><X size={18} /></button>
             <h3 className="font-serif text-xl font-bold text-crimson-950 mb-6 border-b border-gold-100 pb-3">Add Custom Ornament</h3>
-            <ProductFormFields onSubmit={handleAddSubmit} submitLabel="Save and Display in Shop" icon={<Check size={14} />} />
+            <ProductFormFields 
+              onSubmit={handleAddSubmit} 
+              submitLabel="Save and Display in Shop" 
+              icon={<Check size={14} />} 
+              formFields={formFields} 
+              setFormFields={setFormFields} 
+              handleFormChange={handleFormChange} 
+              validCategories={validCategories} 
+            />
           </div>
         </div>
       )}
@@ -762,7 +796,15 @@ export const AdminDashboard: React.FC = () => {
           <div className="relative w-full max-w-2xl bg-white border border-gold-300 rounded-3xl overflow-hidden p-6 sm:p-8 shadow-gold-xl animate-scaleIn max-h-[90vh] overflow-y-auto custom-scrollbar font-sans text-xs">
             <button onClick={() => { setShowEditModal(false); setEditingProductId(null); }} className="absolute top-4 right-4 p-2 rounded-full bg-ivory-100 text-crimson-950 hover:bg-gold-100"><X size={18} /></button>
             <h3 className="font-serif text-xl font-bold text-crimson-950 mb-6 border-b border-gold-100 pb-3">Edit Ornament Details</h3>
-            <ProductFormFields onSubmit={handleEditSubmit} submitLabel="Save Changes" icon={<Save size={14} />} />
+            <ProductFormFields 
+              onSubmit={handleEditSubmit} 
+              submitLabel="Save Changes" 
+              icon={<Save size={14} />} 
+              formFields={formFields} 
+              setFormFields={setFormFields} 
+              handleFormChange={handleFormChange} 
+              validCategories={validCategories} 
+            />
           </div>
         </div>
       )}
