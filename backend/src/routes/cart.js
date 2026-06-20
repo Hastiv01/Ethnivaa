@@ -10,7 +10,7 @@ router.use(authenticate);
 const cartItemInclude = [
   {
     model: Product,
-    attributes: ['id', 'title', 'description', 'price', 'discountPrice', 'color', 'image', 'inventory'],
+    attributes: ['id', 'title', 'description', 'price', 'discountPrice', 'color', 'image', 'inventory', 'material'],
     include: [
       {
         model: Category,

@@ -40,6 +40,20 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0,
     },
+    paymentMethod: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    razorpayOrderId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Razorpay Order ID (order_xxxxx)',
+    },
+    razorpayPaymentId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Razorpay Payment ID (pay_xxxxx) — set after successful payment',
+    },
   });
 
   return Order;

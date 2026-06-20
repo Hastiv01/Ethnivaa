@@ -40,6 +40,8 @@ export interface Order {
     price: number;
     image: string;
     quantity: number;
+    color?: string;
+    material?: string;
   }[];
   shippingAddress: ShippingAddress;
   paymentMethod: string;
@@ -48,6 +50,18 @@ export interface Order {
   subtotal: number;
   shipping: number;
   total: number;
+}
+
+/**
+ * Returned by placeOrder() — includes everything the frontend needs
+ * to open the real Razorpay Checkout popup.
+ */
+export interface PlaceOrderResult {
+  order: Order;
+  razorpayOrderId: string;
+  razorpayKeyId: string;
+  amount: number;   // in paise (INR × 100)
+  currency: string;
 }
 
 export type PageType = 'welcome' | 'home' | 'shop' | 'details' | 'cart' | 'checkout' | 'success' | 'account' | 'admin' | 'login' | 'signup';
@@ -104,7 +118,12 @@ interface ShopContextType {
 
   // Order State
   orders: Order[];
-  placeOrder: (shippingAddress: ShippingAddress, paymentMethod: string) => Promise<Order>;
+  placeOrder: (shippingAddress: ShippingAddress, paymentMethod: string) => Promise<PlaceOrderResult>;
+  confirmPayment: (orderId: string, razorpayData: {
+    razorpayPaymentId: string;
+    razorpayOrderId: string;
+    razorpaySignature: string;
+  }) => Promise<void>;
   latestOrder: Order | null;
   updateOrderStatus: (orderId: string, status: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled', paymentStatus?: 'Success' | 'Processing' | 'Failed') => void;
 
@@ -466,7 +485,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
               name: item.Product?.title || 'Jewelry Item',
               price: Number(item.unitPrice) || 0,
               image: item.Product?.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800',
-              quantity: Number(item.quantity) || 1
+              quantity: Number(item.quantity) || 1,
+              color: item.Product?.color || '',
+              material: item.Product?.material || ''
             }));
             const addr = o.Address || {};
             return {
@@ -1106,7 +1127,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
   // Order Operations
-  const placeOrder = async (address: ShippingAddress, paymentMethod: string): Promise<Order> => {
+  const placeOrder = async (address: ShippingAddress, paymentMethod: string): Promise<PlaceOrderResult> => {
     try {
       // Single API call — sends address inline, no separate address creation step
       const checkResponse = await fetch('/api/orders/checkout', {
@@ -1124,7 +1145,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             state: address.state,
             postalCode: address.pincode,
             country: 'India',
-          }
+          },
+          paymentMethod,
         })
       });
 
@@ -1133,8 +1155,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(err.message || 'Failed to place order');
       }
 
-      const orderData = await checkResponse.json();
-      const o = orderData.order;
+      const responseData = await checkResponse.json();
+      const o = responseData.order;
 
       // Local Cart reset
       setCartItems([]);
@@ -1171,12 +1193,59 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLatestOrder(newOrder);
       setOrders(prev => [newOrder, ...prev]);
 
-      return newOrder;
+      // Return order + Razorpay fields needed to open the real Razorpay Checkout popup
+      return {
+        order: newOrder,
+        razorpayOrderId: responseData.razorpayOrderId,
+        razorpayKeyId: responseData.razorpayKeyId,
+        amount: responseData.amount,
+        currency: responseData.currency || 'INR',
+      };
     } catch (e: any) {
       console.error(e);
-      alert(e.message || 'Failed to place order');
-      throw e;
+      throw e; // let caller (Checkout.tsx) handle the error display
     }
+  };
+
+  /**
+   * confirmPayment — called inside the Razorpay success handler.
+   * Sends the three Razorpay-provided verification fields to the backend
+   * for HMAC-SHA256 signature verification. Rejects forged confirmations.
+   */
+  const confirmPayment = async (
+    orderId: string,
+    razorpayData: {
+      razorpayPaymentId: string;
+      razorpayOrderId: string;
+      razorpaySignature: string;
+    }
+  ): Promise<void> => {
+    if (!authToken) throw new Error('Not authenticated');
+    const response = await fetch(`/api/orders/${orderId}/confirm-payment`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+      },
+      body: JSON.stringify(razorpayData),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Payment verification failed');
+    }
+    // Update local order state to reflect confirmed payment
+    setOrders(prev =>
+      prev.map(o =>
+        o.id === orderId
+          ? { ...o, paymentStatus: 'Success', status: 'Confirmed' }
+          : o
+      )
+    );
+    setLatestOrder(prev =>
+      prev?.id === orderId
+        ? { ...prev, paymentStatus: 'Success', status: 'Confirmed' }
+        : prev
+    );
   };
 
   const updateOrderStatus = async (
@@ -1357,6 +1426,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isInWishlist,
       orders,
       placeOrder,
+      confirmPayment,
       latestOrder,
       updateOrderStatus,
       profile,

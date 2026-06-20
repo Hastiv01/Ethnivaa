@@ -150,6 +150,11 @@ export const AdminDashboard: React.FC = () => {
   const authToken = JSON.parse(localStorage.getItem('ethnivaa_auth_token') || 'null');
 
   const [activeSubTab, setActiveSubTab] = useState<'products' | 'orders' | 'users' | 'categories'>('products');
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const toggleOrderExpand = (orderId: string) => {
+    setExpandedOrderId(prev => prev === orderId ? null : orderId);
+  };
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -584,39 +589,141 @@ export const AdminDashboard: React.FC = () => {
                       <th className="p-4">Amount</th>
                       <th className="p-4">Payment</th>
                       <th className="p-4">Status</th>
-                      <th className="p-4 text-right">Toggle Pay</th>
+                      <th className="p-4 text-center">Items</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gold-100 text-obsidian-850">
                     {orders.map(order => (
-                      <tr key={order.id} className="hover:bg-gold-50/10 transition-colors">
-                        <td className="p-4 sm:p-5 font-bold font-mono text-crimson-950">{order.id}</td>
-                        <td className="p-4 font-semibold text-obsidian-900">{order.shippingAddress.fullName}</td>
-                        <td className="p-4 text-obsidian-500">{order.date}</td>
-                        <td className="p-4 font-bold text-crimson-950 font-serif text-sm">₹{order.total.toLocaleString('en-IN')}</td>
-                        <td className="p-4">
-                          <span className={`inline-block px-3 py-1 rounded-full font-bold uppercase text-[9px] ${order.paymentStatus === 'Success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
-                            {order.paymentStatus}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <select value={order.status || 'Pending'} onChange={(e) => updateOrderStatus(order.id, e.target.value as any)} className="bg-ivory-50 border border-gold-300 text-obsidian-950 text-xs rounded-xl py-1.5 px-3 focus:outline-none focus:border-gold-500 font-sans">
-                            {['Pending', 'Confirmed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(s => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="p-4 text-right">
-                          <button onClick={() => updateOrderStatus(order.id, order.status, order.paymentStatus === 'Success' ? 'Processing' : 'Success')} className="text-[10px] font-bold uppercase border border-gold-300 hover:bg-gold-50 text-crimson-950 px-3 py-1.5 rounded-full transition-all">
-                            Toggle Pay
-                          </button>
-                        </td>
-                      </tr>
+                      <React.Fragment key={order.id}>
+                        <tr
+                          className="hover:bg-gold-50/10 cursor-pointer transition-colors"
+                          onClick={() => toggleOrderExpand(order.id)}
+                        >
+                          <td className="p-4 sm:p-5 font-bold font-mono text-crimson-950">{order.id}</td>
+                          <td className="p-4 font-semibold text-obsidian-900">{order.shippingAddress.fullName}</td>
+                          <td className="p-4 text-obsidian-500">{order.date}</td>
+                          <td className="p-4 font-bold text-crimson-950 font-serif text-sm">₹{order.total.toLocaleString('en-IN')}</td>
+                          <td className="p-4">
+                            <span className={`inline-block px-3 py-1 rounded-full font-bold uppercase text-[9px] ${order.paymentStatus === 'Success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
+                              {order.paymentStatus}
+                            </span>
+                          </td>
+                          <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                            <select value={order.status || 'Pending'} onChange={(e) => updateOrderStatus(order.id, e.target.value as any)} className="bg-ivory-50 border border-gold-300 text-obsidian-950 text-xs rounded-xl py-1.5 px-3 focus:outline-none focus:border-gold-500 font-sans">
+                              {['Pending', 'Confirmed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(s => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="p-4 text-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleOrderExpand(order.id);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[10px] bg-gold-50 text-gold-700 border border-gold-200 hover:bg-gold-100 transition-colors"
+                            >
+                              <span>{order.items.length} {order.items.length === 1 ? 'item' : 'items'}</span>
+                              <Eye size={12} className={expandedOrderId === order.id ? "text-crimson-900" : "text-gold-500"} />
+                            </button>
+                          </td>
+                        </tr>
+                        {expandedOrderId === order.id && (
+                          <tr className="bg-ivory-100/30 border-b border-gold-100/50">
+                            <td colSpan={7} className="p-5">
+                              {/* Beautiful Expandable Order Details Card */}
+                              <div className="space-y-4 font-sans max-w-4xl mx-auto text-left">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gold-200 pb-3 gap-2">
+                                  <div>
+                                    <h4 className="text-sm font-bold text-crimson-950 uppercase tracking-wider flex items-center gap-1.5">
+                                      <Package size={14} className="text-gold-600" />
+                                      <span>Order Items details (Order #{order.id})</span>
+                                    </h4>
+                                    <p className="text-[11px] text-obsidian-500 mt-0.5 font-sans">Prepare these items for the customer. Double check the colors & materials.</p>
+                                  </div>
+                                  <div className="text-[10px] font-bold text-gold-800 bg-gold-50 border border-gold-200 px-3 py-1 rounded-md flex items-center gap-1">
+                                    <span>Total items to make:</span>
+                                    <strong className="text-crimson-900 text-xs">{order.items.reduce((sum, item) => sum + item.quantity, 0)}</strong>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                  {/* List of Items */}
+                                  <div className="md:col-span-2 space-y-3">
+                                    {order.items.map((item, idx) => (
+                                      <div key={idx} className="flex gap-4 bg-white p-3.5 rounded-xl border border-gold-100 shadow-gold-sm hover:shadow-gold transition-shadow">
+                                        <img
+                                          src={item.image}
+                                          alt={item.name}
+                                          className="w-16 h-16 rounded-lg object-cover border border-gold-200 flex-shrink-0"
+                                        />
+                                        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                                          <div>
+                                            <p className="text-sm font-bold text-obsidian-950 leading-snug">{item.name}</p>
+                                            <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                              {item.color && (
+                                                <span className="px-2 py-0.5 rounded text-[9px] bg-slate-50 text-slate-700 font-bold border border-slate-200 uppercase tracking-wider">
+                                                  Color: {item.color}
+                                                </span>
+                                              )}
+                                              {item.material && (
+                                                <span className="px-2 py-0.5 rounded text-[9px] bg-amber-50 text-amber-900 font-bold border border-amber-100 uppercase tracking-wider">
+                                                  Material: {item.material}
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <p className="text-xs text-obsidian-500 mt-1 font-medium">
+                                            Unit Price: ₹{item.price.toLocaleString('en-IN')}
+                                          </p>
+                                        </div>
+                                        <div className="text-right flex flex-col justify-between flex-shrink-0 py-0.5">
+                                          <div className="text-xs font-bold text-crimson-950 bg-crimson-50 px-2.5 py-0.5 rounded border border-crimson-100 self-end">
+                                            Qty: {item.quantity}
+                                          </div>
+                                          <p className="text-sm font-extrabold text-obsidian-900 font-serif">
+                                            ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  {/* Shipping / Address card */}
+                                  <div className="bg-white p-4 rounded-xl border border-gold-200/50 shadow-gold-sm space-y-3">
+                                    <h5 className="text-[11px] font-bold uppercase tracking-wider text-gold-700 pb-1.5 border-b border-gold-100 flex items-center gap-1.5">
+                                      <ShoppingBag size={12} className="text-gold-500" />
+                                      <span>Shipping Details</span>
+                                    </h5>
+                                    <div className="text-xs space-y-2.5 text-obsidian-850">
+                                      <div>
+                                        <span className="font-semibold block text-[10px] text-obsidian-400 uppercase tracking-wider">Recipient Name</span>
+                                        <span className="font-bold text-obsidian-900 text-xs">{order.shippingAddress.fullName}</span>
+                                      </div>
+                                      <div>
+                                        <span className="font-semibold block text-[10px] text-obsidian-400 uppercase tracking-wider">Contact Phone</span>
+                                        <a href={`tel:${order.shippingAddress.mobileNumber}`} className="text-crimson-800 font-bold hover:underline">{order.shippingAddress.mobileNumber}</a>
+                                      </div>
+                                      <div>
+                                        <span className="font-semibold block text-[10px] text-obsidian-400 uppercase tracking-wider">Delivery Address</span>
+                                        <span className="leading-relaxed block text-obsidian-700 bg-ivory-50 p-2 rounded border border-gold-100/50 mt-1 font-mono text-[10px]">
+                                          {order.shippingAddress.address}, {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
+
           </div>
         </div>
       )}

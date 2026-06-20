@@ -12,7 +12,7 @@ router.use(requireRole('ADMIN'));
 const orderItemInclude = [
   {
     model: Product,
-    attributes: ['id', 'title', 'description', 'price', 'discountPrice', 'color', 'image'],
+    attributes: ['id', 'title', 'description', 'price', 'discountPrice', 'color', 'image', 'material'],
     include: [
       {
         model: Category,

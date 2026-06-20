@@ -5,6 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
 import { User, Package, Heart, MapPin, ChevronDown, ChevronUp, Download, Plus, X } from 'lucide-react';
+import { INDIAN_STATES } from './Checkout';
 
 export const Account: React.FC = () => {
   const { 
@@ -444,14 +445,17 @@ export const Account: React.FC = () => {
                 </div>
                 <div>
                   <label className="font-semibold text-obsidian-800">State</label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={newAddress.state}
                     onChange={(e) => setNewAddress(prev => ({ ...prev, state: e.target.value }))}
-                    placeholder="MH"
-                    className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none"
-                  />
+                    className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none font-sans text-xs"
+                  >
+                    <option value="" disabled>Select State</option>
+                    {INDIAN_STATES.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="font-semibold text-obsidian-800">Pincode</label>
