@@ -604,7 +604,7 @@ export const AdminDashboard: React.FC = () => {
                           <td className="p-4 text-obsidian-500">{order.date}</td>
                           <td className="p-4 font-bold text-crimson-950 font-serif text-sm">₹{order.total.toLocaleString('en-IN')}</td>
                           <td className="p-4">
-                            <span className={`inline-block px-3 py-1 rounded-full font-bold uppercase text-[9px] ${order.paymentStatus === 'Success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
+                            <span className={`inline-block px-3 py-1 rounded-full font-bold uppercase text-[9px] ${order.paymentStatus === 'Success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
                               {order.paymentStatus}
                             </span>
                           </td>

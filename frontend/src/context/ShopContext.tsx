@@ -45,7 +45,7 @@ export interface Order {
   }[];
   shippingAddress: ShippingAddress;
   paymentMethod: string;
-  paymentStatus: 'Success' | 'Processing' | 'Failed';
+  paymentStatus: 'Success' | 'Failed';
   status: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
   subtotal: number;
   shipping: number;
@@ -125,7 +125,7 @@ interface ShopContextType {
     razorpaySignature: string;
   }) => Promise<void>;
   latestOrder: Order | null;
-  updateOrderStatus: (orderId: string, status: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled', paymentStatus?: 'Success' | 'Processing' | 'Failed') => void;
+  updateOrderStatus: (orderId: string, status: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled', paymentStatus?: 'Success' | 'Failed') => void;
 
   // Profile State
   profile: Profile;
@@ -503,7 +503,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 pincode: addr.postalCode || ''
               },
               paymentMethod: 'Prepaid / Card',
-              paymentStatus: o.paymentStatus === 'SUCCESS' ? 'Success' : 'Processing',
+              paymentStatus: o.paymentStatus === 'SUCCESS' ? 'Success' : 'Failed',
               status: o.status === 'CONFIRMED' ? 'Confirmed' : o.status === 'PROCESSING' ? 'Processing' : o.status === 'SHIPPED' ? 'Shipped' : o.status === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : o.status === 'DELIVERED' ? 'Delivered' : o.status === 'CANCELLED' ? 'Cancelled' : 'Pending',
               subtotal: Number(o.subtotal) || 0,
               shipping: Number(o.shippingCost) || 0,
@@ -1183,7 +1183,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           pincode: addr.postalCode || ''
         },
         paymentMethod: paymentMethod,
-        paymentStatus: o.paymentStatus === 'SUCCESS' ? 'Success' : 'Processing',
+        paymentStatus: o.paymentStatus === 'SUCCESS' ? 'Success' : 'Failed',
         status: o.status === 'CONFIRMED' ? 'Confirmed' : o.status === 'PROCESSING' ? 'Processing' : o.status === 'SHIPPED' ? 'Shipped' : o.status === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : o.status === 'DELIVERED' ? 'Delivered' : o.status === 'CANCELLED' ? 'Cancelled' : 'Pending',
         subtotal: Number(o.subtotal) || 0,
         shipping: Number(o.shippingCost) || 0,
@@ -1251,7 +1251,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateOrderStatus = async (
     orderId: string, 
     status: 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled', 
-    paymentStatus?: 'Success' | 'Processing' | 'Failed'
+    paymentStatus?: 'Success' | 'Failed'
   ) => {
     try {
       const body: any = {};
@@ -1259,7 +1259,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body.status = status.toUpperCase().replace(/ /g, '_');
       }
       if (paymentStatus) {
-        body.paymentStatus = paymentStatus === 'Success' ? 'SUCCESS' : 'PENDING';
+        body.paymentStatus = paymentStatus === 'Success' ? 'SUCCESS' : 'FAILED';
       }
 
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {

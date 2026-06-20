@@ -94,12 +94,16 @@ export const Checkout: React.FC = () => {
     pincode: profile.savedAddresses[0]?.pincode || '',
   });
 
-  // ── Payment / flow state ───────────────────────────────────────────────────
-  const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'Card' | 'Netbanking' | 'Wallet'>('UPI');
+  const paymentMethod = 'Prepaid / Online';
   const [stage, setStage] = useState<Stage>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
-
+  const [rzpOptions, setRzpOptions] = useState<{
+    razorpayOrderId: string;
+    razorpayKeyId: string;
+    amount: number;
+    currency: string;
+  } | null>(null);
   // Keep a stable ref for the Razorpay instance so we can call .close() if needed
   const rzpRef = useRef<any>(null);
 
@@ -124,6 +128,7 @@ export const Checkout: React.FC = () => {
       const { order, razorpayOrderId, razorpayKeyId, amount, currency } = result;
 
       setPendingOrderId(order.id);
+      setRzpOptions({ razorpayOrderId, razorpayKeyId, amount, currency });
 
       // Step 2: Load Razorpay script
       setStage('script_loading');
@@ -185,6 +190,93 @@ export const Checkout: React.FC = () => {
           ondismiss: () => {
             setStage('dismissed');
           },
+        },
+        config: {
+          display: {
+            hide: [
+              { method: 'paylater' }
+            ]
+          }
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzpRef.current = rzp;
+
+      rzp.on('payment.failed', (response: any) => {
+        setStage('error');
+        setErrorMessage(
+          response?.error?.description || 'Payment failed. Please try a different payment method.'
+        );
+      });
+
+      rzp.open();
+    } catch (err: any) {
+      setStage('error');
+      setErrorMessage(err.message || 'Something went wrong. Please try again.');
+    }
+  };
+
+  const handleRetryPayment = async () => {
+    if (!rzpOptions || !pendingOrderId) return;
+    setStage('rzp_open');
+    setErrorMessage(null);
+
+    try {
+      const options = {
+        key: rzpOptions.razorpayKeyId,
+        amount: rzpOptions.amount,
+        currency: rzpOptions.currency,
+        name: 'Ethnivaa',
+        description: `Order #${pendingOrderId}`,
+        image: 'https://res.cloudinary.com/dujdgboyb/image/upload/v1781935583/new_logo_he9q1o.png',
+        order_id: rzpOptions.razorpayOrderId,
+
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          setStage('confirming');
+          try {
+            await confirmPayment(pendingOrderId, {
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            setStage('success');
+            setTimeout(() => navigateTo('success'), 1200);
+          } catch (err: any) {
+            setStage('error');
+            setErrorMessage(err.message || 'Payment verification failed. Please contact support.');
+          }
+        },
+
+        prefill: {
+          name: formData.fullName,
+          contact: `+91${formData.mobileNumber}`,
+          email: profile.email || '',
+        },
+
+        notes: {
+          shipping_address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`,
+        },
+
+        theme: {
+          color: '#7B1C1C',
+        },
+
+        modal: {
+          ondismiss: () => {
+            setStage('dismissed');
+          },
+        },
+        config: {
+          display: {
+            hide: [
+              { method: 'paylater' }
+            ]
+          }
         },
       };
 
@@ -432,27 +524,6 @@ export const Checkout: React.FC = () => {
             </div>
           </div>
 
-          {/* Payment method selector */}
-          <div className="bg-white border border-gold-200/50 p-5 rounded-2xl shadow-gold shadow-sm font-sans space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-gold-600">Payment Method</span>
-            <div className="grid grid-cols-4 gap-2 text-[10px] font-bold text-center">
-              {(['UPI', 'Card', 'Netbanking', 'Wallet'] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  disabled={isBusy}
-                  onClick={() => setPaymentMethod(m)}
-                  className={`py-2.5 rounded-xl border transition-all ${
-                    paymentMethod === m
-                      ? 'bg-crimson-950 text-gold-100 border-crimson-950 shadow-sm'
-                      : 'bg-ivory-50 text-obsidian-600 border-gold-200 hover:border-gold-400'
-                  } disabled:opacity-50`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Trust badge + CTA */}
           <div className="bg-white border border-gold-300 p-6 rounded-3xl shadow-gold-md font-sans space-y-4">
@@ -473,38 +544,55 @@ export const Checkout: React.FC = () => {
               </span>
             </div>
 
-            {/* ── Status messages ── */}
             {stage === 'dismissed' && pendingOrderId && (
-              <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs">
-                <Clock size={15} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="space-y-1">
+              <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs">
+                <Clock size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2 flex-1">
                   <p className="font-semibold text-amber-800">Order placed — payment incomplete</p>
                   <p className="text-amber-700 leading-relaxed">
                     Your order was created (ID: #{pendingOrderId}) but payment was cancelled.
-                    Visit <strong>My Account → Orders</strong> to retry.
+                    You can retry paying now or visit <strong>My Account → Orders</strong> later.
                   </p>
-                  <button
-                    onClick={() => navigateTo('account')}
-                    className="mt-1 text-[10px] font-bold text-amber-900 underline underline-offset-2"
-                  >
-                    Go to My Account →
-                  </button>
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      onClick={handleRetryPayment}
+                      className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg transition-colors text-[10px] uppercase tracking-wider"
+                    >
+                      Retry Payment
+                    </button>
+                    <button
+                      onClick={() => navigateTo('account')}
+                      className="text-[10px] font-bold text-amber-900 underline underline-offset-2"
+                    >
+                      Go to Account
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
             {stage === 'error' && (
-              <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-xl text-xs">
-                <AlertCircle size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
-                <div className="space-y-1.5">
-                  <p className="font-semibold text-red-700">Payment failed</p>
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-xs">
+                <AlertCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2 flex-1">
+                  <p className="font-semibold text-red-800">Payment failed</p>
                   <p className="text-red-600 leading-relaxed">{errorMessage}</p>
-                  <button
-                    onClick={() => { setStage('idle'); setErrorMessage(null); }}
-                    className="text-[10px] font-bold text-red-700 underline underline-offset-2"
-                  >
-                    Try again
-                  </button>
+                  <div className="flex items-center gap-3 pt-1">
+                    {rzpOptions && (
+                      <button
+                        onClick={handleRetryPayment}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg transition-colors text-[10px] uppercase tracking-wider"
+                      >
+                        Retry Payment
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setStage('idle'); setErrorMessage(null); }}
+                      className="text-[10px] font-bold text-red-700 underline underline-offset-2"
+                    >
+                      Reset Form
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

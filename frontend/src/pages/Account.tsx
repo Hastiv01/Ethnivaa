@@ -200,7 +200,11 @@ export const Account: React.FC = () => {
                         </div>
 
                         <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-0 pt-2 sm:pt-0">
-                          <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider text-[9px]">
+                          <span className={`font-bold border px-3 py-1 rounded-full uppercase tracking-wider text-[9px] ${
+                            order.paymentStatus === 'Success'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
+                          }`}>
                             Payment: {order.paymentStatus}
                           </span>
                           <span className={`font-bold border px-3 py-1 rounded-full uppercase tracking-wider text-[9px] ${
