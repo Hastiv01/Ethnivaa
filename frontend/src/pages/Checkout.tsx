@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
 import type { ShippingAddress } from '../context/ShopContext';
 import {
@@ -80,6 +80,7 @@ export const Checkout: React.FC = () => {
     cartTotal,
     profile,
     addresses,
+    orders,
     placeOrder,
     confirmPayment,
     navigateTo,
@@ -96,17 +97,41 @@ export const Checkout: React.FC = () => {
   });
 
   const paymentMethod = 'Prepaid / Online';
-  const [stage, setStage] = useState<Stage>('idle');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(() => {
+    return localStorage.getItem('ethnivaa_pending_order_id');
+  });
   const [rzpOptions, setRzpOptions] = useState<{
     razorpayOrderId: string;
     razorpayKeyId: string;
     amount: number;
     currency: string;
-  } | null>(null);
-  // Keep a stable ref for the Razorpay instance so we can call .close() if needed
+  } | null>(() => {
+    const saved = localStorage.getItem('ethnivaa_rzp_options');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [stage, setStage] = useState<Stage>(() => {
+    const hasPending = localStorage.getItem('ethnivaa_pending_order_id') !== null;
+    return hasPending ? 'error' : 'idle';
+  });
+  const [errorMessage, setErrorMessage] = useState<string | null>(() => {
+    const hasPending = localStorage.getItem('ethnivaa_pending_order_id') !== null;
+    return hasPending ? 'Your payment is incomplete. Please click the button below to retry and complete your checkout.' : null;
+  });
   const rzpRef = useRef<any>(null);
+
+  // Recovery Mount check: verify if the restored pending order has already been paid successfully
+  useEffect(() => {
+    if (pendingOrderId && orders.length > 0) {
+      const matchedOrder = orders.find(o => o.id === pendingOrderId);
+      if (matchedOrder && (matchedOrder.paymentStatus === 'Success' || matchedOrder.status === 'Confirmed')) {
+        console.log('Pending order was already paid successfully. Cleaning storage and redirecting...');
+        localStorage.removeItem('ethnivaa_pending_order_id');
+        localStorage.removeItem('ethnivaa_rzp_options');
+        setStage('success');
+        navigateTo('success');
+      }
+    }
+  }, [pendingOrderId, orders, navigateTo]);
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

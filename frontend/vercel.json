@@ -6,7 +6,7 @@
       "destination": "https://ethnivaa-backend.onrender.com/api/:path*"
     },
     {
-      "source": "/((?!assets|favicon.ico|index.html).*)$",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]

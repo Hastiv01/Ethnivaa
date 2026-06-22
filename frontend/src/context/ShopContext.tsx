@@ -307,6 +307,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [pendingAction, setPendingAction] = useState<any>(null);
 
+  // Navigation controller — URL is the source of truth
+  const navigateTo = (page: PageType, productId: string | null = null) => {
+    if ((page === 'checkout' || page === 'account' || page === 'admin') && !currentUser) {
+      setPendingAction({ type: 'navigation', page, productId, fromPage: currentPage });
+      navigate('/login');
+      return;
+    }
+    if (productId !== null) setSelectedProductId(productId);
+    navigate(pageToPath(page, productId));
+    window.scrollTo(0, 0);
+  };
+
   // Backend-synced addresses state (separate from localStorage profile)
   const [addresses, setAddresses] = useState<BackendAddress[]>([]);
 
@@ -435,11 +447,28 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: u.name || prev.name,
           email: u.email || prev.email,
         }));
+      } else {
+        // Token is invalid or expired
+        console.warn('Session verification failed, cleaning up credentials');
+        setAuthToken(null);
+        setCurrentUser(null);
+        setCurrentUserRole(null);
+        localStorage.removeItem('ethnivaa_auth_token');
+        localStorage.removeItem('ethnivaa_current_user');
+        localStorage.removeItem('ethnivaa_current_user_role');
+        
+        alert('Your session has expired. Please log in again.');
+        
+        // If on a protected route, redirect to login
+        const path = window.location.pathname;
+        if (path === '/checkout' || path === '/account' || path === '/admin') {
+          navigateTo('login');
+        }
       }
     } catch (e) {
       console.error('Failed to fetch profile:', e);
     }
-  }, []);
+  }, [navigateTo]);
 
   // 1. Fetch categories and products from backend on load
   const PRODUCTS_CACHE_KEY = 'ethnivaa_products_cache';
@@ -715,18 +744,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem('ethnivaa_profile', JSON.stringify(profile));
   }, [profile]);
-
-  // Navigation controller — URL is the source of truth
-  const navigateTo = (page: PageType, productId: string | null = null) => {
-    if ((page === 'checkout' || page === 'account' || page === 'admin') && !currentUser) {
-      setPendingAction({ type: 'navigation', page, productId, fromPage: currentPage });
-      navigate('/login');
-      return;
-    }
-    if (productId !== null) setSelectedProductId(productId);
-    navigate(pageToPath(page, productId));
-    window.scrollTo(0, 0);
-  };
 
   const setSearchQuery = (query: string) => {
     setSearchQueryState(query);
@@ -1206,6 +1223,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLatestOrder(newOrder);
       setOrders(prev => [newOrder, ...prev]);
 
+      // Save pending order info to localStorage for refresh recovery
+      localStorage.setItem('ethnivaa_pending_order_id', newOrder.id);
+      localStorage.setItem(
+        'ethnivaa_rzp_options',
+        JSON.stringify({
+          razorpayOrderId: responseData.razorpayOrderId,
+          razorpayKeyId: responseData.razorpayKeyId,
+          amount: responseData.amount,
+          currency: responseData.currency || 'INR',
+        })
+      );
+
       // Return order + Razorpay fields needed to open the real Razorpay Checkout popup
       return {
         order: newOrder,
@@ -1259,6 +1288,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ? { ...prev, paymentStatus: 'Success', status: 'Confirmed' }
         : prev
     );
+
+    // Clear pending order info from localStorage on successful payment
+    localStorage.removeItem('ethnivaa_pending_order_id');
+    localStorage.removeItem('ethnivaa_rzp_options');
   };
 
   const updateOrderStatus = async (
@@ -1407,6 +1440,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mobile: '',
       savedAddresses: []
     });
+    localStorage.removeItem('ethnivaa_pending_order_id');
+    localStorage.removeItem('ethnivaa_rzp_options');
     navigateTo('home');
   };
 
