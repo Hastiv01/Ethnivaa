@@ -39,17 +39,19 @@ async function getOrCreateActiveCart(userId, transaction) {
 
 function serializeCart(cart) {
   const items = cart?.CartItems ?? [];
-  const normalizedItems = items.map((item) => {
-    const unitPrice = Number(item.unitPrice);
-    const quantity = Number(item.quantity);
-    return {
-      id: item.id,
-      quantity,
-      unitPrice,
-      lineTotal: Number((unitPrice * quantity).toFixed(2)),
-      product: item.Product,
-    };
-  });
+  const normalizedItems = items
+    .filter((item) => item.Product !== null && item.Product !== undefined)
+    .map((item) => {
+      const unitPrice = Number(item.unitPrice);
+      const quantity = Number(item.quantity);
+      return {
+        id: item.id,
+        quantity,
+        unitPrice,
+        lineTotal: Number((unitPrice * quantity).toFixed(2)),
+        product: item.Product,
+      };
+    });
 
   const subtotal = normalizedItems.reduce((sum, item) => sum + item.lineTotal, 0);
 

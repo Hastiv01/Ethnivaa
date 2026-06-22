@@ -348,6 +348,25 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Helper mapper function
   const mapBackendProductToFrontend = (p: any): Product => {
+    if (!p) {
+      return {
+        id: '',
+        name: 'Deleted Product',
+        price: 0,
+        rating: 5.0,
+        reviewsCount: 0,
+        category: 'Traditional Jewellery Sets',
+        material: 'Oxidized Silver',
+        occasion: 'Festive',
+        images: ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800'],
+        description: 'This product is no longer available.',
+        materialsDetail: '',
+        careInstructions: '',
+        stock: 0,
+        reviews: []
+      };
+    }
+
     let imagesArr: string[] = [];
     if (p.images) {
       if (Array.isArray(p.images)) {
@@ -389,6 +408,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isBestSeller: Boolean(p.isBestSeller),
       isNewArrival: Boolean(p.isNewArrival)
     };
+  };
+
+  const parseCartItems = (items: any[]): CartItem[] => {
+    return (items || [])
+      .filter((item: any) => item && item.product !== null && item.product !== undefined)
+      .map((item: any) => ({
+        product: mapBackendProductToFrontend(item.product),
+        quantity: Number(item.quantity),
+        backendItemId: item.id
+      }));
   };
 
   // 1. Fetch categories and products from backend on load
@@ -532,12 +561,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (response.ok) {
           const data = await response.json();
           if (data.cart && Array.isArray(data.cart.items)) {
-            const mapped = data.cart.items.map((item: any) => ({
-              product: mapBackendProductToFrontend(item.product),
-              quantity: Number(item.quantity),
-              backendItemId: item.id
-            }));
-            setCartItems(mapped);
+            setCartItems(parseCartItems(data.cart.items));
           }
         }
       } catch (err) {
@@ -956,12 +980,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const data = await response.json();
         if (data.cart && Array.isArray(data.cart.items)) {
           // Sync with server-confirmed state
-          const mapped = data.cart.items.map((item: any) => ({
-            product: mapBackendProductToFrontend(item.product),
-            quantity: Number(item.quantity),
-            backendItemId: item.id
-          }));
-          setCartItems(mapped);
+          setCartItems(parseCartItems(data.cart.items));
         }
       } else {
         // Rollback on server failure
@@ -1027,12 +1046,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.ok) {
         const data = await response.json();
         if (data.cart && Array.isArray(data.cart.items)) {
-          const mapped = data.cart.items.map((item: any) => ({
-            product: mapBackendProductToFrontend(item.product),
-            quantity: Number(item.quantity),
-            backendItemId: item.id
-          }));
-          setCartItems(mapped);
+          setCartItems(parseCartItems(data.cart.items));
         }
       } else {
         // Rollback
@@ -1074,12 +1088,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.ok) {
         const data = await response.json();
         if (data.cart && Array.isArray(data.cart.items)) {
-          const mapped = data.cart.items.map((item: any) => ({
-            product: mapBackendProductToFrontend(item.product),
-            quantity: Number(item.quantity),
-            backendItemId: item.id
-          }));
-          setCartItems(mapped);
+          setCartItems(parseCartItems(data.cart.items));
         }
       } else {
         // Rollback — re-insert the removed item
