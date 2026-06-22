@@ -25,18 +25,20 @@ const orderItemInclude = [
 // GET /api/admin/dashboard — real stats
 router.get('/dashboard', async (req, res) => {
   try {
-    const totalOrders = await Order.count();
+    const totalOrders = await Order.count({ where: { paymentStatus: 'SUCCESS' } });
     const totalProducts = await Product.count();
     const totalCustomers = await User.count({ where: { role: 'CUSTOMER' } });
     const lowStockCount = await Product.count({ where: { inventory: { [Op.lt]: 10 } } });
 
     const revenueResult = await Order.findOne({
+      where: { paymentStatus: 'SUCCESS' },
       attributes: [[sequelize.fn('SUM', sequelize.col('total')), 'totalRevenue']],
       raw: true,
     });
     const totalRevenue = Number(revenueResult?.totalRevenue) || 0;
 
     const recentOrders = await Order.findAll({
+      where: { paymentStatus: 'SUCCESS' },
       include: [
         { model: User, attributes: ['id', 'name', 'email'] },
         { model: Address },
@@ -56,6 +58,7 @@ router.get('/dashboard', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const orders = await Order.findAll({
+      where: { paymentStatus: 'SUCCESS' },
       include: [
         { model: User, attributes: ['id', 'name', 'email'] },
         { model: Address },

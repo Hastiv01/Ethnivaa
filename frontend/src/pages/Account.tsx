@@ -39,6 +39,37 @@ export const Account: React.FC = () => {
     setExpandedOrderId(prev => (prev === orderId ? null : orderId));
   };
 
+  const handlePincodeChange = async (val: string) => {
+    const cleanVal = val.replace(/\D/g, '').slice(0, 6);
+    setNewAddress(prev => ({ ...prev, pincode: cleanVal }));
+    
+    if (cleanVal.length === 6) {
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${cleanVal}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+            const po = data[0].PostOffice[0];
+            const district = po.District;
+            const stateName = po.State;
+            
+            const matchedState = INDIAN_STATES.find(
+              s => s.toLowerCase() === stateName.toLowerCase()
+            );
+            
+            setNewAddress(prev => ({
+              ...prev,
+              city: district || prev.city,
+              state: matchedState || prev.state
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to look up pincode:', err);
+      }
+    }
+  };
+
   const handleAddAddressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAddress.fullName || !newAddress.mobileNumber || !newAddress.address || !newAddress.city || !newAddress.state || !newAddress.pincode) {
@@ -468,7 +499,7 @@ export const Account: React.FC = () => {
                     required
                     pattern="[0-9]{6}"
                     value={newAddress.pincode}
-                    onChange={(e) => setNewAddress(prev => ({ ...prev, pincode: e.target.value }))}
+                    onChange={(e) => handlePincodeChange(e.target.value)}
                     placeholder="400054"
                     className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none"
                   />

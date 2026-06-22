@@ -73,6 +73,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
+  }, {
+    indexes: [
+      { fields: ['category_id'] },
+      { fields: ['is_best_seller'] },
+      { fields: ['is_new_arrival'] },
+      { fields: ['created_at'] }
+    ]
   });
 
   return Product;

@@ -1,20 +1,21 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ShopProvider, useShop } from './context/ShopContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { LoadingSpinner } from './components/LoadingSpinner';
 
-// Pages
-import { Home } from './pages/Home';
-import { ProductListing } from './pages/ProductListing';
-import { ProductDetails } from './pages/ProductDetails';
-import { Cart } from './pages/Cart';
-import { Checkout } from './pages/Checkout';
-import { OrderSuccess } from './pages/OrderSuccess';
-import { Account } from './pages/Account';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { Welcome } from './pages/Welcome';
-import { Auth } from './pages/Auth';
+// Pages - dynamic lazy loads
+const Welcome = lazy(() => import('./pages/Welcome').then(m => ({ default: m.Welcome })));
+const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const ProductListing = lazy(() => import('./pages/ProductListing').then(m => ({ default: m.ProductListing })));
+const ProductDetails = lazy(() => import('./pages/ProductDetails').then(m => ({ default: m.ProductDetails })));
+const Cart = lazy(() => import('./pages/Cart').then(m => ({ default: m.Cart })));
+const Checkout = lazy(() => import('./pages/Checkout').then(m => ({ default: m.Checkout })));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess').then(m => ({ default: m.OrderSuccess })));
+const Account = lazy(() => import('./pages/Account').then(m => ({ default: m.Account })));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const Auth = lazy(() => import('./pages/Auth').then(m => ({ default: m.Auth })));
 
 // ProtectedRoute: redirects to /login if user is not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -39,27 +40,29 @@ const AppContent: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-ivory-100 font-sans selection:bg-gold-200 selection:text-crimson-950">
       {!isWelcome && <Navbar />}
       <main className="flex-grow">
-        <Routes>
-          {/* Public routes — accessible without login */}
-          <Route path="/" element={<Welcome />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/shop" element={<ProductListing />} />
-          <Route path="/details/:id" element={<ProductDetails />} />
-          <Route path="/login" element={<Auth mode="login" />} />
-          <Route path="/signup" element={<Auth mode="signup" />} />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* Public routes — accessible without login */}
+            <Route path="/" element={<Welcome />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/shop" element={<ProductListing />} />
+            <Route path="/details/:id" element={<ProductDetails />} />
+            <Route path="/login" element={<Auth mode="login" />} />
+            <Route path="/signup" element={<Auth mode="signup" />} />
 
-          {/* All other routes require login */}
-          <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-          <Route path="/success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
-          <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-          <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+            {/* All other routes require login */}
+            <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+            <Route path="/success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
+            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
 
-          {/* Admin page — requires ADMIN role */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            {/* Admin page — requires ADMIN role */}
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
-          {/* Catch-all — redirect to login if not authenticated */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+            {/* Catch-all — redirect to login if not authenticated */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </Suspense>
       </main>
       {!isWelcome && <Footer />}
     </div>

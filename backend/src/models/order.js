@@ -54,6 +54,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       comment: 'Razorpay Payment ID (pay_xxxxx) — set after successful payment',
     },
+  }, {
+    indexes: [
+      { fields: ['user_id'] },
+      { fields: ['payment_status'] },
+      { fields: ['created_at'] }
+    ]
   });
 
   return Order;

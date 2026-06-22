@@ -311,6 +311,8 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const paidOrders = useMemo(() => orders.filter(order => order.paymentStatus === 'Success'), [orders]);
+
   // Dashboard Metrics
   const metrics = useMemo(() => {
     if (dashboardStats) {
@@ -323,12 +325,12 @@ export const AdminDashboard: React.FC = () => {
     }
     // Fallback to local state while loading
     return {
-      totalOrders: orders.length,
-      totalRevenue: orders.reduce((sum, o) => sum + o.total, 0),
-      totalCustomers: new Set(orders.map(o => o.shippingAddress.fullName)).size,
+      totalOrders: paidOrders.length,
+      totalRevenue: paidOrders.reduce((sum, o) => sum + o.total, 0),
+      totalCustomers: new Set(paidOrders.map(o => o.shippingAddress.fullName)).size,
       lowStock: products.filter(p => p.stock < 10).length,
     };
-  }, [dashboardStats, orders, products]);
+  }, [dashboardStats, paidOrders, products]);
 
   // Always restrict the dropdown to exactly these two categories
   const ALLOWED_CATEGORIES = ['Traditional Jewellery Sets', 'Combo Sets'] as const;
@@ -493,7 +495,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="flex border-b border-gold-200/50 mb-6 font-sans text-xs font-bold uppercase tracking-wider overflow-x-auto">
         {([
           { key: 'products', label: `Products (${products.length})` },
-          { key: 'orders', label: `Orders (${orders.length})` },
+          { key: 'orders', label: `Orders (${paidOrders.length})` },
           { key: 'users', label: 'Users' },
           { key: 'categories', label: 'Categories' },
         ] as const).map(tab => (
@@ -573,7 +575,7 @@ export const AdminDashboard: React.FC = () => {
       {activeSubTab === 'orders' && (
         <div className="space-y-4">
           <div className="bg-white border border-gold-200/50 rounded-2xl overflow-hidden shadow-gold shadow-sm font-sans text-xs">
-            {orders.length === 0 ? (
+            {paidOrders.length === 0 ? (
               <div className="p-8 text-center space-y-2">
                 <Package size={32} className="text-gold-400 mx-auto" />
                 <p className="text-obsidian-400 italic">No orders found yet.</p>
@@ -593,7 +595,7 @@ export const AdminDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gold-100 text-obsidian-850">
-                    {orders.map(order => (
+                    {paidOrders.map(order => (
                       <React.Fragment key={order.id}>
                         <tr
                           className="hover:bg-gold-50/10 cursor-pointer transition-colors"

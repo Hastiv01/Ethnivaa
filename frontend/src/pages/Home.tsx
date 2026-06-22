@@ -84,6 +84,8 @@ export const Home: React.FC = () => {
             <img 
               src={slide.image} 
               alt={slide.title} 
+              loading={idx === 0 ? "eager" : "lazy"}
+              {...({ fetchPriority: idx === 0 ? "high" : "low" } as any)}
               className="w-full h-full object-cover object-center transform scale-105 transition-transform duration-[6000ms]"
             />
             
@@ -169,6 +171,7 @@ export const Home: React.FC = () => {
               <img
                 src={col.image}
                 alt={col.name}
+                loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               

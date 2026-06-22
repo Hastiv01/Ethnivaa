@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const adminProductRoutes = require('./routes/adminProducts');
@@ -14,6 +15,8 @@ const visitorRoutes = require('./routes/visitors');
 const { notFound, errorHandler } = require('./middleware/errors');
 
 const app = express();
+
+app.use(compression());
 
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
 	.split(',')

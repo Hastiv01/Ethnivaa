@@ -773,6 +773,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (data.product) {
           const mapped = mapBackendProductToFrontend(data.product);
           setProducts(prev => [mapped, ...prev]);
+          localStorage.removeItem(PRODUCTS_CACHE_KEY);
         }
       } else {
         const err = await response.json();
@@ -829,6 +830,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (data.product) {
           const mapped = mapBackendProductToFrontend(data.product);
           setProducts(prev => prev.map(p => p.id === id ? mapped : p));
+          localStorage.removeItem(PRODUCTS_CACHE_KEY);
         }
       } else {
         const err = await response.json();
@@ -871,6 +873,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         setCartItems(prev => prev.filter(item => item.product.id !== id));
         setWishlist(prev => prev.filter(wishId => wishId !== id));
+        localStorage.removeItem(PRODUCTS_CACHE_KEY);
       } else {
         const err = await response.json();
         alert(`Failed to delete product: ${err.message || 'Unknown error'}`);
@@ -913,6 +916,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           comment: newReview.comment,
         })
       });
+      localStorage.removeItem(PRODUCTS_CACHE_KEY);
     } catch (err) {
       console.error('Failed to save review to backend:', err);
     }

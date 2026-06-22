@@ -21,6 +21,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+  }, {
+    indexes: [
+      { fields: ['product_id'] },
+      { fields: ['created_at'] }
+    ]
   });
 
   return Review;

@@ -107,8 +107,41 @@ export const Checkout: React.FC = () => {
   // Keep a stable ref for the Razorpay instance so we can call .close() if needed
   const rzpRef = useRef<any>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'pincode') {
+      const cleanVal = value.replace(/\D/g, '').slice(0, 6);
+      setFormData(prev => ({ ...prev, pincode: cleanVal }));
+      
+      if (cleanVal.length === 6) {
+        try {
+          const res = await fetch(`https://api.postalpincode.in/pincode/${cleanVal}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+              const po = data[0].PostOffice[0];
+              const district = po.District;
+              const stateName = po.State;
+              
+              const matchedState = INDIAN_STATES.find(
+                s => s.toLowerCase() === stateName.toLowerCase()
+              );
+              
+              setFormData(prev => ({
+                ...prev,
+                city: district || prev.city,
+                state: matchedState || prev.state
+              }));
+            }
+          }
+        } catch (err) {
+          console.error('Failed to look up pincode:', err);
+        }
+      }
+      return;
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 

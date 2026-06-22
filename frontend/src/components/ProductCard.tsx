@@ -73,6 +73,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
         <img 
           src={product.images[0]} 
           alt={product.name} 
+          loading="lazy"
           className="w-full h-full object-contain bg-white object-center group-hover:scale-105 transition-transform duration-700"
         />
 
