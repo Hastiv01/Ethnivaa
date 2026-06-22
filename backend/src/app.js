@@ -31,6 +31,7 @@ app.use(
 );
 app.use(express.json());
 
+app.get('/', (req, res) => res.json({ status: 'ok', message: 'Ethnivaa API Server is running' }));
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
