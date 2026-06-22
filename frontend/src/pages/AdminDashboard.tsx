@@ -42,6 +42,8 @@ interface ProductFormFieldsProps {
     careInstructions: string;
     stock: number;
     images: string[];
+    isBestSeller?: boolean;
+    isNewArrival?: boolean;
   };
   setFormFields: React.Dispatch<React.SetStateAction<any>>;
   handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
@@ -127,6 +129,16 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
         <input type="text" name="careInstructions" value={formFields.careInstructions} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
       </div>
     </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <label className="flex items-center gap-2 cursor-pointer p-3 bg-ivory-50 border border-gold-200 rounded-xl">
+        <input type="checkbox" name="isBestSeller" checked={formFields.isBestSeller || false} onChange={handleFormChange} className="w-4 h-4 text-crimson-600 rounded border-gold-300 focus:ring-crimson-500" />
+        <span className="font-semibold text-obsidian-800">Mark as Best Seller</span>
+      </label>
+      <label className="flex items-center gap-2 cursor-pointer p-3 bg-ivory-50 border border-gold-200 rounded-xl">
+        <input type="checkbox" name="isNewArrival" checked={formFields.isNewArrival || false} onChange={handleFormChange} className="w-4 h-4 text-crimson-600 rounded border-gold-300 focus:ring-crimson-500" />
+        <span className="font-semibold text-obsidian-800">Mark as New Arrival</span>
+      </label>
+    </div>
     <button type="submit" className="w-full bg-crimson-950 hover:bg-crimson-900 text-gold-100 font-bold uppercase tracking-wider py-3 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md">
       {icon}
       <span>{submitLabel}</span>
@@ -173,7 +185,9 @@ export const AdminDashboard: React.FC = () => {
     materialsDetail: '',
     careInstructions: '',
     stock: 10,
-    images: ['']
+    images: [''],
+    isBestSeller: false,
+    isNewArrival: false
   });
 
   // Search local filters
@@ -372,7 +386,9 @@ export const AdminDashboard: React.FC = () => {
       materialsDetail: prod.materialsDetail,
       careInstructions: prod.careInstructions,
       stock: prod.stock,
-      images: [...prod.images]
+      images: [...prod.images],
+      isBestSeller: !!prod.isBestSeller,
+      isNewArrival: !!prod.isNewArrival
     });
     setShowEditModal(true);
   };
@@ -390,13 +406,18 @@ export const AdminDashboard: React.FC = () => {
       materialsDetail: 'Premium base alloy layered with high-micron plating.',
       careInstructions: 'Avoid direct contact with water, sprays, and perfumes.',
       stock: 15,
-      images: ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80']
+      images: ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80'],
+      isBestSeller: false,
+      isNewArrival: false
     });
     setShowAddModal(true);
   };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const target = e.target;
+    const name = target.name;
+    const value = target.type === 'checkbox' ? (target as HTMLInputElement).checked : target.value;
+    
     setFormFields(prev => ({
       ...prev,
       [name]: name === 'price' || name === 'originalPrice' || name === 'stock' ? Number(value) : value
