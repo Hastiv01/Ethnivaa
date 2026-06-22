@@ -248,6 +248,12 @@ router.patch('/:id/confirm-payment', async (req, res) => {
       .digest('hex');
 
     if (expectedSignature !== razorpaySignature) {
+      console.error('--- RAZORPAY SIGNATURE MISMATCH ---');
+      console.error(`Expected: ${expectedSignature}`);
+      console.error(`Received: ${razorpaySignature}`);
+      console.error(`RAZORPAY_KEY_SECRET Configured: ${process.env.RAZORPAY_KEY_SECRET ? 'YES' : 'NO'}`);
+      console.error(`RAZORPAY_KEY_SECRET Length: ${process.env.RAZORPAY_KEY_SECRET ? process.env.RAZORPAY_KEY_SECRET.length : 0}`);
+      
       // Signature mismatch — potential tampering attempt
       await order.update({ paymentStatus: 'FAILED' });
       return res.status(400).json({

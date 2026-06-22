@@ -4,7 +4,7 @@ import type { ShippingAddress } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
-import { User, Package, Heart, MapPin, ChevronDown, ChevronUp, Download, Plus, X } from 'lucide-react';
+import { User, Package, Heart, MapPin, ChevronDown, ChevronUp, Download, Plus, X, Trash2 } from 'lucide-react';
 import { INDIAN_STATES } from './Checkout';
 
 export const Account: React.FC = () => {
@@ -19,6 +19,7 @@ export const Account: React.FC = () => {
     setActiveAccountTab: setActiveTab,
     addresses,
     addAddress,
+    deleteAddress,
     currentUser,
   } = useShop();
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
@@ -357,14 +358,31 @@ export const Account: React.FC = () => {
                   {addresses.map((addr, idx) => (
                     <div 
                       key={addr.id} 
-                      className="bg-white border border-gold-200/50 p-5 rounded-2xl shadow-gold shadow-sm space-y-2 relative"
+                      className="bg-white border border-gold-200/50 p-5 rounded-2xl shadow-gold shadow-sm space-y-2 relative flex flex-col justify-between"
                     >
-                      <div className="font-bold text-crimson-950 text-sm">{addr.recipientName}</div>
-                      <p className="font-light text-obsidian-700 leading-normal">
-                        {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}, {addr.city}, {addr.state} - {addr.postalCode}
-                      </p>
-                      <div className="text-[10px] font-semibold text-obsidian-400">Mobile: {addr.phone}</div>
-                      <div className="text-[10px] font-semibold text-obsidian-300">{addr.label}</div>
+                      <div className="space-y-2">
+                        <div className="font-bold text-crimson-950 text-sm">{addr.recipientName}</div>
+                        <p className="font-light text-obsidian-700 leading-normal">
+                          {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}, {addr.city}, {addr.state} - {addr.postalCode}
+                        </p>
+                        <div className="text-[10px] font-semibold text-obsidian-400">Mobile: {addr.phone}</div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center border-t border-gold-50/50 pt-3.5 mt-2">
+                        <div className="text-[10px] font-semibold text-obsidian-300">{addr.label}</div>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this address?')) {
+                              deleteAddress(addr.id);
+                            }
+                          }}
+                          className="text-red-500 hover:text-red-700 flex items-center gap-1 transition-colors py-1 focus:outline-none"
+                          title="Delete Address"
+                        >
+                          <Trash2 size={13} />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Delete</span>
+                        </button>
+                      </div>
                       
                       {(addr.isDefault || idx === 0) && (
                         <span className="absolute top-4 right-4 bg-gold-400 text-crimson-950 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-sans scale-90">

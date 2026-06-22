@@ -79,6 +79,7 @@ export const Checkout: React.FC = () => {
     cartShippingCost,
     cartTotal,
     profile,
+    addresses,
     placeOrder,
     confirmPayment,
     navigateTo,
@@ -145,8 +146,15 @@ export const Checkout: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const selectSavedAddress = (addr: ShippingAddress) => {
-    setFormData({ ...addr });
+  const selectSavedAddress = (addr: any) => {
+    setFormData({
+      fullName: addr.recipientName || addr.fullName || '',
+      mobileNumber: addr.phone || addr.mobileNumber || '',
+      address: addr.line1 || addr.address || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      pincode: addr.postalCode || addr.pincode || '',
+    });
   };
 
   // ── Main flow ──────────────────────────────────────────────────────────────
@@ -331,7 +339,7 @@ export const Checkout: React.FC = () => {
   };
 
   // ── Empty cart guard ───────────────────────────────────────────────────────
-  if (cartItems.length === 0 && stage !== 'confirming' && stage !== 'success') {
+  if (cartItems.length === 0 && !pendingOrderId && stage !== 'confirming' && stage !== 'success') {
     return (
       <div className="max-w-md mx-auto py-16 text-center space-y-4">
         <h2 className="font-serif text-xl font-bold text-crimson-950">No items in checkout</h2>
@@ -397,23 +405,23 @@ export const Checkout: React.FC = () => {
         <div className="lg:col-span-7 space-y-6">
 
           {/* Saved address autofill */}
-          {profile.savedAddresses.length > 0 && (
+          {addresses.length > 0 && (
             <div className="bg-white border border-gold-200/50 p-5 rounded-2xl shadow-gold shadow-sm font-sans space-y-3">
               <span className="text-xs font-bold uppercase tracking-wider text-gold-600">
                 Autofill Saved Address
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {profile.savedAddresses.map((addr, idx) => (
+                {addresses.map((addr, idx) => (
                   <button
-                    key={idx}
+                    key={addr.id || idx}
                     type="button"
                     disabled={isBusy}
                     onClick={() => selectSavedAddress(addr)}
                     className="text-left p-3 rounded-xl border border-gold-100 hover:border-gold-400 hover:bg-gold-50/20 text-xs transition-all space-y-1.5 focus:outline-none disabled:opacity-50"
                   >
-                    <div className="font-bold text-crimson-950">{addr.fullName}</div>
-                    <div className="text-obsidian-600 line-clamp-2">{addr.address}, {addr.city}</div>
-                    <div className="text-[10px] text-obsidian-400 font-medium">{addr.mobileNumber}</div>
+                    <div className="font-bold text-crimson-950">{addr.recipientName} ({addr.label})</div>
+                    <div className="text-obsidian-600 line-clamp-2">{addr.line1}, {addr.city}</div>
+                    <div className="text-[10px] text-obsidian-400 font-medium">{addr.phone}</div>
                   </button>
                 ))}
               </div>
