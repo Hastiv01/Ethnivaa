@@ -96,19 +96,38 @@ router.post('/checkout', async (req, res) => {
         return res.status(400).json({ message: 'Invalid addressId' });
       }
     } else if (inlineAddress && inlineAddress.recipientName && inlineAddress.line1) {
-      address = await Address.create({
-        userId: req.user.id,
-        label: inlineAddress.label || 'Shipping Address',
-        recipientName: inlineAddress.recipientName,
-        phone: inlineAddress.phone || '',
-        line1: inlineAddress.line1,
-        line2: inlineAddress.line2 || null,
-        city: inlineAddress.city || '',
-        state: inlineAddress.state || '',
-        postalCode: inlineAddress.postalCode || '',
-        country: inlineAddress.country || 'India',
-        isDefault: false,
+      // Find if an identical address already exists for this user to avoid duplicates
+      const existingAddress = await Address.findOne({
+        where: {
+          userId: req.user.id,
+          recipientName: inlineAddress.recipientName,
+          phone: inlineAddress.phone || '',
+          line1: inlineAddress.line1,
+          line2: inlineAddress.line2 || null,
+          city: inlineAddress.city || '',
+          state: inlineAddress.state || '',
+          postalCode: inlineAddress.postalCode || '',
+          country: inlineAddress.country || 'India',
+        }
       });
+
+      if (existingAddress) {
+        address = existingAddress;
+      } else {
+        address = await Address.create({
+          userId: req.user.id,
+          label: inlineAddress.label || 'Shipping Address',
+          recipientName: inlineAddress.recipientName,
+          phone: inlineAddress.phone || '',
+          line1: inlineAddress.line1,
+          line2: inlineAddress.line2 || null,
+          city: inlineAddress.city || '',
+          state: inlineAddress.state || '',
+          postalCode: inlineAddress.postalCode || '',
+          country: inlineAddress.country || 'India',
+          isDefault: false,
+        });
+      }
     } else {
       return res.status(400).json({ message: 'Either addressId or inline address fields are required' });
     }

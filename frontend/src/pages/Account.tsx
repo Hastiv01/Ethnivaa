@@ -248,7 +248,7 @@ export const Account: React.FC = () => {
                                   ? 'bg-rose-50 text-rose-700 border-rose-200'
                                   : 'bg-amber-50 text-amber-700 border-amber-200'
                           }`}>
-                            Shipping: {order.status}
+                            Status: {order.status}
                           </span>
                           {expandedOrderId === order.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </div>

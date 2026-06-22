@@ -229,7 +229,8 @@ export const Checkout: React.FC = () => {
         modal: {
           // Called when user presses the close/back button on Razorpay
           ondismiss: () => {
-            setStage('dismissed');
+            setStage('error');
+            setErrorMessage('Payment window was closed before completion. Please click the Retry button to complete your payment.');
           },
         },
         config: {
@@ -309,7 +310,8 @@ export const Checkout: React.FC = () => {
 
         modal: {
           ondismiss: () => {
-            setStage('dismissed');
+            setStage('error');
+            setErrorMessage('Payment window was closed before completion. Please click the Retry button to complete your payment.');
           },
         },
         config: {
@@ -645,28 +647,50 @@ export const Checkout: React.FC = () => {
               </div>
             )}
 
-            {/* ── Proceed to Pay button ── */}
-            <button
-              type="submit"
-              form="shipping-form"
-              disabled={isBusy}
-              className="w-full bg-crimson-950 hover:bg-crimson-900 disabled:opacity-60 disabled:cursor-not-allowed
-                         text-gold-100 font-bold uppercase tracking-wider text-xs py-4 rounded-full
-                         transition-all duration-300 shadow-md flex items-center justify-center gap-2 group"
-            >
-              {stage === 'creating' ? (
-                <><Loader size={14} className="animate-spin" /><span>Creating Order…</span></>
-              ) : stage === 'script_loading' ? (
-                <><Loader size={14} className="animate-spin" /><span>Loading Razorpay…</span></>
-              ) : stage === 'rzp_open' ? (
-                <><Loader size={14} className="animate-spin" /><span>Payment in Progress…</span></>
-              ) : (
-                <>
-                  <span>Proceed to Pay · ₹{cartTotal.toLocaleString('en-IN')}</span>
-                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </button>
+            {/* ── Proceed to Pay / Retry Payment button ── */}
+            {pendingOrderId ? (
+              <button
+                type="button"
+                disabled={isBusy}
+                onClick={handleRetryPayment}
+                className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed
+                           text-white font-bold uppercase tracking-wider text-xs py-4 rounded-full
+                           transition-all duration-300 shadow-md flex items-center justify-center gap-2 group"
+              >
+                {stage === 'script_loading' ? (
+                  <><Loader size={14} className="animate-spin" /><span>Loading Razorpay…</span></>
+                ) : stage === 'rzp_open' ? (
+                  <><Loader size={14} className="animate-spin" /><span>Payment in Progress…</span></>
+                ) : (
+                  <>
+                    <span>Retry Payment · ₹{((rzpOptions?.amount || 0) / 100).toLocaleString('en-IN')}</span>
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                type="submit"
+                form="shipping-form"
+                disabled={isBusy}
+                className="w-full bg-crimson-950 hover:bg-crimson-900 disabled:opacity-60 disabled:cursor-not-allowed
+                           text-gold-100 font-bold uppercase tracking-wider text-xs py-4 rounded-full
+                           transition-all duration-300 shadow-md flex items-center justify-center gap-2 group"
+              >
+                {stage === 'creating' ? (
+                  <><Loader size={14} className="animate-spin" /><span>Creating Order…</span></>
+                ) : stage === 'script_loading' ? (
+                  <><Loader size={14} className="animate-spin" /><span>Loading Razorpay…</span></>
+                ) : stage === 'rzp_open' ? (
+                  <><Loader size={14} className="animate-spin" /><span>Payment in Progress…</span></>
+                ) : (
+                  <>
+                    <span>Proceed to Pay · ₹{cartTotal.toLocaleString('en-IN')}</span>
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            )}
 
             <p className="text-[9px] text-obsidian-400 text-center font-sans">
               By proceeding, you agree to Ethnivaa's Terms of Service and Privacy Policy.
