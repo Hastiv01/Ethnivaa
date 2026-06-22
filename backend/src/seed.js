@@ -21,9 +21,13 @@ async function seed() {
     },
   });
 
-  if (adminUser.role !== 'ADMIN') {
-    await adminUser.update({ role: 'ADMIN' });
-  }
+  // Always update password and name in database if they are defined in env variables
+  await adminUser.update({
+    name: adminName,
+    passwordHash: await bcrypt.hash(adminPassword, 10),
+    role: 'ADMIN'
+  });
+  console.log(`Synced admin credentials in database for: ${adminEmail}`);
 
   if (!adminUser.emailVerifiedAt) {
     await adminUser.update({ emailVerifiedAt: new Date() });
