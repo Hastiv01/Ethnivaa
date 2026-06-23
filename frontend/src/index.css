@@ -16,10 +16,16 @@
 @layer utilities {
   /* Premium Glassmorphic container with a soft gold border and subtle blur */
   .glass-premium {
-    background: rgba(252, 251, 247, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(252, 251, 247, 0.98);
     border: 1px solid rgba(212, 175, 55, 0.15);
+  }
+  
+  @media (min-width: 768px) {
+    .glass-premium {
+      background: rgba(252, 251, 247, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
   }
   
   .glass-dark {

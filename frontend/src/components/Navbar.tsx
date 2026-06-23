@@ -94,17 +94,17 @@ export const Navbar: React.FC = () => {
               onClick={() => navigateTo('home')} 
               className="flex flex-col items-center group cursor-pointer focus:outline-none"
             >
-              <span className="font-serif text-3xl font-extrabold tracking-widest text-crimson-950 group-hover:text-gold-600 transition-colors duration-300">
+              <span className="font-serif text-2xl sm:text-3xl font-extrabold tracking-widest text-crimson-950 group-hover:text-gold-600 transition-colors duration-300">
                 ETHNIVAA
               </span>
-              <span className="text-[9px] uppercase tracking-[0.4em] text-gold-600 font-sans mt-0.5 font-bold">
+              <span className="hidden sm:block text-[9px] uppercase tracking-[0.4em] text-gold-600 font-sans mt-0.5 font-bold">
                 THE HERITAGE OF JEWELRY
               </span>
             </button>
           </div>
 
           {/* Action Icons - Right */}
-          <div className="flex items-center space-x-3 sm:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             
             {/* Search Input Expanded */}
             <form 
@@ -128,7 +128,7 @@ export const Navbar: React.FC = () => {
             {/* Search Toggle Icon */}
             <button 
               onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-              className="text-crimson-950 hover:text-gold-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200"
+              className="hidden md:block text-crimson-950 hover:text-gold-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200"
               title="Search"
             >
               <Search size={20} />
@@ -167,7 +167,7 @@ export const Navbar: React.FC = () => {
 
             {/* User Account / Logout */}
             {currentUser ? (
-              <div className="flex items-center gap-1">
+              <div className="hidden md:flex items-center gap-1">
                 <button 
                   onClick={() => {
                     setActiveAccountTab('orders');
@@ -192,7 +192,7 @@ export const Navbar: React.FC = () => {
             ) : (
               <button 
                 onClick={() => navigateTo('login')}
-                className="text-crimson-950 hover:text-gold-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200 flex items-center gap-1"
+                className="hidden md:flex text-crimson-950 hover:text-gold-600 p-2 rounded-full hover:bg-ivory-200 transition-all duration-200 flex items-center gap-1"
                 title="Log In"
               >
                 <User size={20} />
