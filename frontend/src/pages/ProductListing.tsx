@@ -5,7 +5,7 @@ import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
 import { SlidersHorizontal, ArrowUpDown, RotateCcw, X, Search } from 'lucide-react';
 
-const CATEGORIES: string[] = [];
+
 const PRICE_RANGES = [
   { label: 'All Prices', min: 0, max: 999999 },
   { label: 'Under ₹2,000', min: 0, max: 2000 },
@@ -17,6 +17,7 @@ const PRICE_RANGES = [
 export const ProductListing: React.FC = () => {
   const { 
     products, 
+    categories,
     searchQuery, 
     setSearchQuery,
     selectedCategoryFilter, 
@@ -120,15 +121,15 @@ export const ProductListing: React.FC = () => {
               >
                 All Collections
               </button>
-              {CATEGORIES.map(cat => (
+              {categories.map(cat => (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategoryFilter(cat)}
+                  key={cat.id}
+                  onClick={() => setSelectedCategoryFilter(cat.name)}
                   className={`text-left py-1 hover:text-crimson-900 transition-colors ${
-                    selectedCategoryFilter === cat ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
+                    selectedCategoryFilter === cat.name ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
                   }`}
                 >
-                  {cat} Collection
+                  {cat.name} Collection
                 </button>
               ))}
             </div>
@@ -283,17 +284,17 @@ export const ProductListing: React.FC = () => {
                     >
                       All
                     </button>
-                    {CATEGORIES.map(cat => (
+                    {categories.map(cat => (
                       <button
-                        key={cat}
-                        onClick={() => setSelectedCategoryFilter(cat)}
+                        key={cat.id}
+                        onClick={() => setSelectedCategoryFilter(cat.name)}
                         className={`px-3 py-1.5 rounded-full border transition-all ${
-                          selectedCategoryFilter === cat 
+                          selectedCategoryFilter === cat.name 
                             ? 'bg-crimson-950 text-gold-100 border-crimson-950' 
                             : 'bg-white border-gold-300 text-obsidian-800'
                         }`}
                       >
-                        {cat}
+                        {cat.name}
                       </button>
                     ))}
                   </div>

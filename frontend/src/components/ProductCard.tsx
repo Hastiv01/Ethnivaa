@@ -33,7 +33,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
   return (
     <div 
       onClick={handleCardClick}
-      className="group relative bg-white border border-gold-200/50 rounded-2xl overflow-hidden cursor-pointer product-card-hover flex flex-col justify-between"
+      className="group relative bg-white border border-gold-200/50 rounded-2xl overflow-hidden cursor-pointer product-card-hover flex flex-col justify-between transform-gpu isolate"
     >
       {/* Product Image and Overlay Tools */}
       <div className="relative aspect-square overflow-hidden bg-ivory-100 image-zoom-container">
@@ -74,11 +74,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           src={product.images[0]} 
           alt={product.name} 
           loading="lazy"
-          className="w-full h-full object-contain bg-white object-center group-hover:scale-105 transition-transform duration-700"
+          className="w-full h-full object-contain bg-white object-center md:group-hover:scale-105 transition-transform duration-700 transform-gpu"
         />
 
         {/* Quick View Drawer Hover Overlay (Desktop only) */}
-        <div className="absolute inset-0 bg-crimson-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none md:pointer-events-auto">
+        <div className="absolute inset-0 bg-crimson-950/20 opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 hidden md:flex items-center justify-center pointer-events-none md:pointer-events-auto">
           <button
             onClick={handleQuickViewClick}
             className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-crimson-950 text-xs font-bold uppercase tracking-wider transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:bg-crimson-950 hover:text-white"
