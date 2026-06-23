@@ -8,6 +8,21 @@ interface ProductCardProps {
   onQuickView: (product: Product) => void;
 }
 
+// Helper function to optimize Cloudinary and Unsplash images on the fly
+const getOptimizedImageUrl = (url: string, width: number = 500) => {
+  if (!url) return '';
+  
+  // Cloudinary optimization
+  if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+    // Inject auto-format, auto-quality, and width limit if not already present
+    if (!url.includes('f_auto') && !url.includes('q_auto')) {
+      return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width},c_limit/`);
+    }
+  }
+  
+  return url;
+};
+
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
   const { navigateTo, toggleWishlist, isInWishlist } = useShop();
 
@@ -71,7 +86,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
 
         {/* Product Image */}
         <img 
-          src={product.images[0]} 
+          src={getOptimizedImageUrl(product.images[0], 500)} 
           alt={product.name} 
           loading="lazy"
           className="w-full h-full object-contain bg-white object-center md:group-hover:scale-105 transition-transform duration-700 transform-gpu"

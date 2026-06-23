@@ -14,7 +14,7 @@ export const OrderSuccess: React.FC = () => {
         productId: 'eth-001',
         name: 'Mayur Pankh Oxidized Choker Set',
         price: 1899,
-        image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=300&auto=format&fit=crop&q=80',
+        image: '/placeholder.png',
         quantity: 1
       }
     ],

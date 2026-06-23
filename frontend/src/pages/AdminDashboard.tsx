@@ -112,7 +112,7 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
       </div>
       <div className="space-y-1.5">
         <label className="font-semibold text-obsidian-800">Showcase Image URL</label>
-        <input type="text" value={formFields.images[0]} onChange={(e) => setFormFields((prev: any) => ({ ...prev, images: [e.target.value] }))} placeholder="https://images.unsplash.com/..." className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
+        <input type="text" value={formFields.images[0]} onChange={(e) => setFormFields((prev: any) => ({ ...prev, images: [e.target.value] }))} placeholder="/placeholder.png" className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
       </div>
     </div>
     <div className="space-y-1.5">
@@ -406,7 +406,7 @@ export const AdminDashboard: React.FC = () => {
       materialsDetail: 'Premium base alloy layered with high-micron plating.',
       careInstructions: 'Avoid direct contact with water, sprays, and perfumes.',
       stock: 15,
-      images: ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80'],
+      images: ['/placeholder.png'],
       isBestSeller: false,
       isNewArrival: false
     });

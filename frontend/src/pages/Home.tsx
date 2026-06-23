@@ -9,7 +9,7 @@ const COLLECTIONS = [
   {
     name: 'All Collections',
     category: null,
-    image: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=1600&auto=format&fit=crop&q=80',
+    image: '/placeholder.png',
     tag: 'Explore All Jewels'
   }
 ];

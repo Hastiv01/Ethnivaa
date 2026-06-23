@@ -370,7 +370,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         category: 'All Collections',
         material: 'Oxidized Silver',
         occasion: 'Festive',
-        images: ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800'],
+        images: ['/placeholder.png'],
         description: 'This product is no longer available.',
         materialsDetail: '',
         careInstructions: '',
@@ -404,7 +404,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       category: p.Category?.name || p.category || 'All Collections',
       material: p.material || 'Oxidized Silver',
       occasion: p.occasion || 'Festive',
-      images: imagesArr.length > 0 ? imagesArr : ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800'],
+      images: imagesArr.length > 0 ? imagesArr : ['/placeholder.png'],
       description: p.description || '',
       materialsDetail: p.materialsDetail || '',
       careInstructions: p.careInstructions || '',
@@ -542,7 +542,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
               productId: String(item.productId),
               name: item.Product?.title || 'Jewelry Item',
               price: Number(item.unitPrice) || 0,
-              image: item.Product?.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800',
+              image: item.Product?.image || '/placeholder.png',
               quantity: Number(item.quantity) || 1,
               color: item.Product?.color || '',
               material: item.Product?.material || ''
@@ -1196,7 +1196,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         productId: String(item.productId),
         name: item.Product?.title || 'Jewelry Item',
         price: Number(item.unitPrice) || 0,
-        image: item.Product?.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800',
+        image: item.Product?.image || '/placeholder.png',
         quantity: Number(item.quantity) || 1
       }));
       const addr = o.Address || {};
