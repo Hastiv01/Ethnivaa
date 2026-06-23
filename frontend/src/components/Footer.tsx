@@ -59,13 +59,8 @@ export const Footer: React.FC = () => {
             <h3 className="font-serif text-lg text-gold-400 font-semibold tracking-wider">Collections</h3>
             <ul className="space-y-3 text-sm font-light text-ivory-400">
               <li>
-                <button onClick={() => selectCategory('Traditional Jewellery Sets')} className="hover:text-gold-300 transition-colors duration-200">
-                  Traditional Jewellery Sets
-                </button>
-              </li>
-              <li>
-                <button onClick={() => selectCategory('Combo Sets')} className="hover:text-gold-300 transition-colors duration-200">
-                  Combo Sets
+                <button onClick={() => selectCategory('All Collections')} className="hover:text-gold-300 transition-colors duration-200">
+                  All Collections
                 </button>
               </li>
             </ul>

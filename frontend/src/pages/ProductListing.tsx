@@ -5,7 +5,7 @@ import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
 import { SlidersHorizontal, ArrowUpDown, RotateCcw, X, Search } from 'lucide-react';
 
-const CATEGORIES = ['Traditional Jewellery Sets', 'Combo Sets'];
+const CATEGORIES: string[] = [];
 const PRICE_RANGES = [
   { label: 'All Prices', min: 0, max: 999999 },
   { label: 'Under ₹2,000', min: 0, max: 2000 },

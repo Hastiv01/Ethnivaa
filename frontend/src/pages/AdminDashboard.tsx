@@ -178,7 +178,7 @@ export const AdminDashboard: React.FC = () => {
     name: '',
     price: 0,
     originalPrice: 0,
-    category: 'Traditional Jewellery Sets' as Product['category'],
+    category: 'All Collections' as Product['category'],
     material: 'Oxidized Silver' as Product['material'],
     occasion: 'Festive' as Product['occasion'],
     description: '',
@@ -347,7 +347,7 @@ export const AdminDashboard: React.FC = () => {
   }, [dashboardStats, paidOrders, products]);
 
   // Always restrict the dropdown to exactly these two categories
-  const ALLOWED_CATEGORIES = ['Traditional Jewellery Sets', 'Combo Sets'] as const;
+  const ALLOWED_CATEGORIES = ['All Collections'] as const;
   const validCategories = ALLOWED_CATEGORIES.map(name => {
     const found = categories.find(c => c.name === name);
     return found ?? { id: 0, name, slug: name.toLowerCase().replace(/\s+/g, '-') };
@@ -394,7 +394,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const openAddModal = () => {
-    const defaultCategory = 'Traditional Jewellery Sets';
+    const defaultCategory = 'All Collections';
     setFormFields({
       name: '',
       price: 1500,
