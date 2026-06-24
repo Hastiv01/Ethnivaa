@@ -8,10 +8,10 @@ import { SlidersHorizontal, ArrowUpDown, RotateCcw, X, Search } from 'lucide-rea
 
 const PRICE_RANGES = [
   { label: 'All Prices', min: 0, max: 999999 },
-  { label: 'Under ₹2,000', min: 0, max: 2000 },
-  { label: '₹2,000 - ₹5,000', min: 2000, max: 5000 },
-  { label: '₹5,000 - ₹10,000', min: 5000, max: 10000 },
-  { label: 'Above ₹10,000', min: 10000, max: 999999 },
+  { label: 'Under ₹250', min: 0, max: 250 },
+  { label: '₹250 - ₹500', min: 250, max: 500 },
+  { label: '₹500 - ₹700', min: 500, max: 700 },
+  { label: 'Above ₹700', min: 700, max: 999999 },
 ];
 
 export const ProductListing: React.FC = () => {

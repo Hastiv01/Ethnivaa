@@ -48,7 +48,7 @@ export const Navbar: React.FC = () => {
       {/* Announcement Bar */}
       <div className="bg-crimson-950 text-gold-100 text-xs py-1.5 px-4 text-center font-sans tracking-widest flex items-center justify-center gap-2">
         <Sparkles size={12} className="animate-pulse text-gold-300" />
-        <span>FESTIVE SALE: GET 10% OFF ON KUNDAN COLLECTION • FREE SHIPPING ABOVE ₹5,000</span>
+        <span>FREE DELIVERY ON ALL ORDERS ABOVE ₹699</span>
         <Sparkles size={12} className="animate-pulse text-gold-300" />
       </div>
 

@@ -262,7 +262,7 @@ export const ProductDetails: React.FC = () => {
                 <Truck size={18} className="text-gold-600 shrink-0" />
                 <div className="flex flex-col text-left leading-tight">
                   <span className="text-[10px] font-bold text-obsidian-950 uppercase tracking-widest">Free Delivery</span>
-                  <span className="text-[9px] text-obsidian-600 font-light">above ₹499</span>
+                  <span className="text-[9px] text-obsidian-600 font-light">above ₹699</span>
                 </div>
               </div>
               <div className="hidden sm:block w-px h-6 bg-gold-200/50 shrink-0"></div>
