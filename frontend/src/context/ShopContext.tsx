@@ -101,7 +101,7 @@ interface ShopContextType {
 
   // Cart State
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number) => Promise<boolean>;
   buyNow: (product: Product, quantity?: number) => void;
   updateCartQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
@@ -704,8 +704,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (type === 'navigation') {
         navigateTo(pendingAction.page, pendingAction.productId);
       } else if (type === 'buyNow') {
-        addToCart(pendingAction.product, pendingAction.quantity);
-        navigateTo('checkout');
+        (async () => {
+          const success = await addToCart(pendingAction.product, pendingAction.quantity);
+          if (success) {
+            navigateTo('checkout');
+          }
+        })();
       }
       setPendingAction(null);
     }
@@ -915,11 +919,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Cart operations (backend synced, optimistic updates)
-  const addToCart = async (product: Product, quantity: number = 1) => {
+  const addToCart = async (product: Product, quantity: number = 1): Promise<boolean> => {
     if (!currentUser) {
       setPendingAction({ type: 'cart', product, quantity, fromPage: currentPage });
       navigateTo('login');
-      return;
+      return false;
+    }
+
+    const isDbProduct = /^\d+$/.test(product.id);
+    if (!isDbProduct) {
+      alert("This is a demo product and cannot be purchased.");
+      return false;
     }
 
     // --- OPTIMISTIC UPDATE: update UI immediately ---
@@ -950,6 +960,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Sync with server-confirmed state
           setCartItems(parseCartItems(data.cart.items));
         }
+        return true;
       } else {
         // Rollback on server failure
         setCartItems(prev => {
@@ -964,6 +975,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return prev.filter(item => item.product.id !== product.id);
         });
         console.error('Failed to add item to backend cart');
+        return false;
       }
     } catch (err) {
       // Rollback on network error
@@ -979,17 +991,20 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return prev.filter(item => item.product.id !== product.id);
       });
       console.error('Failed to add item to backend cart:', err);
+      return false;
     }
   };
 
-  const buyNow = (product: Product, quantity: number = 1) => {
+  const buyNow = async (product: Product, quantity: number = 1) => {
     if (!currentUser) {
       setPendingAction({ type: 'buyNow', product, quantity });
       navigateTo('login');
       return;
     }
-    addToCart(product, quantity);
-    navigateTo('checkout');
+    const success = await addToCart(product, quantity);
+    if (success) {
+      navigateTo('checkout');
+    }
   };
 
   const updateCartQuantity = async (productId: string, quantity: number) => {
