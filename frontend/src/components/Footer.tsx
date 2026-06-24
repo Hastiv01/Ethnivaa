@@ -6,12 +6,12 @@ export const Footer: React.FC = () => {
   const { navigateTo, currentUserRole, visitorCount } = useShop();
 
   return (
-    <footer className="bg-obsidian-950 text-ivory-300 font-sans border-t border-gold-950 pt-16 pb-8">
+    <footer className="bg-obsidian-950 text-ivory-300 font-sans border-t border-gold-950 pt-12 pb-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           
           {/* Brand Info */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <span className="font-serif text-3xl font-bold tracking-widest text-gold-400">
                 ETHNIVAA
@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Contact Details */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <h3 className="font-serif text-lg text-gold-400 font-semibold tracking-wider">Heritage Lounge</h3>
             <ul className="space-y-4 text-sm font-light text-ivory-400">
               <li className="flex items-start gap-3">
@@ -47,7 +47,7 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Legal */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <h3 className="font-serif text-lg text-gold-400 font-semibold tracking-wider">Legal</h3>
             <ul className="space-y-3 text-sm font-light text-ivory-400">
               <li>
@@ -70,7 +70,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Patrons Welcome Counter Banner */}
-        <div className="border-t border-gold-950/20 pt-12 pb-8 text-center font-serif">
+        <div className="border-t border-gold-950/20 pt-8 pb-6 text-center font-serif">
           <p className="text-[10px] uppercase tracking-[0.3em] text-gold-500/80 mb-2">
             Royal Boutique Connoisseurs
           </p>
@@ -87,7 +87,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gold-950/40 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="border-t border-gold-950/40 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-ivory-600 font-light">
             &copy; {new Date().getFullYear()} Ethnivaa Jewelry. Handcrafted with pride in India. All Rights Reserved.
           </p>
@@ -102,9 +102,6 @@ export const Footer: React.FC = () => {
                 <span>Admin Panel</span>
               </button>
             )}
-            
-            <div className="flex gap-4 text-xs text-ivory-600">
-            </div>
           </div>
         </div>
       </div>

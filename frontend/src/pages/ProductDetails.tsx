@@ -4,7 +4,7 @@ import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
-import { Star, Truck, ShoppingBag, Heart, ArrowLeft, Plus, Minus, Send } from 'lucide-react';
+import { Star, Truck, ShoppingBag, Heart, ArrowLeft, Plus, Minus, Send, ShieldCheck, Lock } from 'lucide-react';
 
 export const ProductDetails: React.FC = () => {
   const { id: urlProductId } = useParams<{ id: string }>();
@@ -255,11 +255,32 @@ export const ProductDetails: React.FC = () => {
             </div>
 
 
-          {/* Delivery badges */}
+          {/* Trust badges */}
           <div className="py-5">
-            <div className="flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-ivory-50 border border-gold-200/50 text-xs font-sans text-obsidian-800 shadow-gold-sm">
-              <Truck size={16} className="text-gold-600" />
-              <span><strong className="text-obsidian-950 font-bold uppercase tracking-wider">Free Delivery</strong> on all orders above ₹499</span>
+            <div className="flex flex-wrap sm:flex-nowrap items-center justify-around gap-2 py-3 px-2 sm:px-4 rounded-xl bg-ivory-50 border border-gold-200/50 shadow-gold-sm">
+              <div className="flex items-center gap-2">
+                <Truck size={18} className="text-gold-600 shrink-0" />
+                <div className="flex flex-col text-left leading-tight">
+                  <span className="text-[10px] font-bold text-obsidian-950 uppercase tracking-widest">Free Delivery</span>
+                  <span className="text-[9px] text-obsidian-600 font-light">above ₹499</span>
+                </div>
+              </div>
+              <div className="hidden sm:block w-px h-6 bg-gold-200/50 shrink-0"></div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={18} className="text-gold-600 shrink-0" />
+                <div className="flex flex-col text-left leading-tight">
+                  <span className="text-[10px] font-bold text-obsidian-950 uppercase tracking-widest">Quality</span>
+                  <span className="text-[9px] text-obsidian-600 font-light">assured</span>
+                </div>
+              </div>
+              <div className="hidden sm:block w-px h-6 bg-gold-200/50 shrink-0"></div>
+              <div className="flex items-center gap-2">
+                <Lock size={18} className="text-gold-600 shrink-0" />
+                <div className="flex flex-col text-left leading-tight">
+                  <span className="text-[10px] font-bold text-obsidian-950 uppercase tracking-widest">Secure</span>
+                  <span className="text-[9px] text-obsidian-600 font-light">payments</span>
+                </div>
+              </div>
             </div>
           </div>
 
