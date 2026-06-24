@@ -1,6 +1,6 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
-import { Mail, Phone, MapPin, ShieldAlert, Sparkles } from 'lucide-react';
+import { Mail, Phone, MapPin, ShieldAlert } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const { navigateTo, currentUserRole, visitorCount } = useShop();
