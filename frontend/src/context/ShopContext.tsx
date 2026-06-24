@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { mockProducts } from '../data/products';
 import type { Product, Review } from '../data/products';
 
 export interface CartItem {
@@ -259,7 +258,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load initial products (will be hydrated from backend on load)
   const [products, setProducts] = useState<Product[]>(() => {
-    return safeParse('ethnivaa_products_v2', mockProducts);
+    return safeParse('ethnivaa_products_v2', []);
   });
 
   // Load Cart from localStorage
@@ -923,12 +922,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!currentUser) {
       setPendingAction({ type: 'cart', product, quantity, fromPage: currentPage });
       navigateTo('login');
-      return false;
-    }
-
-    const isDbProduct = /^\d+$/.test(product.id);
-    if (!isDbProduct) {
-      alert("This is a demo product and cannot be purchased.");
       return false;
     }
 
