@@ -15,7 +15,8 @@ export const ProductDetails: React.FC = () => {
     toggleWishlist, 
     isInWishlist, 
     navigateTo,
-    addReview
+    addReview,
+    buyNow
   } = useShop();
 
   // URL param takes priority; fall back to context selectedProductId
@@ -76,8 +77,7 @@ export const ProductDetails: React.FC = () => {
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity);
-    navigateTo('checkout');
+    buyNow(product, quantity);
   };
 
   const handleReviewSubmit = (e: React.FormEvent) => {

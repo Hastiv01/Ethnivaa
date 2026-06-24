@@ -102,6 +102,7 @@ interface ShopContextType {
   // Cart State
   cartItems: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
+  buyNow: (product: Product, quantity?: number) => void;
   updateCartQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
@@ -702,6 +703,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (fromPage) navigateTo(fromPage);
       } else if (type === 'navigation') {
         navigateTo(pendingAction.page, pendingAction.productId);
+      } else if (type === 'buyNow') {
+        addToCart(pendingAction.product, pendingAction.quantity);
+        navigateTo('checkout');
       }
       setPendingAction(null);
     }
@@ -976,6 +980,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       console.error('Failed to add item to backend cart:', err);
     }
+  };
+
+  const buyNow = (product: Product, quantity: number = 1) => {
+    if (!currentUser) {
+      setPendingAction({ type: 'buyNow', product, quantity });
+      navigateTo('login');
+      return;
+    }
+    addToCart(product, quantity);
+    navigateTo('checkout');
   };
 
   const updateCartQuantity = async (productId: string, quantity: number) => {
@@ -1408,6 +1422,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addReview,
       cartItems,
       addToCart,
+      buyNow,
       updateCartQuantity,
       removeFromCart,
       clearCart,
