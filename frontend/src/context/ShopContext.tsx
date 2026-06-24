@@ -88,8 +88,8 @@ interface ShopContextType {
   // Search & Filter state sharing
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  selectedCategoryFilter: string | null;
-  setSelectedCategoryFilter: (category: string | null) => void;
+  specialFilter: 'best-sellers' | 'new-arrivals' | null;
+  setSpecialFilter: (filter: 'best-sellers' | 'new-arrivals' | null) => void;
 
   // Products state (supports Admin CRUD)
   products: Product[];
@@ -252,7 +252,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return match ? match[1] : null;
   });
   const [searchQuery, setSearchQueryState] = useState<string>('');
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
+  const [specialFilter, setSpecialFilter] = useState<'best-sellers' | 'new-arrivals' | null>(null);
 
 
 
@@ -1399,8 +1399,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigateTo,
       searchQuery,
       setSearchQuery,
-      selectedCategoryFilter,
-      setSelectedCategoryFilter,
+      specialFilter,
+      setSpecialFilter,
       products,
       addProduct,
       editProduct,

@@ -18,7 +18,9 @@ export const ProductListing: React.FC = () => {
   const { 
     products, 
     searchQuery, 
-    setSearchQuery
+    setSearchQuery,
+    specialFilter,
+    setSpecialFilter
   } = useShop();
 
   const [selectedPriceRange, setSelectedPriceRange] = useState<number>(0); // Index of range
@@ -37,6 +39,13 @@ export const ProductListing: React.FC = () => {
         p.name.toLowerCase().includes(q) || 
         p.description.toLowerCase().includes(q)
       );
+    }
+
+    // Special Filter
+    if (specialFilter === 'best-sellers') {
+      result = result.filter(p => p.isBestSeller);
+    } else if (specialFilter === 'new-arrivals') {
+      result = result.filter(p => p.isNewArrival);
     }
 
 
@@ -59,10 +68,11 @@ export const ProductListing: React.FC = () => {
     }
 
     return result;
-  }, [products, searchQuery, selectedPriceRange, sortBy]);
+  }, [products, searchQuery, selectedPriceRange, sortBy, specialFilter]);
 
   const handleResetFilters = () => {
     setSearchQuery('');
+    setSpecialFilter(null);
 
     setSelectedPriceRange(0);
     setSortBy('popular');
@@ -73,7 +83,7 @@ export const ProductListing: React.FC = () => {
       {/* Page Title & Breadcrumbs */}
       <div className="text-center space-y-2 mb-10">
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-crimson-950 uppercase tracking-wide">
-          All Treasures
+          {specialFilter === 'best-sellers' ? 'Best Sellers' : specialFilter === 'new-arrivals' ? 'New Arrivals' : 'All Treasures'}
         </h1>
         <p className="text-xs text-obsidian-600 font-sans font-light">
           {filteredProducts.length} unique masterpieces discovered
@@ -107,13 +117,15 @@ export const ProductListing: React.FC = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
               Price Range
             </span>
-            <div className="flex flex-col space-y-1.5 font-sans text-xs">
+            <div className="flex flex-wrap gap-2 font-sans text-[10px]">
               {PRICE_RANGES.map((rng, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedPriceRange(idx)}
-                  className={`text-left py-1 hover:text-crimson-900 transition-colors ${
-                    selectedPriceRange === idx ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
+                  className={`px-3 py-1.5 rounded-full border transition-all ${
+                    selectedPriceRange === idx 
+                      ? 'bg-crimson-950 border-crimson-950 text-gold-100 font-bold shadow-sm' 
+                      : 'bg-white border-gold-200 text-obsidian-700 hover:border-gold-400 hover:text-crimson-900'
                   }`}
                 >
                   {rng.label}

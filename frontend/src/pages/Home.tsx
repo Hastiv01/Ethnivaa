@@ -9,17 +9,17 @@ const COLLECTIONS = [
   {
     name: 'All Collections',
     category: null,
-    image: '/placeholder.png',
+    image: 'https://res.cloudinary.com/dujdgboyb/image/upload/v1781512978/ChatGPT_Image_Jun_15_2026_11_41_57_AM_hff2td.png',
     tag: 'Explore All Jewels'
   }
 ];
 
 export const Home: React.FC = () => {
-  const { products, navigateTo, setSelectedCategoryFilter } = useShop();
+  const { products, navigateTo, setSpecialFilter } = useShop();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
-  const handleCollectionClick = (category: string | null) => {
-    setSelectedCategoryFilter(category);
+  const handleCollectionClick = () => {
+    setSpecialFilter(null);
     navigateTo('shop');
   };
 
@@ -44,7 +44,7 @@ export const Home: React.FC = () => {
           {COLLECTIONS.map((col, idx) => (
             <div
               key={idx}
-              onClick={() => handleCollectionClick(col.category)}
+              onClick={handleCollectionClick}
               className="group relative h-80 sm:h-96 md:h-[28rem] rounded-2xl overflow-hidden cursor-pointer border border-gold-200/50 shadow-gold shadow-sm hover:shadow-gold-md transition-all duration-300"
             >
               <div className="absolute inset-0 bg-gradient-to-t from-crimson-950/90 via-crimson-950/20 to-transparent z-10 transition-colors duration-300 group-hover:from-crimson-950"></div>
@@ -52,7 +52,7 @@ export const Home: React.FC = () => {
                 src={col.image}
                 alt={col.name}
                 loading="eager"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
               />
 
               <div className="absolute inset-0 z-20 p-6 sm:p-10 flex flex-col justify-end text-white text-center items-center">
@@ -85,7 +85,7 @@ export const Home: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              setSelectedCategoryFilter(null);
+              setSpecialFilter('best-sellers');
               navigateTo('shop');
             }}
             className="text-xs uppercase tracking-wider font-bold text-crimson-900 hover:text-gold-600 flex items-center gap-1.5 transition-colors border-b border-crimson-950 pb-1"
@@ -119,7 +119,7 @@ export const Home: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              setSelectedCategoryFilter(null);
+              setSpecialFilter('new-arrivals');
               navigateTo('shop');
             }}
             className="text-xs uppercase tracking-wider font-bold text-crimson-900 hover:text-gold-600 flex items-center gap-1.5 transition-colors border-b border-crimson-950 pb-1"
