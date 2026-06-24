@@ -3,7 +3,7 @@ import { useShop } from '../context/ShopContext';
 import type { Product } from '../data/products';
 import {
   ShieldCheck, Plus, Pencil, Trash2, IndianRupee, ShoppingBag, Users, AlertTriangle,
-  X, Check, Save, Tag, RefreshCw, Package, Eye
+  X, Check, Save, RefreshCw, Package, Eye
 } from 'lucide-react';
 
 // Backend address type for admin orders
@@ -205,9 +205,7 @@ export const AdminDashboard: React.FC = () => {
   // Categories state
   const [adminCategories, setAdminCategories] = useState<any[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [newCatName, setNewCatName] = useState('');
-  const [newCatSlug, setNewCatSlug] = useState('');
-  const [catSubmitting, setCatSubmitting] = useState(false);
+
 
   // Fetch real dashboard stats
   const fetchDashboardStats = useCallback(async () => {
@@ -277,34 +275,7 @@ export const AdminDashboard: React.FC = () => {
 
 
 
-  // Add category
-  const handleAddCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCatName.trim() || !newCatSlug.trim()) return;
-    setCatSubmitting(true);
-    try {
-      const res = await fetch('/api/admin/categories', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ name: newCatName.trim(), slug: newCatSlug.trim() })
-      });
-      if (res.ok) {
-        setNewCatName('');
-        setNewCatSlug('');
-        await fetchAdminCategories();
-      } else {
-        const err = await res.json();
-        alert(err.message || 'Failed to add category');
-      }
-    } catch (err) {
-      alert('Error adding category');
-    } finally {
-      setCatSubmitting(false);
-    }
-  };
+
 
   // Delete category
   const handleDeleteCategory = async (id: number, name: string) => {
