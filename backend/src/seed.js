@@ -35,8 +35,7 @@ async function seed() {
 
   // STEP 1: Upsert the correct current categories first
   const categories = [
-    { name: 'Traditional Jewellery Sets', slug: 'traditional-jewellery-sets', description: 'Intricate necklaces, choker sets and traditional ornaments' },
-    { name: 'Combo Sets', slug: 'combo-sets', description: 'Complete matched jewelry combinations' },
+    { name: 'All Collections', slug: 'all-collections', description: 'All jewelry pieces' },
   ];
 
   for (const categoryData of categories) {
@@ -51,23 +50,20 @@ async function seed() {
   }
 
   // STEP 2: Now safely remove stale old categories
-  // First reassign all their products to 'traditional-jewellery-sets', then delete
-  const fallbackCat = await Category.findOne({ where: { slug: 'traditional-jewellery-sets' } });
-  for (const slug of ['earrings', 'hair-accessories', 'necklaces']) {
+  const fallbackCat = await Category.findOne({ where: { slug: 'all-collections' } });
+  for (const slug of ['traditional-jewellery-sets', 'combo-sets', 'earrings', 'hair-accessories', 'necklaces', 'men', 'women', 'accessories', 'bangles']) {
     const old = await Category.findOne({ where: { slug } });
     if (old) {
       if (fallbackCat) {
         const moved = await Product.update({ categoryId: fallbackCat.id }, { where: { categoryId: old.id } });
-        console.log(`Reassigned ${moved[0]} product(s) from ${slug} → traditional-jewellery-sets`);
+        console.log(`Reassigned ${moved[0]} product(s) from ${slug} → all-collections`);
       }
       await old.destroy({ force: true });
       console.log(`Removed stale category: ${slug}`);
     }
   }
 
-
-  const traditionalCat = await Category.findOne({ where: { slug: 'traditional-jewellery-sets' } });
-  const comboSetsCat = await Category.findOne({ where: { slug: 'combo-sets' } });
+  const allCollectionsCat = await Category.findOne({ where: { slug: 'all-collections' } });
 
   await Product.findOrCreate({
     where: { title: 'Mayur Pankh Oxidized Choker Set' },
@@ -92,7 +88,7 @@ async function seed() {
       isNewArrival: false,
       rating: 4.8,
       reviewsCount: 2,
-      categoryId: comboSetsCat.id,
+      categoryId: allCollectionsCat.id,
     },
   });
 
@@ -118,7 +114,7 @@ async function seed() {
       isNewArrival: false,
       rating: 4.9,
       reviewsCount: 2,
-      categoryId: comboSetsCat.id,
+      categoryId: allCollectionsCat.id,
     },
   });
 
@@ -144,7 +140,7 @@ async function seed() {
       isNewArrival: false,
       rating: 4.6,
       reviewsCount: 2,
-      categoryId: comboSetsCat.id,
+      categoryId: allCollectionsCat.id,
     },
   });
 
