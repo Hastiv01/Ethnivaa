@@ -806,48 +806,7 @@ export const AdminDashboard: React.FC = () => {
       {/* CATEGORIES TAB */}
       {activeSubTab === 'categories' && (
         <div className="space-y-6">
-          {/* Add New Category */}
-          <div className="bg-white border border-gold-200/50 rounded-2xl p-6 shadow-gold shadow-sm font-sans text-xs">
-            <h3 className="font-serif text-lg font-bold text-crimson-950 mb-4 border-b border-gold-100 pb-3 flex items-center gap-2">
-              <Tag size={18} className="text-gold-500" />
-              Add New Category
-            </h3>
-            <form onSubmit={handleAddCategory} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-              <div className="space-y-1.5">
-                <label className="font-semibold text-obsidian-800">Category Name</label>
-                <input
-                  type="text"
-                  value={newCatName}
-                  onChange={(e) => {
-                    setNewCatName(e.target.value);
-                    setNewCatSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
-                  }}
-                  placeholder="e.g. Bridal Sets"
-                  className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none"
-                  required
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="font-semibold text-obsidian-800">Slug (auto-generated)</label>
-                <input
-                  type="text"
-                  value={newCatSlug}
-                  onChange={(e) => setNewCatSlug(e.target.value)}
-                  placeholder="e.g. bridal-sets"
-                  className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none font-mono"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={catSubmitting}
-                className="bg-crimson-950 hover:bg-crimson-900 text-gold-100 font-bold uppercase tracking-wider px-5 py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md"
-              >
-                <Plus size={14} />
-                <span>{catSubmitting ? 'Adding...' : 'Add Category'}</span>
-              </button>
-            </form>
-          </div>
+
 
           {/* Categories List */}
           <div className="bg-white border border-gold-200/50 rounded-2xl overflow-hidden shadow-gold shadow-sm font-sans text-xs">
