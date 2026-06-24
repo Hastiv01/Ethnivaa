@@ -25,7 +25,6 @@ export const ProductListing: React.FC = () => {
 
   const [selectedPriceRange, setSelectedPriceRange] = useState<number>(0); // Index of range
   const [sortBy, setSortBy] = useState<string>('popular');
-  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   // Memoized Filtered and Sorted Products
@@ -85,84 +84,57 @@ export const ProductListing: React.FC = () => {
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-crimson-950 uppercase tracking-wide">
           {specialFilter === 'best-sellers' ? 'Best Sellers' : specialFilter === 'new-arrivals' ? 'New Arrivals' : 'All Treasures'}
         </h1>
-        <p className="text-xs text-obsidian-600 font-sans font-light">
-          {filteredProducts.length} unique masterpieces discovered
-        </p>
         <div className="w-16 h-0.5 bg-gold-400 mx-auto mt-2"></div>
       </div>
 
-      {/* Grid: Filters Sidebar + Listing */}
-      <div className="lg:grid lg:grid-cols-4 lg:gap-8 items-start">
+      {/* Product Listing Area */}
+      <div className="space-y-6">
         
-        {/* Left column: Desktop Sidebar Filters */}
-        <aside className="hidden lg:block space-y-6 bg-white p-6 border border-gold-200/50 rounded-2xl shadow-gold shadow-sm">
-          <div className="flex items-center justify-between pb-4 border-b border-gold-100">
-            <h3 className="font-serif font-bold text-crimson-950 text-base flex items-center gap-2">
-              <SlidersHorizontal size={16} />
-              <span>Filters</span>
-            </h3>
-            <button
-              onClick={handleResetFilters}
-              className="text-[11px] font-bold tracking-wider text-crimson-800 hover:text-gold-600 transition-colors uppercase flex items-center gap-1"
-            >
-              <RotateCcw size={10} />
-              <span>Reset</span>
-            </button>
-          </div>
-
-
-
-          {/* Filter: Price Range */}
-          <div className="space-y-2.5 pt-4 border-t border-gold-100">
-            <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
-              Price Range
-            </span>
-            <div className="flex flex-wrap gap-2 font-sans text-[10px]">
-              {PRICE_RANGES.map((rng, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedPriceRange(idx)}
-                  className={`px-3 py-1.5 rounded-full border transition-all ${
-                    selectedPriceRange === idx 
-                      ? 'bg-crimson-950 border-crimson-950 text-gold-100 font-bold shadow-sm' 
-                      : 'bg-white border-gold-200 text-obsidian-700 hover:border-gold-400 hover:text-crimson-900'
-                  }`}
-                >
-                  {rng.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        {/* Right column: Toolbar + Product Grid */}
-        <div className="lg:col-span-3 space-y-6">
+        {/* Top Toolbar */}
+        <div className="bg-white border border-gold-200/50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-gold shadow-sm">
           
-          {/* Top Toolbar */}
-          <div className="bg-white border border-gold-200/50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-gold shadow-sm">
-            {/* Search Term Tag (if any) */}
-            <div className="flex flex-wrap items-center gap-2">
+          {/* Left Side: Product Count, Search Tag & Reset */}
+            <div className="flex flex-wrap w-full sm:w-auto items-center gap-3">
+              <span className="text-xs text-obsidian-600 font-sans font-semibold">
+                Showing {filteredProducts.length} pieces
+              </span>
+              
+              {(searchQuery || selectedPriceRange !== 0 || sortBy !== 'popular' || specialFilter !== null) && (
+                <button
+                  onClick={handleResetFilters}
+                  className="text-[11px] font-bold tracking-wider text-crimson-800 hover:text-gold-600 transition-colors uppercase flex items-center gap-1 sm:border-l border-gold-200 sm:pl-3"
+                >
+                  <RotateCcw size={10} />
+                  <span>Reset All</span>
+                </button>
+              )}
+
               {searchQuery && (
-                <span className="bg-gold-50 text-crimson-950 text-xs px-3.5 py-1.5 rounded-full border border-gold-200 flex items-center gap-1.5 font-sans font-medium">
+                <span className="bg-gold-50 text-crimson-950 text-xs px-3.5 py-1.5 rounded-full border border-gold-200 flex items-center gap-1.5 font-sans font-medium ml-1">
                   <span>Search: "{searchQuery}"</span>
                   <button onClick={() => setSearchQuery('')} className="hover:text-crimson-600">
                     <X size={12} />
                   </button>
                 </span>
               )}
-
             </div>
 
-            {/* Mobile Filters and Sorting Control */}
-            <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-3 font-sans text-xs">
-              {/* Mobile Filter Button */}
-              <button
-                onClick={() => setIsMobileFiltersOpen(true)}
-                className="lg:hidden flex items-center gap-1.5 border border-gold-300 rounded-full px-4 py-2 bg-white text-crimson-950 font-bold hover:bg-gold-50"
-              >
-                <SlidersHorizontal size={14} />
-                <span>Filters</span>
-              </button>
+            {/* Filters and Sorting Control */}
+            <div className="flex flex-wrap w-full sm:w-auto items-center justify-between sm:justify-end gap-3 font-sans text-xs">
+              
+              {/* Price Range Dropdown */}
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal size={14} className="text-gold-600" />
+                <select
+                  value={selectedPriceRange}
+                  onChange={(e) => setSelectedPriceRange(Number(e.target.value))}
+                  className="bg-transparent border border-gold-300 rounded-full px-3.5 py-2 text-obsidian-950 font-semibold focus:outline-none focus:border-gold-500 cursor-pointer shadow-gold-sm"
+                >
+                  {PRICE_RANGES.map((rng, idx) => (
+                    <option key={idx} value={idx}>{rng.label}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Sort Dropdown */}
               <div className="flex items-center gap-2">
@@ -214,77 +186,7 @@ export const ProductListing: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
       </div>
-
-      {/* Mobile Filters Drawer Modal */}
-      {isMobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-obsidian-950/60 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-80 bg-white h-full p-6 flex flex-col justify-between shadow-2xl animate-slideLeft">
-            
-            {/* Header */}
-            <div>
-              <div className="flex items-center justify-between pb-4 border-b border-gold-100">
-                <h3 className="font-serif font-bold text-crimson-950 text-lg flex items-center gap-2">
-                  <SlidersHorizontal size={18} />
-                  <span>Refine Treasures</span>
-                </h3>
-                <button
-                  onClick={() => setIsMobileFiltersOpen(false)}
-                  className="p-1.5 rounded-full bg-ivory-100 text-crimson-950 hover:bg-gold-100"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Scrollable Filters Content */}
-              <div className="space-y-6 py-6 overflow-y-auto max-h-[75vh] custom-scrollbar">
-                
-
-
-                {/* Price Filter */}
-                <div className="space-y-2.5 border-t border-gold-100 pt-4">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
-                    Price Range
-                  </span>
-                  <div className="flex flex-col space-y-2 text-xs font-sans">
-                    {PRICE_RANGES.map((rng, idx) => (
-                      <label key={idx} className="flex items-center gap-2 cursor-pointer font-medium text-obsidian-800">
-                        <input
-                          type="radio"
-                          name="price-range"
-                          checked={selectedPriceRange === idx}
-                          onChange={() => setSelectedPriceRange(idx)}
-                          className="accent-crimson-800 h-4 w-4"
-                        />
-                        <span>{rng.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                {/* End of Filters */}
-              </div>
-            </div>
-
-            {/* Footer buttons */}
-            <div className="flex items-center gap-3 border-t border-gold-100 pt-4 font-sans text-xs">
-              <button
-                onClick={handleResetFilters}
-                className="flex-1 py-3 rounded-full border border-gold-300 font-bold hover:bg-gold-50 text-crimson-950 uppercase text-center"
-              >
-                Reset
-              </button>
-              <button
-                onClick={() => setIsMobileFiltersOpen(false)}
-                className="flex-1 py-3 rounded-full bg-crimson-950 text-gold-100 hover:bg-crimson-900 font-bold uppercase text-center shadow-md"
-              >
-                Apply
-              </button>
-            </div>
-            
-          </div>
-        </div>
-      )}
 
       {/* Quick View Modal Hook */}
       <QuickViewModal 

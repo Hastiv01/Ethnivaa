@@ -47,7 +47,7 @@ export const Home: React.FC = () => {
               onClick={handleCollectionClick}
               className="group relative h-80 sm:h-96 md:h-[28rem] rounded-2xl overflow-hidden cursor-pointer border border-gold-200/50 shadow-gold shadow-sm hover:shadow-gold-md transition-all duration-300"
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-crimson-950/90 via-crimson-950/20 to-transparent z-10 transition-colors duration-300 group-hover:from-crimson-950"></div>
+              <div className="absolute inset-0 bg-obsidian-950/40 z-10 transition-colors duration-300 group-hover:bg-obsidian-950/60"></div>
               <img
                 src={col.image}
                 alt={col.name}
@@ -55,16 +55,16 @@ export const Home: React.FC = () => {
                 className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
               />
 
-              <div className="absolute inset-0 z-20 p-6 sm:p-10 flex flex-col justify-end text-white text-center items-center">
-                <span className="text-xs sm:text-sm uppercase tracking-[0.3em] text-gold-300 font-semibold mb-2 block">
+              <div className="absolute inset-0 z-20 p-6 sm:p-10 flex flex-col justify-center text-center items-center">
+                <span className="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-gold-300 font-bold mb-3 block drop-shadow-md">
                   {col.tag}
                 </span>
-                <h3 className="font-serif text-2xl sm:text-5xl font-bold group-hover:text-gold-300 transition-colors">
+                <h3 className="font-serif text-4xl sm:text-7xl font-extrabold text-white drop-shadow-2xl tracking-wider">
                   {col.name}
                 </h3>
-                <span className="mt-4 text-sm sm:text-base font-semibold text-gold-400 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                <span className="mt-8 text-xs sm:text-sm uppercase tracking-widest font-bold text-gold-400 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 drop-shadow-md">
                   <span>View All Treasures</span>
-                  <ArrowRight size={18} />
+                  <ArrowRight size={16} />
                 </span>
               </div>
             </div>

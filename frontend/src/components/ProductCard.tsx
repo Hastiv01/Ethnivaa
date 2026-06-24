@@ -115,7 +115,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           </h4>
           
           {/* Rating */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
             <div className="flex text-gold-400">
               <Star size={12} className="fill-gold-400 text-gold-400" />
             </div>

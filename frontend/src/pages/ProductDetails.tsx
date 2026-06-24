@@ -168,7 +168,7 @@ export const ProductDetails: React.FC = () => {
             {/* Rating Stars Summary */}
             <button 
               onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}
-              className="group flex items-center gap-2 font-sans text-xs transition-opacity hover:opacity-80 focus:outline-none"
+              className="group flex flex-wrap items-center gap-2 font-sans text-xs transition-all hover:opacity-80 active:scale-95 focus:outline-none text-left"
               title="Click to read all reviews"
             >
               <div className="flex text-gold-400">
@@ -342,11 +342,11 @@ export const ProductDetails: React.FC = () => {
                         key={stars}
                         type="button"
                         onClick={() => setReviewRating(stars)}
-                        className="p-1 hover:scale-110 transition-transform focus:outline-none"
+                        className="p-1 hover:scale-110 active:scale-95 transition-transform duration-150 focus:outline-none touch-manipulation"
                       >
                         <Star 
                           size={18} 
-                          className={`${stars <= reviewRating ? 'fill-gold-400 text-gold-400' : 'text-gold-200'}`} 
+                          className={`transition-colors duration-150 ${stars <= reviewRating ? 'fill-gold-400 text-gold-400' : 'text-gold-200'}`} 
                         />
                       </button>
                     ))}
