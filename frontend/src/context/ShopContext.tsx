@@ -63,7 +63,7 @@ export interface PlaceOrderResult {
   currency: string;
 }
 
-export type PageType = 'welcome' | 'home' | 'shop' | 'details' | 'cart' | 'checkout' | 'success' | 'account' | 'admin' | 'login' | 'signup';
+export type PageType = 'welcome' | 'home' | 'shop' | 'details' | 'cart' | 'checkout' | 'success' | 'account' | 'admin' | 'login' | 'signup' | 'terms' | 'privacy' | 'returns';
 
 export interface BackendAddress {
   id: number;
@@ -215,6 +215,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (path === '/admin') return 'admin';
     if (path === '/login') return 'login';
     if (path === '/signup') return 'signup';
+    if (path === '/terms') return 'terms';
+    if (path === '/privacy') return 'privacy';
+    if (path === '/returns') return 'returns';
     return 'home';
   };
 
@@ -232,6 +235,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       case 'admin': return '/admin';
       case 'login': return '/login';
       case 'signup': return '/signup';
+      case 'terms': return '/terms';
+      case 'privacy': return '/privacy';
+      case 'returns': return '/returns';
       default: return '/home';
     }
   };

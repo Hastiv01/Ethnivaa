@@ -3,7 +3,7 @@ import { useShop } from '../context/ShopContext';
 import { Mail, Phone, MapPin, ShieldAlert, Sparkles } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { navigateTo, setSelectedCategoryFilter, currentUserRole, visitorCount } = useShop();
+  const { navigateTo, currentUserRole, visitorCount } = useShop();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -16,15 +16,10 @@ export const Footer: React.FC = () => {
     }
   };
 
-  const selectCategory = (cat: string) => {
-    setSelectedCategoryFilter(cat);
-    navigateTo('shop');
-  };
-
   return (
     <footer className="bg-obsidian-950 text-ivory-300 font-sans border-t border-gold-950 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
           
           {/* Brand Info */}
           <div className="space-y-6">
@@ -33,37 +28,12 @@ export const Footer: React.FC = () => {
                 ETHNIVAA
               </span>
               <p className="text-[10px] uppercase tracking-[0.3em] text-gold-200 mt-1">
-                The Heritage of Jewelry
+                Where Tradition Meets Timeless Beauty
               </p>
             </div>
             <p className="text-sm text-ivory-400 font-light leading-relaxed">
-              Ethnivaa celebrates the eternal grace of Indian heritage. Every ornament is handcrafted by master artisans, preserving the ancient jewelry techniques of Kundan, Jadhau, Kemp, and Oxidized Silver.
+              Ethnivaa celebrates the timeless beauty of Indian heritage through handcrafted jewellery inspired by traditional artistry. From Navratri collections to elegant wedding sets, every piece reflects culture, craftsmanship, and elegance.
             </p>
-            {/* Social Icons Mock */}
-            <div className="flex space-x-4">
-              {['Instagram', 'Pinterest', 'Facebook'].map(social => (
-                <a 
-                  key={social} 
-                  href="#" 
-                  className="text-xs tracking-wider uppercase text-gold-400 hover:text-gold-100 transition-colors duration-200 border border-gold-900 px-3 py-1 rounded-full hover:border-gold-400"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  {social}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="space-y-6">
-            <h3 className="font-serif text-lg text-gold-400 font-semibold tracking-wider">Collections</h3>
-            <ul className="space-y-3 text-sm font-light text-ivory-400">
-              <li>
-                <button onClick={() => selectCategory('All Collections')} className="hover:text-gold-300 transition-colors duration-200">
-                  All Collections
-                </button>
-              </li>
-            </ul>
           </div>
 
           {/* Contact Details */}
@@ -73,16 +43,16 @@ export const Footer: React.FC = () => {
               <li className="flex items-start gap-3">
                 <MapPin size={18} className="text-gold-400 shrink-0 mt-0.5" />
                 <span>
-                  Ethnivaa Heritage Lounge, 102 Waterfield Road, Bandra West, Mumbai, Maharashtra 400050
+                  PLOT NO 1919, "NIRNAD" FLAT, G1, A WING, BETWEEN RUPANI CIRCLE TO SANSKAR MANDAL AND OPP. VALIYA HOSPITAL BHAVNAGAR-364002.
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={16} className="text-gold-400 shrink-0" />
-                <span>+91 22 2640 4455</span>
+                <span>+91 78748 60077</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={16} className="text-gold-400 shrink-0" />
-                <span>care@ethnivaa.com</span>
+                <span>ethnivaa.help@gmail.com</span>
               </li>
             </ul>
           </div>
@@ -152,8 +122,9 @@ export const Footer: React.FC = () => {
             )}
             
             <div className="flex gap-4 text-xs text-ivory-600">
-              <a href="#" className="hover:text-gold-400" onClick={(e) => e.preventDefault()}>Terms</a>
-              <a href="#" className="hover:text-gold-400" onClick={(e) => e.preventDefault()}>Privacy</a>
+              <a href="#" className="hover:text-gold-400" onClick={(e) => { e.preventDefault(); navigateTo('terms'); }}>Terms & Conditions</a>
+              <a href="#" className="hover:text-gold-400" onClick={(e) => { e.preventDefault(); navigateTo('privacy'); }}>Privacy Policy</a>
+              <a href="#" className="hover:text-gold-400" onClick={(e) => { e.preventDefault(); navigateTo('returns'); }}>Return & Refund Policy</a>
             </div>
           </div>
         </div>

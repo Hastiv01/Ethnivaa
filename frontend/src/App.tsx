@@ -16,6 +16,9 @@ const OrderSuccess = lazy(() => import('./pages/OrderSuccess').then(m => ({ defa
 const Account = lazy(() => import('./pages/Account').then(m => ({ default: m.Account })));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const Auth = lazy(() => import('./pages/Auth').then(m => ({ default: m.Auth })));
+const Terms = lazy(() => import('./pages/Terms').then(m => ({ default: m.Terms })));
+const Privacy = lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })));
+const Returns = lazy(() => import('./pages/Returns').then(m => ({ default: m.Returns })));
 
 // ProtectedRoute: redirects to /login if user is not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -49,6 +52,9 @@ const AppContent: React.FC = () => {
             <Route path="/details/:id" element={<ProductDetails />} />
             <Route path="/login" element={<Auth mode="login" />} />
             <Route path="/signup" element={<Auth mode="signup" />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/returns" element={<Returns />} />
 
             {/* All other routes require login */}
             <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />

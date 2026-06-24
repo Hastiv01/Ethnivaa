@@ -256,11 +256,10 @@ export const ProductDetails: React.FC = () => {
 
 
           {/* Delivery badges */}
-          <div className="flex justify-center py-4 text-center font-sans text-[10px] text-obsidian-500 border-t border-gold-100">
-            <div className="flex flex-col items-center gap-1.5 p-2 px-8 rounded-xl bg-ivory-50 border border-gold-100/30">
-              <Truck size={18} className="text-gold-500" />
-              <span className="font-bold text-obsidian-800">Free Delivery</span>
-              <span>Above ₹499</span>
+          <div className="py-5">
+            <div className="flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-ivory-50 border border-gold-200/50 text-xs font-sans text-obsidian-800 shadow-gold-sm">
+              <Truck size={16} className="text-gold-600" />
+              <span><strong className="text-obsidian-950 font-bold uppercase tracking-wider">Free Delivery</strong> on all orders above ₹499</span>
             </div>
           </div>
 
