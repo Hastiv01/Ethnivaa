@@ -161,7 +161,7 @@ export const AdminDashboard: React.FC = () => {
 
   const authToken = JSON.parse(localStorage.getItem('ethnivaa_auth_token') || 'null');
 
-  const [activeSubTab, setActiveSubTab] = useState<'products' | 'orders' | 'users' | 'categories'>('products');
+  const [activeSubTab, setActiveSubTab] = useState<'products' | 'orders' | 'users'>('products');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const toggleOrderExpand = (orderId: string) => {
@@ -202,9 +202,6 @@ export const AdminDashboard: React.FC = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [userSearch, setUserSearch] = useState('');
 
-  // Categories state
-  const [adminCategories, setAdminCategories] = useState<any[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
 
 
   // Fetch real dashboard stats
@@ -245,24 +242,7 @@ export const AdminDashboard: React.FC = () => {
     }
   }, [authToken]);
 
-  // Fetch admin categories
-  const fetchAdminCategories = useCallback(async () => {
-    if (!authToken) return;
-    setCategoriesLoading(true);
-    try {
-      const res = await fetch('/api/admin/categories', {
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAdminCategories(data.categories || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch categories:', err);
-    } finally {
-      setCategoriesLoading(false);
-    }
-  }, [authToken]);
+
 
   useEffect(() => {
     fetchDashboardStats();
@@ -270,31 +250,13 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     if (activeSubTab === 'users') fetchUsers();
-    if (activeSubTab === 'categories') fetchAdminCategories();
-  }, [activeSubTab, fetchUsers, fetchAdminCategories]);
+  }, [activeSubTab, fetchUsers]);
 
 
 
 
 
-  // Delete category
-  const handleDeleteCategory = async (id: number, name: string) => {
-    if (!confirm(`Delete category "${name}"? This cannot be undone.`)) return;
-    try {
-      const res = await fetch(`/api/admin/categories/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      if (res.ok) {
-        await fetchAdminCategories();
-      } else {
-        const err = await res.json();
-        alert(err.message || 'Failed to delete category');
-      }
-    } catch (err) {
-      alert('Error deleting category');
-    }
-  };
+
 
   const paidOrders = useMemo(() => orders.filter(order => order.paymentStatus === 'Success'), [orders]);
 
@@ -489,7 +451,6 @@ export const AdminDashboard: React.FC = () => {
           { key: 'products', label: `Products (${products.length})` },
           { key: 'orders', label: `Orders (${paidOrders.length})` },
           { key: 'users', label: 'Users' },
-          { key: 'categories', label: 'Categories' },
         ] as const).map(tab => (
           <button
             key={tab.key}
@@ -774,60 +735,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* CATEGORIES TAB */}
-      {activeSubTab === 'categories' && (
-        <div className="space-y-6">
 
-
-          {/* Categories List */}
-          <div className="bg-white border border-gold-200/50 rounded-2xl overflow-hidden shadow-gold shadow-sm font-sans text-xs">
-            {categoriesLoading ? (
-              <p className="p-8 text-center text-obsidian-400 italic">Loading categories...</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gold-50/50 border-b border-gold-100 text-gold-700 font-bold uppercase tracking-wider text-[10px]">
-                      <th className="p-4">#</th>
-                      <th className="p-4">Category Name</th>
-                      <th className="p-4">Slug</th>
-                      <th className="p-4 text-center">Products</th>
-                      <th className="p-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gold-100 text-obsidian-850">
-                    {adminCategories.map(cat => (
-                      <tr key={cat.id} className="hover:bg-gold-50/10 transition-colors">
-                        <td className="p-4 font-mono text-obsidian-400">{cat.id}</td>
-                        <td className="p-4 font-bold text-crimson-950">{cat.name}</td>
-                        <td className="p-4 font-mono text-obsidian-500">{cat.slug}</td>
-                        <td className="p-4 text-center">
-                          <span className="inline-block px-3 py-1 rounded-full font-bold text-[9px] bg-gold-50 text-gold-700 border border-gold-200">
-                            {cat.productCount ?? 0} products
-                          </span>
-                        </td>
-                        <td className="p-4 text-right">
-                          <button
-                            onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                            disabled={(cat.productCount ?? 0) > 0}
-                            className="p-2 rounded-full border border-crimson-100 hover:bg-crimson-50 text-crimson-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                            title={(cat.productCount ?? 0) > 0 ? 'Move products first' : 'Delete category'}
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {adminCategories.length === 0 && (
-                      <tr><td colSpan={5} className="p-8 text-center text-obsidian-400 italic">No categories found. Add one above.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       </div>
 
