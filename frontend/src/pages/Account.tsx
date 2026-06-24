@@ -4,7 +4,7 @@ import type { ShippingAddress } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
-import { User, Package, Heart, MapPin, ChevronDown, ChevronUp, Download, Plus, X, Trash2 } from 'lucide-react';
+import { User, Package, Heart, MapPin, ChevronDown, ChevronUp, Plus, X, Trash2 } from 'lucide-react';
 import { INDIAN_STATES } from './Checkout';
 
 export const Account: React.FC = () => {
@@ -101,9 +101,6 @@ export const Account: React.FC = () => {
     setShowAddAddress(false);
   };
 
-  const handleInvoiceDownload = (orderId: string) => {
-    alert(`Downloading Invoice for Order ${orderId}...`);
-  };
 
   // Resolve products in wishlist
   const wishlistedProducts = products.filter(p => wishlist.includes(p.id));
@@ -278,23 +275,13 @@ export const Account: React.FC = () => {
                           </div>
 
                           {/* Address & Actions */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-gold-100">
+                          <div className="grid grid-cols-1 gap-6 pt-4 border-t border-gold-100">
                             <div>
                               <h4 className="font-serif font-bold text-crimson-950 text-sm mb-2">Delivery Address</h4>
                               <p className="font-light text-obsidian-700 leading-relaxed text-[11px]">
                                 <span className="font-semibold text-obsidian-900 block">{order.shippingAddress.fullName}</span>
                                 {order.shippingAddress.address}, {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
                               </p>
-                            </div>
-                            
-                            <div className="flex flex-col justify-end items-stretch sm:items-end gap-2.5">
-                              <button
-                                onClick={() => handleInvoiceDownload(order.id)}
-                                className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full border border-gold-300 bg-white hover:bg-gold-50 text-crimson-950 font-bold uppercase transition-colors"
-                              >
-                                <Download size={12} />
-                                <span>Download Invoice</span>
-                              </button>
                             </div>
                           </div>
 
