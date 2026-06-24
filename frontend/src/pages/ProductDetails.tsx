@@ -4,7 +4,7 @@ import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
-import { Star, Shield, Truck, RefreshCw, ShoppingBag, Heart, ArrowLeft, Plus, Minus, Send } from 'lucide-react';
+import { Star, Truck, ShoppingBag, Heart, ArrowLeft, Plus, Minus, Send } from 'lucide-react';
 
 export const ProductDetails: React.FC = () => {
   const { id: urlProductId } = useParams<{ id: string }>();
@@ -191,9 +191,6 @@ export const ProductDetails: React.FC = () => {
                 ₹{product.originalPrice!.toLocaleString('en-IN')}
               </span>
             )}
-            <span className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 font-bold font-sans">
-              Inclusive of all taxes
-            </span>
           </div>
 
           {/* Description */}
@@ -258,22 +255,12 @@ export const ProductDetails: React.FC = () => {
             </div>
 
 
-          {/* Delivery & Security badges */}
-          <div className="grid grid-cols-3 gap-2 py-4 text-center font-sans text-[10px] text-obsidian-500 border-t border-gold-100">
-            <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-ivory-50 border border-gold-100/30">
+          {/* Delivery badges */}
+          <div className="flex justify-center py-4 text-center font-sans text-[10px] text-obsidian-500 border-t border-gold-100">
+            <div className="flex flex-col items-center gap-1.5 p-2 px-8 rounded-xl bg-ivory-50 border border-gold-100/30">
               <Truck size={18} className="text-gold-500" />
-              <span className="font-bold text-obsidian-800">Free Insured Delivery</span>
-              <span>On orders above ₹5K</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-ivory-50 border border-gold-100/30">
-              <Shield size={18} className="text-gold-500" />
-              <span className="font-bold text-obsidian-800">100% Certified Gold</span>
-              <span>18K & 22K Purity Verified</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-ivory-50 border border-gold-100/30">
-              <RefreshCw size={18} className="text-gold-500" />
-              <span className="font-bold text-obsidian-800">Easy Exchanges</span>
-              <span>15-day return window</span>
+              <span className="font-bold text-obsidian-800">Free Delivery</span>
+              <span>Above ₹499</span>
             </div>
           </div>
 

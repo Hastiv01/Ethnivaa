@@ -41,7 +41,7 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300 glass-premium shadow-gold-sm">
+    <header className="sticky top-0 z-40 w-full transition-all duration-300 bg-white shadow-gold-sm">
       {/* Decorative top festive strip */}
       <div className="w-full h-1 bg-gradient-to-r from-crimson-950 via-gold-400 to-crimson-950"></div>
       

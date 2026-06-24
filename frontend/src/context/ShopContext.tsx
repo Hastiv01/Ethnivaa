@@ -1078,7 +1078,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Calculated properties
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const cartSubtotal = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-  const cartShippingCost = cartSubtotal > 5000 ? 0 : (cartSubtotal === 0 ? 0 : 150); // Free shipping over 5000 INR
+  const cartShippingCost = cartSubtotal >= 499 ? 0 : (cartSubtotal === 0 ? 0 : 80); // Free shipping over 499 INR
   const cartTotal = cartSubtotal + cartShippingCost;
 
   // Wishlist operations
