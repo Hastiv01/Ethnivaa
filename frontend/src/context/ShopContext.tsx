@@ -847,7 +847,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSelectedProductId(null);
         navigate('/shop');
       }
-      setCartItems(prev => prev.filter(item => item.product.id !== id));
+      setCartItems(prev => prev.filter(item => item.product?.id !== id));
       setWishlist(prev => prev.filter(wishId => wishId !== id));
       return;
     }
@@ -866,7 +866,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSelectedProductId(null);
           navigate('/shop');
         }
-        setCartItems(prev => prev.filter(item => item.product.id !== id));
+        setCartItems(prev => prev.filter(item => item.product?.id !== id));
         setWishlist(prev => prev.filter(wishId => wishId !== id));
         localStorage.removeItem(PRODUCTS_CACHE_KEY);
       } else {
@@ -927,10 +927,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // --- OPTIMISTIC UPDATE: update UI immediately ---
     setCartItems(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
+      const existing = prev.find(item => item.product?.id === product.id);
       if (existing) {
         return prev.map(item =>
-          item.product.id === product.id
+          item.product?.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
@@ -957,15 +957,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // Rollback on server failure
         setCartItems(prev => {
-          const existing = prev.find(item => item.product.id === product.id);
+          const existing = prev.find(item => item.product?.id === product.id);
           if (existing && existing.quantity > quantity) {
             return prev.map(item =>
-              item.product.id === product.id
+              item.product?.id === product.id
                 ? { ...item, quantity: item.quantity - quantity }
                 : item
             );
           }
-          return prev.filter(item => item.product.id !== product.id);
+          return prev.filter(item => item.product?.id !== product.id);
         });
         console.error('Failed to add item to backend cart');
         return false;
@@ -973,15 +973,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       // Rollback on network error
       setCartItems(prev => {
-        const existing = prev.find(item => item.product.id === product.id);
+        const existing = prev.find(item => item.product?.id === product.id);
         if (existing && existing.quantity > quantity) {
           return prev.map(item =>
-            item.product.id === product.id
+            item.product?.id === product.id
               ? { ...item, quantity: item.quantity - quantity }
               : item
           );
         }
-        return prev.filter(item => item.product.id !== product.id);
+        return prev.filter(item => item.product?.id !== product.id);
       });
       console.error('Failed to add item to backend cart:', err);
       return false;
@@ -1001,7 +1001,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateCartQuantity = async (productId: string, quantity: number) => {
-    const existing = cartItems.find(item => item.product.id === productId);
+    const existing = cartItems.find(item => item.product?.id === productId);
     if (!existing) return;
     
     if (quantity <= 0) {
@@ -1016,7 +1016,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const previousQuantity = existing.quantity;
     setCartItems(prev =>
       prev.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
+        item.product?.id === productId ? { ...item, quantity } : item
       )
     );
 
@@ -1038,7 +1038,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Rollback
         setCartItems(prev =>
           prev.map(item =>
-            item.product.id === productId ? { ...item, quantity: previousQuantity } : item
+            item.product?.id === productId ? { ...item, quantity: previousQuantity } : item
           )
         );
       }
@@ -1046,7 +1046,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Rollback
       setCartItems(prev =>
         prev.map(item =>
-          item.product.id === productId ? { ...item, quantity: previousQuantity } : item
+          item.product?.id === productId ? { ...item, quantity: previousQuantity } : item
         )
       );
       console.error('Failed to update cart item:', err);
@@ -1054,7 +1054,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeFromCart = async (productId: string) => {
-    const existing = cartItems.find(item => item.product.id === productId);
+    const existing = cartItems.find(item => item.product?.id === productId);
     if (!existing) return;
 
     const backendItemId = existing.backendItemId;
@@ -1062,7 +1062,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // --- OPTIMISTIC UPDATE ---
     const removedItem = existing;
-    setCartItems(prev => prev.filter(item => item.product.id !== productId));
+    setCartItems(prev => prev.filter(item => item.product?.id !== productId));
 
     try {
       const response = await fetch(`/api/cart/items/${backendItemId}`, {
@@ -1105,7 +1105,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Calculated properties
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
-  const cartSubtotal = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  const cartSubtotal = cartItems.reduce((total, item) => total + ((item.product?.price || 0) * item.quantity), 0);
   const cartShippingCost = cartSubtotal >= 499 ? 0 : (cartSubtotal === 0 ? 0 : 80); // Free shipping over 499 INR
   const cartTotal = cartSubtotal + cartShippingCost;
 

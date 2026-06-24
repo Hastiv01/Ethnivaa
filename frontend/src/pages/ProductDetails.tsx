@@ -227,6 +227,7 @@ export const ProductDetails: React.FC = () => {
 
                 {/* Add To Cart */}
                 <button
+                  type="button"
                   onClick={handleAddToCart}
                   className="w-full sm:flex-1 bg-white hover:bg-gold-50 border border-crimson-950 text-crimson-950 font-bold uppercase tracking-wider text-xs py-3.5 rounded-full transition-all duration-300 shadow-md hover:shadow-gold-sm flex items-center justify-center gap-2"
                 >
@@ -236,6 +237,7 @@ export const ProductDetails: React.FC = () => {
 
                 {/* Buy Now */}
                 <button
+                  type="button"
                   onClick={handleBuyNow}
                   className="w-full sm:flex-1 bg-crimson-950 hover:bg-crimson-900 text-gold-100 font-bold uppercase tracking-wider text-xs py-3.5 rounded-full transition-all duration-300 shadow-md flex items-center justify-center gap-2"
                 >
@@ -244,6 +246,7 @@ export const ProductDetails: React.FC = () => {
 
                 {/* Wishlist Icon */}
                 <button
+                  type="button"
                   onClick={() => toggleWishlist(product.id)}
                   className="p-3 rounded-full border border-gold-300 hover:bg-gold-50 text-crimson-950 transition-colors shadow-gold-sm w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-0"
                   title="Add to wishlist"
