@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useShop } from '../context/ShopContext';
 import type { Product } from '../data/products';
 import {
-  ShieldCheck, Plus, Pencil, Trash2, IndianRupee, ShoppingBag, Users, AlertTriangle,
+  ShieldCheck, Plus, Pencil, Trash2, IndianRupee, ShoppingBag, Users,
   X, Check, Save, RefreshCw, Package, Eye
 } from 'lucide-react';
 
@@ -23,7 +23,6 @@ interface DashboardStats {
   totalRevenue: number;
   totalCustomers: number;
   totalProducts: number;
-  lowStockCount: number;
 }
 
 interface ProductFormFieldsProps {
@@ -34,24 +33,17 @@ interface ProductFormFieldsProps {
     name: string;
     price: number;
     originalPrice: number;
-    category: Product['category'] | string;
-    material: Product['material'] | string;
-    occasion: Product['occasion'] | string;
     description: string;
-    materialsDetail: string;
-    careInstructions: string;
-    stock: number;
     images: string[];
     isBestSeller?: boolean;
     isNewArrival?: boolean;
   };
   setFormFields: React.Dispatch<React.SetStateAction<any>>;
   handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
-  validCategories: any[];
 }
 
 const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
-  onSubmit, submitLabel, icon, formFields, setFormFields, handleFormChange, validCategories
+  onSubmit, submitLabel, icon, formFields, setFormFields, handleFormChange
 }) => {
   const calculatedDiscount = formFields.originalPrice > 0 ? Math.round(((formFields.originalPrice - formFields.price) / formFields.originalPrice) * 100) : 0;
   
@@ -85,49 +77,13 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
           </div>
         </div>
       </div>
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div className="space-y-1.5">
-        <label className="font-semibold text-obsidian-800">Collection Category</label>
-        <select name="category" value={formFields.category} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-          {validCategories.map(cat => (<option key={cat.id} value={cat.name}>{cat.name}</option>))}
-        </select>
-      </div>
-      <div className="space-y-1.5">
-        <label className="font-semibold text-obsidian-800">Base Metal / Material</label>
-        <select name="material" value={formFields.material} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-          <option>22K Gold</option><option>Sterling Silver</option><option>Gold Plated</option><option>Oxidized Silver</option><option>Brass</option>
-        </select>
-      </div>
-      <div className="space-y-1.5">
-        <label className="font-semibold text-obsidian-800">Recommended Occasion</label>
-        <select name="occasion" value={formFields.occasion} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none">
-          <option>Festive</option><option>Bridal</option><option>Casual Wear</option><option>Party Wear</option>
-        </select>
-      </div>
+    <div className="space-y-1.5 mt-4">
+      <label className="font-semibold text-obsidian-800">Showcase Image URL</label>
+      <input type="text" value={formFields.images[0]} onChange={(e) => setFormFields((prev: any) => ({ ...prev, images: [e.target.value] }))} placeholder="/placeholder.png" className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
     </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="space-y-1.5">
-        <label className="font-semibold text-obsidian-800">Boutique Stock Level</label>
-        <input type="number" name="stock" required min={0} value={formFields.stock} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-      </div>
-      <div className="space-y-1.5">
-        <label className="font-semibold text-obsidian-800">Showcase Image URL</label>
-        <input type="text" value={formFields.images[0]} onChange={(e) => setFormFields((prev: any) => ({ ...prev, images: [e.target.value] }))} placeholder="/placeholder.png" className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-      </div>
-    </div>
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 mt-4">
       <label className="font-semibold text-obsidian-800">Description</label>
       <textarea name="description" rows={3} value={formFields.description} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none resize-none"></textarea>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="space-y-1.5">
-        <label className="font-semibold text-obsidian-800">Materials Detail</label>
-        <input type="text" name="materialsDetail" value={formFields.materialsDetail} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-      </div>
-      <div className="space-y-1.5">
-        <label className="font-semibold text-obsidian-800">Care Instructions</label>
-        <input type="text" name="careInstructions" value={formFields.careInstructions} onChange={handleFormChange} className="w-full bg-ivory-50 border border-gold-200 rounded-xl p-2.5 focus:outline-none" />
-      </div>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <label className="flex items-center gap-2 cursor-pointer p-3 bg-ivory-50 border border-gold-200 rounded-xl">
@@ -151,7 +107,6 @@ export const AdminDashboard: React.FC = () => {
   const {
     products,
     orders,
-    categories,
     addProduct,
     editProduct,
     deleteProduct,
@@ -178,13 +133,7 @@ export const AdminDashboard: React.FC = () => {
     name: '',
     price: 0,
     originalPrice: 0,
-    category: 'All Collections' as Product['category'],
-    material: 'Oxidized Silver' as Product['material'],
-    occasion: 'Festive' as Product['occasion'],
     description: '',
-    materialsDetail: '',
-    careInstructions: '',
-    stock: 10,
     images: [''],
     isBestSeller: false,
     isNewArrival: false
@@ -267,32 +216,20 @@ export const AdminDashboard: React.FC = () => {
         totalOrders: dashboardStats.totalOrders,
         totalRevenue: dashboardStats.totalRevenue,
         totalCustomers: dashboardStats.totalCustomers,
-        lowStock: dashboardStats.lowStockCount,
       };
     }
-    // Fallback to local state while loading
     return {
       totalOrders: paidOrders.length,
       totalRevenue: paidOrders.reduce((sum, o) => sum + o.total, 0),
       totalCustomers: new Set(paidOrders.map(o => o.shippingAddress.fullName)).size,
-      lowStock: products.filter(p => p.stock < 10).length,
     };
   }, [dashboardStats, paidOrders, products]);
-
-  // Always restrict the dropdown to exactly these two categories
-  const ALLOWED_CATEGORIES = ['All Collections'] as const;
-  const validCategories = ALLOWED_CATEGORIES.map(name => {
-    const found = categories.find(c => c.name === name);
-    return found ?? { id: 0, name, slug: name.toLowerCase().replace(/\s+/g, '-') };
-  });
 
   const filteredProducts = useMemo(() => {
     if (!productSearch.trim()) return products;
     const q = productSearch.toLowerCase();
     return products.filter(p =>
-      p.name.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q) ||
-      p.material.toLowerCase().includes(q)
+      p.name.toLowerCase().includes(q)
     );
   }, [products, productSearch]);
 
@@ -312,13 +249,7 @@ export const AdminDashboard: React.FC = () => {
       name: prod.name,
       price: prod.price,
       originalPrice: prod.originalPrice || 0,
-      category: prod.category,
-      material: prod.material,
-      occasion: prod.occasion,
       description: prod.description,
-      materialsDetail: prod.materialsDetail,
-      careInstructions: prod.careInstructions,
-      stock: prod.stock,
       images: [...prod.images],
       isBestSeller: !!prod.isBestSeller,
       isNewArrival: !!prod.isNewArrival
@@ -327,18 +258,11 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const openAddModal = () => {
-    const defaultCategory = 'All Collections';
     setFormFields({
       name: '',
       price: 1500,
       originalPrice: 2000,
-      category: defaultCategory as Product['category'],
-      material: 'Oxidized Silver',
-      occasion: 'Festive',
       description: 'Handcrafted luxury traditional ornament for special occasions.',
-      materialsDetail: 'Premium base alloy layered with high-micron plating.',
-      careInstructions: 'Avoid direct contact with water, sprays, and perfumes.',
-      stock: 15,
       images: ['/placeholder.png'],
       isBestSeller: false,
       isNewArrival: false
@@ -353,7 +277,7 @@ export const AdminDashboard: React.FC = () => {
     
     setFormFields(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'originalPrice' || name === 'stock' ? Number(value) : value
+      [name]: name === 'price' || name === 'originalPrice' ? Number(value) : value
     }));
   };
 
@@ -405,7 +329,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 mb-10 font-sans">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 font-sans">
         <div className="bg-white border border-gold-200/50 p-5 rounded-2xl shadow-gold shadow-sm flex items-center gap-4">
           <div className="p-3 rounded-xl bg-gold-50 text-gold-600"><IndianRupee size={22} /></div>
           <div>
@@ -434,15 +358,7 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-lg sm:text-xl font-bold text-crimson-950">{visitorCount.toLocaleString()}</span>
           </div>
         </div>
-        <div className="bg-white border border-gold-200/50 p-5 rounded-2xl shadow-gold shadow-sm flex items-center gap-4 col-span-2 md:col-span-1">
-          <div className={`p-3 rounded-xl bg-gold-50 text-gold-600 ${metrics.lowStock > 0 ? 'bg-amber-50 text-amber-600 animate-pulse animate-duration-1000' : ''}`}>
-            <AlertTriangle size={22} />
-          </div>
-          <div>
-            <span className="text-[10px] text-obsidian-400 font-semibold uppercase tracking-wider block">Low Stock Items</span>
-            <span className={`text-lg sm:text-xl font-bold ${metrics.lowStock > 0 ? 'text-amber-600' : 'text-crimson-950'}`}>{metrics.lowStock}</span>
-          </div>
-        </div>
+
       </div>
 
       {/* Navigation Inner Tabs */}
@@ -481,9 +397,7 @@ export const AdminDashboard: React.FC = () => {
                 <thead>
                   <tr className="bg-gold-50/50 border-b border-gold-100 text-gold-700 font-bold uppercase tracking-wider text-[10px]">
                     <th className="p-4 sm:p-5">Product Details</th>
-                    <th className="p-4">Collection</th>
-                    <th className="p-4">Material</th>
-                    <th className="p-4 text-center">Stock</th>
+
                     <th className="p-4">Price</th>
                     <th className="p-4 text-right">Actions</th>
                   </tr>
@@ -498,13 +412,7 @@ export const AdminDashboard: React.FC = () => {
                           <div className="text-[10px] text-obsidian-400 font-mono">#{prod.id}</div>
                         </div>
                       </td>
-                      <td className="p-4 font-semibold text-obsidian-900">{prod.category}</td>
-                      <td className="p-4 text-obsidian-600">{prod.material}</td>
-                      <td className="p-4 text-center">
-                        <span className={`inline-block px-3 py-1 rounded-full font-bold uppercase text-[9px] ${prod.stock === 0 ? 'bg-crimson-50 text-crimson-700 border border-crimson-100' : prod.stock < 10 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'}`}>
-                          {prod.stock === 0 ? 'Out of stock' : `${prod.stock} items`}
-                        </span>
-                      </td>
+
                       <td className="p-4 font-bold text-crimson-950 font-serif text-sm">₹{prod.price.toLocaleString('en-IN')}</td>
                       <td className="p-4 text-right">
                         <div className="flex justify-end gap-2.5">
@@ -515,7 +423,7 @@ export const AdminDashboard: React.FC = () => {
                     </tr>
                   ))}
                   {filteredProducts.length === 0 && (
-                    <tr><td colSpan={6} className="p-8 text-center text-obsidian-400 italic">No products found.</td></tr>
+                    <tr><td colSpan={3} className="p-8 text-center text-obsidian-400 italic">No products found.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -619,11 +527,6 @@ export const AdminDashboard: React.FC = () => {
                                               {item.color && (
                                                 <span className="px-2 py-0.5 rounded text-[9px] bg-slate-50 text-slate-700 font-bold border border-slate-200 uppercase tracking-wider">
                                                   Color: {item.color}
-                                                </span>
-                                              )}
-                                              {item.material && (
-                                                <span className="px-2 py-0.5 rounded text-[9px] bg-amber-50 text-amber-900 font-bold border border-amber-100 uppercase tracking-wider">
-                                                  Material: {item.material}
                                                 </span>
                                               )}
                                             </div>
@@ -752,7 +655,6 @@ export const AdminDashboard: React.FC = () => {
               formFields={formFields} 
               setFormFields={setFormFields} 
               handleFormChange={handleFormChange} 
-              validCategories={validCategories} 
             />
           </div>
         </div>
@@ -771,7 +673,6 @@ export const AdminDashboard: React.FC = () => {
               formFields={formFields} 
               setFormFields={setFormFields} 
               handleFormChange={handleFormChange} 
-              validCategories={validCategories} 
             />
           </div>
         </div>

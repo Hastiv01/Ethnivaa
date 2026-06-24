@@ -76,15 +76,10 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
           {/* Right: Product Details */}
           <div className="flex flex-col justify-between space-y-6">
             <div className="space-y-4">
-              {/* Collection and Category */}
-              <div>
-                <span className="text-xs uppercase tracking-widest text-gold-600 font-bold font-sans">
-                  {product.category} Collection
-                </span>
+
                 <h3 className="font-serif text-2xl font-bold text-obsidian-950 mt-1">
                   {product.name}
                 </h3>
-              </div>
 
               {/* Price */}
               <div className="flex items-baseline gap-3">
@@ -98,38 +93,18 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                 )}
               </div>
 
-              {/* Short details */}
-              <div className="grid grid-cols-2 gap-4 py-3 border-y border-gold-100 text-xs font-sans text-obsidian-800">
-                <div>
-                  <span className="text-obsidian-400 block mb-0.5">Material</span>
-                  <span className="font-semibold">{product.material}</span>
-                </div>
-                <div>
-                  <span className="text-obsidian-400 block mb-0.5">Occasion</span>
-                  <span className="font-semibold">{product.occasion}</span>
-                </div>
-              </div>
+
 
               {/* Description */}
               <p className="text-xs text-obsidian-600 font-light leading-relaxed font-sans line-clamp-3">
                 {product.description}
               </p>
 
-              {/* Stock Status */}
-              <div className="text-xs font-sans">
-                {product.stock === 0 ? (
-                  <span className="text-crimson-600 font-bold">Out of Stock</span>
-                ) : product.stock < 10 ? (
-                  <span className="text-amber-600 font-bold">Hurry! Only {product.stock} left in stock</span>
-                ) : (
-                  <span className="text-emerald-700 font-medium">In Stock</span>
-                )}
-              </div>
+
             </div>
 
             {/* Actions Panel */}
-            {product.stock > 0 && (
-              <div className="space-y-4 pt-4 border-t border-gold-100">
+            <div className="space-y-4 pt-4 border-t border-gold-100">
                 <div className="flex items-center gap-4">
                   {/* Quantity Stepper */}
                   <div className="flex items-center border border-gold-300 rounded-full bg-ivory-50 px-2 py-1 shadow-gold-sm">
@@ -143,7 +118,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                       {quantity}
                     </span>
                     <button
-                      onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
+                      onClick={() => setQuantity(q => q + 1)}
                       className="p-1 text-crimson-950 hover:text-gold-600"
                     >
                       <Plus size={14} />
@@ -186,10 +161,9 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                   <ArrowRight size={14} />
                 </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
     </div>,
     document.body
   );

@@ -14,14 +14,8 @@ export interface Product {
   originalPrice?: number;
   rating: number;
   reviewsCount: number;
-  category: string;
-  material: '22K Gold' | 'Sterling Silver' | 'Gold Plated' | 'Oxidized Silver' | 'Brass';
-  occasion: 'Festive' | 'Bridal' | 'Casual Wear' | 'Party Wear';
   images: string[];
   description: string;
-  materialsDetail: string;
-  careInstructions: string;
-  stock: number;
   reviews: Review[];
   isBestSeller?: boolean;
   isNewArrival?: boolean;
@@ -35,16 +29,10 @@ export const mockProducts: Product[] = [
     originalPrice: 2499,
     rating: 4.8,
     reviewsCount: 124,
-    category: 'All Collections',
-    material: 'Oxidized Silver',
-    occasion: 'Festive',
     images: [
       '/placeholder.png'
     ],
     description: 'This peacock-inspired oxidized silver choker features intricate hand-carved detailing and dangling metal beads. Perfect for pairing with ethnic ghagras and sarees during Garba nights.',
-    materialsDetail: 'Premium grade Oxidized German Silver alloy with synthetic black beads. Lead and nickel free as per international standards.',
-    careInstructions: 'Keep away from moisture, perfumes, and direct heat. Store in the airtight Ethnivaa velvet pouch provided when not in use. Clean gently with a soft dry cotton cloth.',
-    stock: 25,
     isBestSeller: true,
     isNewArrival: false,
     reviews: [
@@ -59,16 +47,10 @@ export const mockProducts: Product[] = [
     originalPrice: 10999,
     rating: 4.9,
     reviewsCount: 88,
-    category: 'All Collections',
-    material: 'Gold Plated',
-    occasion: 'Bridal',
     images: [
       '/placeholder.png'
     ],
     description: 'An absolute masterpiece of traditional craftsmanship. This Royal Kundan Hasli is embellished with high-grade hand-cut glass stones, pearls, and green meenakari work on the reverse side.',
-    materialsDetail: '22K Gold plating over brass base, set with finest Jadau Kundan glass stones, fresh water pearls, and micro-plated red beads.',
-    careInstructions: 'Avoid contact with chemicals, hairsprays, and perfumes. Wipe clean after wearing to remove oils or sweat. Store wrapped in cotton tissue inside a hard box.',
-    stock: 8,
     isBestSeller: true,
     isNewArrival: false,
     reviews: [
@@ -83,16 +65,10 @@ export const mockProducts: Product[] = [
     originalPrice: 15500,
     rating: 4.7,
     reviewsCount: 42,
-    category: 'All Collections',
-    material: '22K Gold',
-    occasion: 'Bridal',
     images: [
       '/placeholder.png'
     ],
     description: 'Handcrafted temple jewelry waistband featuring the divine figure of Goddess Lakshmi seated on a lotus, flanked by dancing peacocks. Adorned with red kemp stones and hanging gold beads.',
-    materialsDetail: 'Handcrafted in copper base with extra-thick 22K antique gold gilding, encrusted with premium pink/red kemp glass stones.',
-    careInstructions: 'Handle with care. Gold plating is premium but delicate. Avoid pulling. Store horizontally in the custom velvet box provided.',
-    stock: 5,
     isBestSeller: false,
     isNewArrival: true,
     reviews: [
@@ -106,16 +82,10 @@ export const mockProducts: Product[] = [
     originalPrice: 1499,
     rating: 4.6,
     reviewsCount: 205,
-    category: 'All Collections',
-    material: 'Oxidized Silver',
-    occasion: 'Casual Wear',
     images: [
       '/placeholder.png'
     ],
     description: 'Timeless crescent moon Chandbalis featuring delicate filigree work, tiny floral motifs, and pearls hanging at the border. Lightweight enough for daily or festive styling.',
-    materialsDetail: '92.5 Sterling Silver plating on copper alloy, oxidized for a rustic, vintage look. Hypoallergenic posts.',
-    careInstructions: 'Clean with a dry polishing cloth. Avoid storage in damp areas like bathrooms. Protect from contact with cosmetic sprays.',
-    stock: 50,
     isBestSeller: true,
     isNewArrival: false,
     reviews: [
@@ -130,16 +100,10 @@ export const mockProducts: Product[] = [
     originalPrice: 8999,
     rating: 4.8,
     reviewsCount: 56,
-    category: 'All Collections',
-    material: 'Gold Plated',
-    occasion: 'Festive',
     images: [
       '/placeholder.png'
     ],
     description: 'A classic heritage necklace from Andhra Pradesh. Guttapusalu literally translates to a shoal of small fish. This piece features clusters of high-quality seed pearls fringe, lined with kemp rubies and emeralds.',
-    materialsDetail: 'High-micron gold-plated brass base, natural seed pearls, synthetic emeralds, and ruby kemp stones.',
-    careInstructions: 'Do not wash or immerse in water. Avoid spraying perfume over the pearl clusters. Wrap in soft cotton fabric.',
-    stock: 12,
     isBestSeller: false,
     isNewArrival: false,
     reviews: [
@@ -153,16 +117,10 @@ export const mockProducts: Product[] = [
     originalPrice: 1999,
     rating: 4.5,
     reviewsCount: 79,
-    category: 'All Collections',
-    material: 'Oxidized Silver',
-    occasion: 'Festive',
     images: [
       '/placeholder.png'
     ],
     description: 'A stack of six rustic oxidized bangles accented with musical ghungroos (jingling metal beads). Adds that cheerful festive chime and rustic bohemian charm to your movement.',
-    materialsDetail: 'Alloy of brass and copper coated in antique oxidized silver. Resilient and slightly adjustable for comfort.',
-    careInstructions: 'Keep in airtight zip locks. Keep away from water to preserve the musical ring of the beads.',
-    stock: 30,
     isBestSeller: false,
     isNewArrival: true,
     reviews: [
@@ -176,16 +134,10 @@ export const mockProducts: Product[] = [
     originalPrice: 22000,
     rating: 5.0,
     reviewsCount: 31,
-    category: 'All Collections',
-    material: '22K Gold',
-    occasion: 'Bridal',
     images: [
       '/placeholder.png'
     ],
     description: 'A heavy bridal pendant intricately depicting Lord Venkateswara of Tirupati, adorned with classical patterns, ruby cabochons, and dangling gold balls. Symbol of devotion and high heritage.',
-    materialsDetail: 'Solid base copper with certified 22K antique gold overlay (3.0 microns thick) and authentic synthetic kemp rubies.',
-    careInstructions: 'Clean only with jewelry specialized cloth. Avoid storing near other metal ornaments to prevent scratches on the lord figure carving.',
-    stock: 3,
     isBestSeller: true,
     isNewArrival: true,
     reviews: [
@@ -199,16 +151,10 @@ export const mockProducts: Product[] = [
     originalPrice: 3499,
     rating: 4.7,
     reviewsCount: 64,
-    category: 'All Collections',
-    material: 'Gold Plated',
-    occasion: 'Bridal',
     images: [
       '/placeholder.png'
     ],
     description: 'Frame your forehead with bridal elegance. This tikka features a classic floral center encrusted with uncut Kundan and framed with pearl drops and red beads, suspended from a pearl-accented chain.',
-    materialsDetail: 'Brass base, 18K gold-plated, premium glass Kundan stones, faux pearls and crystals.',
-    careInstructions: 'Do not apply makeup or hairspray after putting it on. Put it on as the final accessory of your bridal makeup. Wipe off sweat before storing.',
-    stock: 18,
     isBestSeller: false,
     isNewArrival: false,
     reviews: [

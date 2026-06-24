@@ -107,10 +107,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
       {/* Product Information */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div className="space-y-1">
-          {/* Collection Name */}
-          <span className="text-[10px] uppercase tracking-widest text-gold-600 font-bold font-sans">
-            {product.category} Collection
-          </span>
+
           
           {/* Product Name */}
           <h4 className="font-serif text-[15px] font-semibold text-obsidian-950 line-clamp-1 group-hover:text-crimson-900 transition-colors">

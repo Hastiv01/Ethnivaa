@@ -23,7 +23,6 @@ export const ProductDetails: React.FC = () => {
 
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'details' | 'care'>('details');
   const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ display: 'none' });
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
@@ -50,10 +49,9 @@ export const ProductDetails: React.FC = () => {
     );
   }
 
-  // Related products (same category, excluding current product)
   const relatedProducts = useMemo(() => {
     return products
-      .filter(p => p.category === product.category && p.id !== product.id)
+      .filter(p => p.id !== product.id)
       .slice(0, 4);
   }, [products, product]);
 
@@ -163,9 +161,6 @@ export const ProductDetails: React.FC = () => {
           
           {/* Title & Ratings */}
           <div className="space-y-2">
-            <span className="text-xs uppercase tracking-widest text-gold-600 font-bold font-sans">
-              {product.category} Collection
-            </span>
             <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-obsidian-950 leading-tight">
               {product.name}
             </h1>
@@ -206,24 +201,8 @@ export const ProductDetails: React.FC = () => {
             {product.description}
           </p>
 
-          {/* Stock Notification */}
-          <div className="text-xs font-sans">
-            {product.stock === 0 ? (
-              <span className="text-crimson-600 font-bold uppercase tracking-wider">Currently Out of Stock</span>
-            ) : product.stock < 10 ? (
-              <span className="text-amber-600 font-bold bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
-                Hurry! Only {product.stock} items left in stock
-              </span>
-            ) : (
-              <span className="text-emerald-700 font-semibold bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">
-                In Stock & Ready to Ship
-              </span>
-            )}
-          </div>
-
           {/* Quantity Stepper & Cart triggers */}
-          {product.stock > 0 && (
-            <div className="space-y-4 pt-4 border-t border-gold-100">
+          <div className="space-y-4 pt-4 border-t border-gold-100">
               <div className="flex flex-col sm:flex-row items-center gap-4">
                 
                 {/* Stepper */}
@@ -238,7 +217,7 @@ export const ProductDetails: React.FC = () => {
                     {quantity}
                   </span>
                   <button
-                    onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
+                    onClick={() => setQuantity(q => q + 1)}
                     className="p-1.5 text-crimson-950 hover:text-gold-600"
                   >
                     <Plus size={16} />
@@ -277,45 +256,7 @@ export const ProductDetails: React.FC = () => {
 
               </div>
             </div>
-          )}
 
-          {/* Tabbed Info Panel: Specs & Care */}
-          <div className="border border-gold-200/50 rounded-2xl overflow-hidden bg-white shadow-gold shadow-sm mt-8">
-            <div className="flex bg-gold-50/50 border-b border-gold-100">
-              <button
-                onClick={() => setActiveTab('details')}
-                className={`flex-1 py-3 text-xs uppercase font-bold tracking-wider font-sans text-center transition-colors ${
-                  activeTab === 'details' ? 'bg-white text-crimson-950 border-b-2 border-gold-400' : 'text-obsidian-500 hover:text-crimson-900'
-                }`}
-              >
-                Materials & Dimensions
-              </button>
-              <button
-                onClick={() => setActiveTab('care')}
-                className={`flex-1 py-3 text-xs uppercase font-bold tracking-wider font-sans text-center transition-colors ${
-                  activeTab === 'care' ? 'bg-white text-crimson-950 border-b-2 border-gold-400' : 'text-obsidian-500 hover:text-crimson-900'
-                }`}
-              >
-                Care Instructions
-              </button>
-            </div>
-            
-            <div className="p-5 text-xs font-sans text-obsidian-700 font-light leading-relaxed">
-              {activeTab === 'details' ? (
-                <div className="space-y-2">
-                  <p>{product.materialsDetail}</p>
-                  <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gold-100 font-medium">
-                    <div>Collection: <span className="font-light">{product.category} Collection</span></div>
-                    <div>Material: <span className="font-light">{product.material}</span></div>
-                    <div>Occasion: <span className="font-light">{product.occasion}</span></div>
-                    <div>Availability: <span className="font-light">Ready to Ship</span></div>
-                  </div>
-                </div>
-              ) : (
-                <p>{product.careInstructions}</p>
-              )}
-            </div>
-          </div>
 
           {/* Delivery & Security badges */}
           <div className="grid grid-cols-3 gap-2 py-4 text-center font-sans text-[10px] text-obsidian-500 border-t border-gold-100">

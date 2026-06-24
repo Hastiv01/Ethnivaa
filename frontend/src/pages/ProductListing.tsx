@@ -17,11 +17,8 @@ const PRICE_RANGES = [
 export const ProductListing: React.FC = () => {
   const { 
     products, 
-    categories,
     searchQuery, 
-    setSearchQuery,
-    selectedCategoryFilter, 
-    setSelectedCategoryFilter 
+    setSearchQuery
   } = useShop();
 
   const [selectedPriceRange, setSelectedPriceRange] = useState<number>(0); // Index of range
@@ -38,15 +35,11 @@ export const ProductListing: React.FC = () => {
       const q = searchQuery.toLowerCase();
       result = result.filter(p => 
         p.name.toLowerCase().includes(q) || 
-        p.description.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
+        p.description.toLowerCase().includes(q)
       );
     }
 
-    // Category filter
-    if (selectedCategoryFilter) {
-      result = result.filter(p => p.category === selectedCategoryFilter);
-    }
+
 
     // Price range filter
     const range = PRICE_RANGES[selectedPriceRange];
@@ -66,11 +59,11 @@ export const ProductListing: React.FC = () => {
     }
 
     return result;
-  }, [products, searchQuery, selectedCategoryFilter, selectedPriceRange, sortBy]);
+  }, [products, searchQuery, selectedPriceRange, sortBy]);
 
   const handleResetFilters = () => {
     setSearchQuery('');
-    setSelectedCategoryFilter(null);
+
     setSelectedPriceRange(0);
     setSortBy('popular');
   };
@@ -80,7 +73,7 @@ export const ProductListing: React.FC = () => {
       {/* Page Title & Breadcrumbs */}
       <div className="text-center space-y-2 mb-10">
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-crimson-950 uppercase tracking-wide">
-          {selectedCategoryFilter ? `${selectedCategoryFilter} Collection` : 'All Treasures'}
+          All Treasures
         </h1>
         <p className="text-xs text-obsidian-600 font-sans font-light">
           {filteredProducts.length} unique masterpieces discovered
@@ -107,33 +100,7 @@ export const ProductListing: React.FC = () => {
             </button>
           </div>
 
-          {/* Filter: Category */}
-          <div className="space-y-2.5">
-            <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
-              Collection
-            </span>
-            <div className="flex flex-col space-y-1.5 font-sans text-xs">
-              <button
-                onClick={() => setSelectedCategoryFilter(null)}
-                className={`text-left py-1 hover:text-crimson-900 transition-colors ${
-                  !selectedCategoryFilter ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
-                }`}
-              >
-                All Collections
-              </button>
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategoryFilter(cat.name)}
-                  className={`text-left py-1 hover:text-crimson-900 transition-colors ${
-                    selectedCategoryFilter === cat.name ? 'font-bold text-crimson-900 pl-2 border-l-2 border-gold-400' : 'text-obsidian-700'
-                  }`}
-                >
-                  {cat.name} Collection
-                </button>
-              ))}
-            </div>
-          </div>
+
 
           {/* Filter: Price Range */}
           <div className="space-y-2.5 pt-4 border-t border-gold-100">
@@ -171,14 +138,7 @@ export const ProductListing: React.FC = () => {
                   </button>
                 </span>
               )}
-              {selectedCategoryFilter && (
-                <span className="bg-gold-50 text-crimson-950 text-xs px-3.5 py-1.5 rounded-full border border-gold-200 flex items-center gap-1.5 font-sans font-medium">
-                  <span>Collection: {selectedCategoryFilter}</span>
-                  <button onClick={() => setSelectedCategoryFilter(null)} className="hover:text-crimson-600">
-                    <X size={12} />
-                  </button>
-                </span>
-              )}
+
             </div>
 
             {/* Mobile Filters and Sorting Control */}
@@ -268,37 +228,7 @@ export const ProductListing: React.FC = () => {
               {/* Scrollable Filters Content */}
               <div className="space-y-6 py-6 overflow-y-auto max-h-[75vh] custom-scrollbar">
                 
-                {/* Collection filter */}
-                <div className="space-y-2.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gold-600 font-sans block">
-                    Collection
-                  </span>
-                  <div className="flex flex-wrap gap-2 text-xs font-sans">
-                    <button
-                      onClick={() => setSelectedCategoryFilter(null)}
-                      className={`px-3 py-1.5 rounded-full border transition-all ${
-                        !selectedCategoryFilter 
-                          ? 'bg-crimson-950 text-gold-100 border-crimson-950' 
-                          : 'bg-white border-gold-300 text-obsidian-800'
-                      }`}
-                    >
-                      All
-                    </button>
-                    {categories.map(cat => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setSelectedCategoryFilter(cat.name)}
-                        className={`px-3 py-1.5 rounded-full border transition-all ${
-                          selectedCategoryFilter === cat.name 
-                            ? 'bg-crimson-950 text-gold-100 border-crimson-950' 
-                            : 'bg-white border-gold-300 text-obsidian-800'
-                        }`}
-                      >
-                        {cat.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+
 
                 {/* Price Filter */}
                 <div className="space-y-2.5 border-t border-gold-100 pt-4">

@@ -41,7 +41,6 @@ export interface Order {
     image: string;
     quantity: number;
     color?: string;
-    material?: string;
   }[];
   shippingAddress: ShippingAddress;
   paymentMethod: string;
@@ -94,7 +93,7 @@ interface ShopContextType {
 
   // Products state (supports Admin CRUD)
   products: Product[];
-  categories: { id: number; name: string; slug: string }[];
+
   addProduct: (product: Omit<Product, 'id' | 'rating' | 'reviewsCount' | 'reviews'>) => void;
   editProduct: (id: string, updatedFields: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
@@ -249,8 +248,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [searchQuery, setSearchQueryState] = useState<string>('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
 
-  // Categories list from database
-  const [categories, setCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
+
 
   // Load initial products (will be hydrated from backend on load)
   const [products, setProducts] = useState<Product[]>(() => {
@@ -367,14 +365,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         price: 0,
         rating: 5.0,
         reviewsCount: 0,
-        category: 'All Collections',
-        material: 'Oxidized Silver',
-        occasion: 'Festive',
         images: ['/placeholder.png'],
         description: 'This product is no longer available.',
-        materialsDetail: '',
-        careInstructions: '',
-        stock: 0,
         reviews: []
       };
     }
@@ -401,14 +393,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       originalPrice: p.originalPrice ? Number(p.originalPrice) : undefined,
       rating: Number(p.rating) || 5.0,
       reviewsCount: Number(p.reviewsCount) || 0,
-      category: p.Category?.name || p.category || 'All Collections',
-      material: p.material || 'Oxidized Silver',
-      occasion: p.occasion || 'Festive',
       images: imagesArr.length > 0 ? imagesArr : ['/placeholder.png'],
       description: p.description || '',
-      materialsDetail: p.materialsDetail || '',
-      careInstructions: p.careInstructions || '',
-      stock: Number(p.inventory) || 0,
       reviews: Array.isArray(p.Reviews) ? p.Reviews.map((r: any) => ({
         id: String(r.id),
         userName: r.User?.name || 'Customer',
@@ -476,12 +462,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadBackendData = async () => {
     try {
-      // Load categories
-      const catRes = await fetch('/api/products/categories');
-      if (catRes.ok) {
-        const catData = await catRes.json();
-        setCategories(catData.categories || []);
-      }
+
 
       // Check product cache before fetching
       const cacheRaw = localStorage.getItem(PRODUCTS_CACHE_KEY);
@@ -544,8 +525,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
               price: Number(item.unitPrice) || 0,
               image: item.Product?.image || '/placeholder.png',
               quantity: Number(item.quantity) || 1,
-              color: item.Product?.color || '',
-              material: item.Product?.material || ''
+              color: item.Product?.color || ''
             }));
             const addr = o.Address || {};
             return {
@@ -761,30 +741,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Admin CRUD Operations
   const addProduct = async (newProd: Omit<Product, 'id' | 'rating' | 'reviewsCount' | 'reviews'>) => {
     try {
-      // Find category from DB list first
-      let categoryObj = categories.find(
-        c => c.name.toLowerCase() === newProd.category.toLowerCase()
-      );
 
-      // If not found in loaded list, try to fetch fresh categories from backend
-      if (!categoryObj) {
-        try {
-          const catRes = await fetch('/api/products/categories');
-          if (catRes.ok) {
-            const catData = await catRes.json();
-            const freshCats: { id: number; name: string; slug: string }[] = catData.categories || [];
-            setCategories(freshCats);
-            categoryObj = freshCats.find(
-              c => c.name.toLowerCase() === newProd.category.toLowerCase()
-            );
-          }
-        } catch (_) { /* ignore */ }
-      }
-
-      if (!categoryObj) {
-        alert(`Category "${newProd.category}" does not exist in the database yet.\n\nPlease run the backend seed script first:\n  npm run seed\n\nOr ask your admin to create this category in the database.`);
-        return;
-      }
 
       const response = await fetch('/api/admin/products', {
         method: 'POST',
@@ -797,13 +754,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: newProd.description,
           price: newProd.price,
           originalPrice: newProd.originalPrice,
-          material: newProd.material,
-          occasion: newProd.occasion,
           images: newProd.images,
-          materialsDetail: newProd.materialsDetail,
-          careInstructions: newProd.careInstructions,
-          stock: newProd.stock,
-          categoryId: categoryObj.id,
           isBestSeller: newProd.isBestSeller,
           isNewArrival: newProd.isNewArrival
         })
@@ -838,22 +789,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const categoryObj = updatedFields.category 
-        ? (categories.find(c => c.name.toLowerCase() === updatedFields.category?.toLowerCase()) || categories[0])
-        : undefined;
-
       const body: any = {};
       if (updatedFields.name !== undefined) body.title = updatedFields.name;
       if (updatedFields.description !== undefined) body.description = updatedFields.description;
       if (updatedFields.price !== undefined) body.price = updatedFields.price;
       if (updatedFields.originalPrice !== undefined) body.originalPrice = updatedFields.originalPrice;
-      if (updatedFields.material !== undefined) body.material = updatedFields.material;
-      if (updatedFields.occasion !== undefined) body.occasion = updatedFields.occasion;
       if (updatedFields.images !== undefined) body.images = updatedFields.images;
-      if (updatedFields.materialsDetail !== undefined) body.materialsDetail = updatedFields.materialsDetail;
-      if (updatedFields.careInstructions !== undefined) body.careInstructions = updatedFields.careInstructions;
-      if (updatedFields.stock !== undefined) body.stock = updatedFields.stock;
-      if (categoryObj) body.categoryId = categoryObj.id;
       if (updatedFields.isBestSeller !== undefined) body.isBestSeller = updatedFields.isBestSeller;
       if (updatedFields.isNewArrival !== undefined) body.isNewArrival = updatedFields.isNewArrival;
 
@@ -1455,7 +1396,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       selectedCategoryFilter,
       setSelectedCategoryFilter,
       products,
-      categories,
       addProduct,
       editProduct,
       deleteProduct,

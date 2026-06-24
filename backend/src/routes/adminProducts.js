@@ -1,5 +1,5 @@
 const express = require('express');
-const { Product, Category } = require('../models');
+const { Product } = require('../models');
 const { authenticate, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -7,17 +7,11 @@ const router = express.Router();
 router.use(authenticate);
 router.use(requireRole('ADMIN'));
 
-const productInclude = [
-  {
-    model: Category,
-    attributes: ['id', 'name', 'slug'],
-  },
-];
+
 
 router.get('/', async (req, res) => {
   try {
     const products = await Product.findAll({
-      include: productInclude,
       order: [['createdAt', 'DESC']],
     });
 
@@ -36,28 +30,17 @@ router.post('/', async (req, res) => {
       discountPrice,
       color,
       image,
-      inventory,
-      stock,
-      categoryId,
+
       originalPrice,
-      material,
-      occasion,
       images,
-      materialsDetail,
-      careInstructions,
       isBestSeller,
       isNewArrival,
       rating,
       reviewsCount,
     } = req.body;
 
-    if (!title || !description || price == null || !categoryId) {
-      return res.status(400).json({ message: 'title, description, price, and categoryId are required' });
-    }
-
-    const category = await Category.findByPk(categoryId);
-    if (!category) {
-      return res.status(400).json({ message: 'Invalid categoryId' });
+    if (!title || !description || price == null) {
+      return res.status(400).json({ message: 'title, description, and price are required' });
     }
 
     const product = await Product.create({
@@ -67,21 +50,14 @@ router.post('/', async (req, res) => {
       discountPrice: discountPrice ?? null,
       color: color ?? null,
       image: image ?? (images && images.length > 0 ? images[0] : null),
-      inventory: inventory ?? stock ?? 0,
-      categoryId: categoryId,
-      originalPrice: originalPrice ?? null,
-      material: material ?? null,
-      occasion: occasion ?? null,
-      images: images ?? (image ? [image] : []),
-      materialsDetail: materialsDetail ?? null,
-      careInstructions: careInstructions ?? null,
+
       isBestSeller: isBestSeller ?? false,
       isNewArrival: isNewArrival ?? false,
       rating: rating ?? 5.0,
       reviewsCount: reviewsCount ?? 0,
     });
 
-    const createdProduct = await Product.findByPk(product.id, { include: productInclude });
+    const createdProduct = await Product.findByPk(product.id);
 
     return res.status(201).json({ product: createdProduct });
   } catch (error) {
@@ -104,27 +80,16 @@ router.put('/:id', async (req, res) => {
       discountPrice,
       color,
       image,
-      inventory,
-      stock,
-      categoryId,
+
       originalPrice,
-      material,
-      occasion,
       images,
-      materialsDetail,
-      careInstructions,
       isBestSeller,
       isNewArrival,
       rating,
       reviewsCount,
     } = req.body;
 
-    if (categoryId) {
-      const category = await Category.findByPk(categoryId);
-      if (!category) {
-        return res.status(400).json({ message: 'Invalid categoryId' });
-      }
-    }
+
 
     await product.update({
       title: title ?? product.title,
@@ -133,21 +98,14 @@ router.put('/:id', async (req, res) => {
       discountPrice: discountPrice ?? product.discountPrice,
       color: color ?? product.color,
       image: image ?? (images && images.length > 0 ? images[0] : product.image),
-      inventory: inventory ?? stock ?? product.inventory,
-      categoryId: categoryId ?? product.categoryId,
-      originalPrice: originalPrice ?? product.originalPrice,
-      material: material ?? product.material,
-      occasion: occasion ?? product.occasion,
-      images: images ?? product.images,
-      materialsDetail: materialsDetail ?? product.materialsDetail,
-      careInstructions: careInstructions ?? product.careInstructions,
+
       isBestSeller: isBestSeller ?? product.isBestSeller,
       isNewArrival: isNewArrival ?? product.isNewArrival,
       rating: rating ?? product.rating,
       reviewsCount: reviewsCount ?? product.reviewsCount,
     });
 
-    const updatedProduct = await Product.findByPk(product.id, { include: productInclude });
+    const updatedProduct = await Product.findByPk(product.id);
 
     return res.json({ product: updatedProduct });
   } catch (error) {

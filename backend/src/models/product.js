@@ -29,34 +29,17 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    inventory: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
+
     originalPrice: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
-    material: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    occasion: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+
     images: {
       type: DataTypes.JSON,
       allowNull: true,
     },
-    materialsDetail: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    careInstructions: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
+
     isBestSeller: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -75,7 +58,6 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     indexes: [
-      { fields: ['category_id'] },
       { fields: ['is_best_seller'] },
       { fields: ['is_new_arrival'] },
       { fields: ['created_at'] }

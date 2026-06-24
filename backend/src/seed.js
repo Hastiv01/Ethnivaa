@@ -1,6 +1,6 @@
 require('dotenv').config();
 const bcrypt = require('bcrypt');
-const { sequelize, User, Category, Product, Address } = require('./models');
+const { sequelize, User, Product, Address } = require('./models');
 
 async function seed() {
   await sequelize.authenticate();
@@ -33,37 +33,7 @@ async function seed() {
     await adminUser.update({ emailVerifiedAt: new Date() });
   }
 
-  // STEP 1: Upsert the correct current categories first
-  const categories = [
-    { name: 'All Collections', slug: 'all-collections', description: 'All jewelry pieces' },
-  ];
 
-  for (const categoryData of categories) {
-    const [cat, created] = await Category.findOrCreate({
-      where: { slug: categoryData.slug },
-      defaults: categoryData,
-    });
-    if (!created && cat.name !== categoryData.name) {
-      await cat.update({ name: categoryData.name, description: categoryData.description });
-      console.log(`Updated category: ${categoryData.slug}`);
-    }
-  }
-
-  // STEP 2: Now safely remove stale old categories
-  const fallbackCat = await Category.findOne({ where: { slug: 'all-collections' } });
-  for (const slug of ['traditional-jewellery-sets', 'combo-sets', 'earrings', 'hair-accessories', 'necklaces', 'men', 'women', 'accessories', 'bangles']) {
-    const old = await Category.findOne({ where: { slug } });
-    if (old) {
-      if (fallbackCat) {
-        const moved = await Product.update({ categoryId: fallbackCat.id }, { where: { categoryId: old.id } });
-        console.log(`Reassigned ${moved[0]} product(s) from ${slug} → all-collections`);
-      }
-      await old.destroy({ force: true });
-      console.log(`Removed stale category: ${slug}`);
-    }
-  }
-
-  const allCollectionsCat = await Category.findOne({ where: { slug: 'all-collections' } });
 
   await Product.findOrCreate({
     where: { title: 'Mayur Pankh Oxidized Choker Set' },
@@ -79,16 +49,7 @@ async function seed() {
         'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&auto=format&fit=crop&q=80'
       ],
-      inventory: 25,
-      material: 'Oxidized Silver',
-      occasion: 'Festive',
-      materialsDetail: 'Premium grade Oxidized German Silver alloy with synthetic black beads. Lead and nickel free as per international standards.',
-      careInstructions: 'Keep away from moisture, perfumes, and direct heat. Store in the airtight Ethnivaa velvet pouch when not in use.',
-      isBestSeller: true,
-      isNewArrival: false,
-      rating: 4.8,
       reviewsCount: 2,
-      categoryId: allCollectionsCat.id,
     },
   });
 
@@ -105,16 +66,7 @@ async function seed() {
         'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=800&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=800&auto=format&fit=crop&q=80'
       ],
-      inventory: 8,
-      material: 'Gold Plated',
-      occasion: 'Bridal',
-      materialsDetail: '22K Gold plating over brass base, set with finest Jadau Kundan glass stones, fresh water pearls.',
-      careInstructions: 'Avoid contact with chemicals and perfumes. Wipe clean after wearing to remove oils or sweat.',
-      isBestSeller: true,
-      isNewArrival: false,
-      rating: 4.9,
       reviewsCount: 2,
-      categoryId: allCollectionsCat.id,
     },
   });
 
@@ -131,16 +83,7 @@ async function seed() {
         'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=800&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&auto=format&fit=crop&q=80'
       ],
-      inventory: 50,
-      material: 'Oxidized Silver',
-      occasion: 'Casual Wear',
-      materialsDetail: '92.5 Sterling Silver plating on copper alloy, oxidized for a rustic, vintage look.',
-      careInstructions: 'Clean with a dry polishing cloth. Avoid storage in damp areas like bathrooms.',
-      isBestSeller: true,
-      isNewArrival: false,
-      rating: 4.6,
       reviewsCount: 2,
-      categoryId: allCollectionsCat.id,
     },
   });
 

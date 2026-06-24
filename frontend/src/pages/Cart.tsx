@@ -98,9 +98,7 @@ export const Cart: React.FC = () => {
 
               {/* Product Info */}
               <div className="flex-1 min-w-0 space-y-1">
-                <span className="text-[9px] uppercase tracking-widest text-gold-600 font-bold font-sans">
-                  {item.product.category}
-                </span>
+
                 
                 <h3 
                   onClick={() => navigateTo('details', item.product.id)}
@@ -109,9 +107,7 @@ export const Cart: React.FC = () => {
                   {item.product.name}
                 </h3>
                 
-                <span className="text-xs text-obsidian-500 font-sans block">
-                  Material: {item.product.material}
-                </span>
+
 
                 {/* Subtotal on Mobile */}
                 <div className="flex items-center justify-between sm:hidden pt-2">
