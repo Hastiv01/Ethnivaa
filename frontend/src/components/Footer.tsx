@@ -1,20 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useShop } from '../context/ShopContext';
 import { Mail, Phone, MapPin, ShieldAlert, Sparkles } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const { navigateTo, currentUserRole, visitorCount } = useShop();
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setEmail('');
-      setTimeout(() => setSubscribed(false), 5000);
-    }
-  };
 
   return (
     <footer className="bg-obsidian-950 text-ivory-300 font-sans border-t border-gold-950 pt-16 pb-8">
@@ -57,33 +46,26 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Legal */}
           <div className="space-y-6">
-            <h3 className="font-serif text-lg text-gold-400 font-semibold tracking-wider">Newsletter</h3>
-            <p className="text-sm font-light text-ivory-400">
-              Subscribe to receive updates on new arrivals, royal collection launches, and exclusive heritage stories.
-            </p>
-            <form onSubmit={handleSubscribe} className="space-y-3">
-              <div className="relative">
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your royal email..."
-                  className="w-full bg-obsidian-900 border border-gold-900 text-ivory-200 placeholder-ivory-600 text-xs rounded-full py-2.5 pl-4 pr-10 focus:outline-none focus:border-gold-400 font-sans"
-                />
-                <button type="submit" className="absolute right-3 top-2.5 text-gold-400 hover:text-gold-100">
-                  <Mail size={16} />
+            <h3 className="font-serif text-lg text-gold-400 font-semibold tracking-wider">Legal</h3>
+            <ul className="space-y-3 text-sm font-light text-ivory-400">
+              <li>
+                <button onClick={() => navigateTo('terms')} className="hover:text-gold-300 transition-colors duration-200">
+                  Terms & Conditions
                 </button>
-              </div>
-              {subscribed && (
-                <p className="text-[11px] text-gold-300 font-medium flex items-center gap-1.5 animate-fadeIn">
-                  <Sparkles size={12} />
-                  <span>Subscription confirmed. Thank you!</span>
-                </p>
-              )}
-            </form>
+              </li>
+              <li>
+                <button onClick={() => navigateTo('privacy')} className="hover:text-gold-300 transition-colors duration-200">
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo('returns')} className="hover:text-gold-300 transition-colors duration-200">
+                  Return & Refund Policy
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -122,9 +104,6 @@ export const Footer: React.FC = () => {
             )}
             
             <div className="flex gap-4 text-xs text-ivory-600">
-              <a href="#" className="hover:text-gold-400" onClick={(e) => { e.preventDefault(); navigateTo('terms'); }}>Terms & Conditions</a>
-              <a href="#" className="hover:text-gold-400" onClick={(e) => { e.preventDefault(); navigateTo('privacy'); }}>Privacy Policy</a>
-              <a href="#" className="hover:text-gold-400" onClick={(e) => { e.preventDefault(); navigateTo('returns'); }}>Return & Refund Policy</a>
             </div>
           </div>
         </div>
