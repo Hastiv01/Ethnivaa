@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-obsidian-950 text-ivory-300 font-sans border-t border-gold-950 pt-10 pb-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           
           {/* Brand Info */}
           <div className="space-y-4">
@@ -67,25 +67,29 @@ export const Footer: React.FC = () => {
               </li>
             </ul>
           </div>
-        </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gold-950/40 pt-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col md:flex-row items-center gap-4">
-            <p className="text-[10px] text-ivory-600 font-light">
-              &copy; {new Date().getFullYear()} Ethnivaa Jewelry. All Rights Reserved.
-            </p>
-            
-            {/* Elegant Patron Counter Badge */}
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-obsidian-900 border border-gold-900/40 shadow-inner">
+          {/* Patrons */}
+          <div className="space-y-4">
+            <h3 className="font-serif text-base text-gold-400 font-semibold tracking-wider">Patrons</h3>
+            <p className="text-xs font-light text-ivory-400">Join our growing community of jewelry connoisseurs.</p>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-obsidian-900 border border-gold-900/40 shadow-inner">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gold-500"></span>
               </span>
-              <span className="text-[9px] uppercase tracking-[0.15em] text-gold-500/80 font-sans font-medium">
-                {visitorCount.toLocaleString()} Patrons
+              <span className="text-[10px] uppercase tracking-[0.15em] text-gold-500/80 font-sans font-medium">
+                {visitorCount.toLocaleString()} Welcomed
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-gold-950/40 pt-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center">
+            <p className="text-[10px] text-ivory-600 font-light">
+              &copy; {new Date().getFullYear()} Ethnivaa Jewelry. All Rights Reserved.
+            </p>
           </div>
           
           <div className="flex items-center gap-6">
