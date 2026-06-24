@@ -88,8 +88,8 @@ export const Navbar: React.FC = () => {
             ))}
           </nav>
 
-          {/* Brand Logo Centered */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex justify-center">
+          {/* Brand Logo */}
+          <div className="flex-1 md:flex-none flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2">
             <button 
               onClick={() => navigateTo('home')} 
               className="flex flex-col items-center group cursor-pointer focus:outline-none"

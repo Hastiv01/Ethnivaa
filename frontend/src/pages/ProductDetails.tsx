@@ -166,19 +166,23 @@ export const ProductDetails: React.FC = () => {
             </h1>
             
             {/* Rating Stars Summary */}
-            <div className="flex items-center gap-2 font-sans text-xs">
+            <button 
+              onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}
+              className="group flex items-center gap-2 font-sans text-xs transition-opacity hover:opacity-80 focus:outline-none"
+              title="Click to read all reviews"
+            >
               <div className="flex text-gold-400">
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
                     size={16} 
-                    className={`${i < Math.round(product.rating) ? 'fill-gold-400 text-gold-400' : 'text-gold-200'}`} 
+                    className={`transition-transform duration-300 group-hover:scale-110 ${i < Math.round(product.rating) ? 'fill-gold-400 text-gold-400' : 'text-gold-200'}`} 
                   />
                 ))}
               </div>
               <span className="font-bold text-obsidian-900">{product.rating} / 5.0</span>
-              <span className="text-obsidian-400">({product.reviewsCount} customer reviews)</span>
-            </div>
+              <span className="text-obsidian-400 group-hover:text-gold-600 transition-colors border-b border-transparent group-hover:border-gold-600 pb-0.5">({product.reviewsCount} customer reviews)</span>
+            </button>
           </div>
 
           {/* Pricing */}
@@ -288,7 +292,7 @@ export const ProductDetails: React.FC = () => {
       </div>
 
       {/* Reviews Section */}
-      <section className="border-t border-gold-200/50 pt-12 mb-16">
+      <section id="reviews" className="border-t border-gold-200/50 pt-12 mb-16 scroll-mt-24">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           
           {/* Column 1: Ratings overview & Add Review form */}

@@ -59,7 +59,7 @@ export const Home: React.FC = () => {
                 <span className="text-xs sm:text-sm uppercase tracking-[0.3em] text-gold-300 font-semibold mb-2 block">
                   {col.tag}
                 </span>
-                <h3 className="font-serif text-3xl sm:text-5xl font-bold group-hover:text-gold-300 transition-colors">
+                <h3 className="font-serif text-2xl sm:text-5xl font-bold group-hover:text-gold-300 transition-colors">
                   {col.name}
                 </h3>
                 <span className="mt-4 text-sm sm:text-base font-semibold text-gold-400 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">

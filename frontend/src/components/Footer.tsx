@@ -72,12 +72,12 @@ export const Footer: React.FC = () => {
           <div className="space-y-4">
             <h3 className="font-serif text-base text-gold-400 font-semibold tracking-wider">Patrons</h3>
             <p className="text-xs font-light text-ivory-400">Join our growing community of jewelry connoisseurs.</p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-obsidian-900 border border-gold-900/40 shadow-inner">
-              <span className="relative flex h-1.5 w-1.5">
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-obsidian-800/80 border border-gold-700/50 shadow-md">
+              <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gold-500"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-400"></span>
               </span>
-              <span className="text-[10px] uppercase tracking-[0.15em] text-gold-500/80 font-sans font-medium">
+              <span className="text-xs uppercase tracking-[0.15em] text-gold-300 font-sans font-bold">
                 {visitorCount.toLocaleString()} Welcomed
               </span>
             </div>
