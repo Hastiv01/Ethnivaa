@@ -28,6 +28,7 @@ type AuthResult = {
   success: boolean;
   message: string;
   signupToken?: string;
+  resetToken?: string;
 };
 
 export interface Order {
