@@ -96,6 +96,7 @@ export const Checkout: React.FC = () => {
     pincode: profile.savedAddresses[0]?.pincode || '',
   });
 
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const paymentMethod = 'Prepaid / Online';
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(() => {
     return localStorage.getItem('ethnivaa_pending_order_id');
@@ -185,6 +186,11 @@ export const Checkout: React.FC = () => {
   // ── Main flow ──────────────────────────────────────────────────────────────
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreeTerms) {
+      setStage('error');
+      setErrorMessage('You must agree to the Terms & Conditions and Privacy Policy to proceed.');
+      return;
+    }
     setStage('creating');
     setErrorMessage(null);
 
@@ -285,6 +291,11 @@ export const Checkout: React.FC = () => {
   };
 
   const handleRetryPayment = async () => {
+    if (!agreeTerms) {
+      setStage('error');
+      setErrorMessage('You must agree to the Terms & Conditions and Privacy Policy to proceed.');
+      return;
+    }
     if (!rzpOptions || !pendingOrderId) return;
     setStage('rzp_open');
     setErrorMessage(null);
@@ -671,6 +682,26 @@ export const Checkout: React.FC = () => {
                 <span className="font-medium">Razorpay payment window is open — do not refresh this page.</span>
               </div>
             )}
+
+            <div className="flex items-start gap-2.5 py-1">
+              <input
+                id="agree-checkout-terms"
+                type="checkbox"
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+                className="mt-1 h-3.5 w-3.5 rounded border-gold-300 text-crimson-950 focus:ring-crimson-900 cursor-pointer"
+              />
+              <label htmlFor="agree-checkout-terms" className="text-[11px] text-obsidian-600 font-light leading-normal cursor-pointer select-none">
+                I agree to the{' '}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-bold text-crimson-900 hover:text-gold-600 underline">
+                  Terms & Conditions
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-bold text-crimson-900 hover:text-gold-600 underline">
+                  Privacy Policy
+                </a>.
+              </label>
+            </div>
 
             {/* ── Proceed to Pay / Retry Payment button ── */}
             {pendingOrderId ? (

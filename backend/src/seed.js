@@ -1,6 +1,6 @@
 require('dotenv').config();
 const bcrypt = require('bcrypt');
-const { sequelize, User, Product, Address } = require('./models');
+const { sequelize, User, Category, Product, Address } = require('./models');
 
 async function seed() {
   await sequelize.authenticate();
@@ -33,11 +33,19 @@ async function seed() {
     await adminUser.update({ emailVerifiedAt: new Date() });
   }
 
-
+  const [defaultCategory] = await Category.findOrCreate({
+    where: { slug: 'heritage-collection' },
+    defaults: {
+      name: 'Heritage Collection',
+      slug: 'heritage-collection',
+      description: 'Traditional Indian heritage jewelry boutique',
+    },
+  });
 
   await Product.findOrCreate({
     where: { title: 'Mayur Pankh Oxidized Choker Set' },
     defaults: {
+      categoryId: defaultCategory.id,
       title: 'Mayur Pankh Oxidized Choker Set',
       description: 'This peacock-inspired oxidized silver choker features intricate hand-carved detailing and dangling metal beads. Perfect for pairing with ethnic ghagras and sarees during Garba nights.',
       price: 1899,
@@ -56,6 +64,7 @@ async function seed() {
   await Product.findOrCreate({
     where: { title: 'Royal Kundan Hasli Necklace Set' },
     defaults: {
+      categoryId: defaultCategory.id,
       title: 'Royal Kundan Hasli Necklace Set',
       description: 'An absolute masterpiece of traditional craftsmanship. This Royal Kundan Hasli is embellished with high-grade hand-cut glass stones, pearls, and green meenakari work on the reverse side.',
       price: 8499,
@@ -73,6 +82,7 @@ async function seed() {
   await Product.findOrCreate({
     where: { title: 'Antique Oxidized Chandbali Earrings' },
     defaults: {
+      categoryId: defaultCategory.id,
       title: 'Antique Oxidized Chandbali Earrings',
       description: 'Timeless crescent moon Chandbalis featuring delicate filigree work, tiny floral motifs, and pearls hanging at the border. Lightweight enough for daily or festive styling.',
       price: 999,

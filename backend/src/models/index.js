@@ -11,6 +11,7 @@ const OrderItemFactory = require('./orderItem');
 const ReviewFactory = require('./review');
 const AddressFactory = require('./address');
 const SignupChallengeFactory = require('./signupChallenge');
+const PasswordResetChallengeFactory = require('./passwordResetChallenge');
 const VisitorCountFactory = require('./visitorCount');
 
 const User = UserFactory(sequelize, DataTypes);
@@ -23,6 +24,7 @@ const OrderItem = OrderItemFactory(sequelize, DataTypes);
 const Review = ReviewFactory(sequelize, DataTypes);
 const Address = AddressFactory(sequelize, DataTypes);
 const SignupChallenge = SignupChallengeFactory(sequelize, DataTypes);
+const PasswordResetChallenge = PasswordResetChallengeFactory(sequelize, DataTypes);
 const VisitorCount = VisitorCountFactory(sequelize, DataTypes);
 
 User.hasMany(Address, { foreignKey: { name: 'userId', allowNull: false }, onDelete: 'RESTRICT' });
@@ -62,6 +64,7 @@ module.exports = {
   sequelize,
   User,
   SignupChallenge,
+  PasswordResetChallenge,
   Category,
   Product,
   Cart,

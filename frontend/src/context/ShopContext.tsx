@@ -155,6 +155,9 @@ interface ShopContextType {
   completeSignup: (signupToken: string, password: string) => Promise<AuthResult>;
   googleSignIn: (idToken: string) => Promise<AuthResult>;
   logout: () => void;
+  startPasswordReset: (email: string) => Promise<AuthResult>;
+  verifyPasswordResetOtp: (email: string, otp: string) => Promise<AuthResult>;
+  completePasswordReset: (resetToken: string, password: string) => Promise<AuthResult>;
   visitorCount: number;
   recordVisit: () => Promise<void>;
 }
@@ -1414,6 +1417,42 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigateTo('home');
   };
 
+  const startPasswordReset = async (email: string): Promise<AuthResult> => {
+    try {
+      const response = await apiRequest<{ message: string }>(
+        '/api/auth/forgot-password/start',
+        { email }
+      );
+      return { success: true, message: response.message || 'OTP sent to email' };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Failed to send OTP' };
+    }
+  };
+
+  const verifyPasswordResetOtp = async (email: string, otp: string): Promise<AuthResult> => {
+    try {
+      const response = await apiRequest<{ message: string; resetToken: string }>(
+        '/api/auth/forgot-password/verify',
+        { email, otp }
+      );
+      return { success: true, message: response.message || 'OTP verified successfully', resetToken: response.resetToken };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Failed to verify OTP' };
+    }
+  };
+
+  const completePasswordReset = async (resetToken: string, password: string): Promise<AuthResult> => {
+    try {
+      const response = await apiRequest<{ message: string }>(
+        '/api/auth/forgot-password/complete',
+        { resetToken, password }
+      );
+      return { success: true, message: response.message || 'Password reset successfully' };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Failed to reset password' };
+    }
+  };
+
   return (
     <ShopContext.Provider value={{
       currentPage,
@@ -1466,6 +1505,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       completeSignup,
       googleSignIn,
       logout,
+      startPasswordReset,
+      verifyPasswordResetOtp,
+      completePasswordReset,
       visitorCount,
       recordVisit
     }}>

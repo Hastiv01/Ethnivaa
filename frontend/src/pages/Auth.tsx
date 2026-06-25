@@ -8,10 +8,21 @@ interface AuthProps {
 }
 
 export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
-  const { login, startSignup, verifySignupOtp, completeSignup, googleSignIn, navigateTo, pendingAction } = useShop();
+  const { 
+    login, 
+    startSignup, 
+    verifySignupOtp, 
+    completeSignup, 
+    googleSignIn, 
+    navigateTo, 
+    pendingAction,
+    startPasswordReset,
+    verifyPasswordResetOtp,
+    completePasswordReset
+  } = useShop();
   const navigate = useNavigate();
 
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot'>(initialMode);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
   
@@ -27,6 +38,15 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
   const [signupToken, setSignupToken] = useState('');
   const [signupUsername, setSignupUsername] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [signupAgree, setSignupAgree] = useState(false);
+
+  // Forgot password fields
+  const [forgotStep, setForgotStep] = useState<'email' | 'otp' | 'password'>('email');
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotResetToken, setForgotResetToken] = useState('');
+  const [forgotPassword, setForgotPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
 
   // Notification Banner State
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
@@ -49,6 +69,13 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
     setSignupToken('');
     setSignupUsername('');
     setSignupPassword('');
+    setSignupAgree(false);
+    setForgotStep('email');
+    setForgotEmail('');
+    setForgotOtp('');
+    setForgotResetToken('');
+    setForgotPassword('');
+    setForgotConfirmPassword('');
     setInfoMessage(null);
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -172,6 +199,10 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
   // Signup Step 1: Send Email -> Show OTP entry
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!signupAgree) {
+      displayMessage('error', 'You must agree to the Terms & Conditions and Privacy Policy to continue.');
+      return;
+    }
     if (!signupName || !signupEmail) {
       displayMessage('error', 'Please enter your full name and email address.');
       return;
@@ -238,6 +269,63 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
       setTimeout(() => {
         checkAndRedirectHome();
       }, 1000);
+    } else {
+      displayMessage('error', result.message);
+    }
+  };
+
+  const handleForgotSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) {
+      displayMessage('error', 'Please enter your email address.');
+      return;
+    }
+    const result = await startPasswordReset(forgotEmail);
+    if (result.success) {
+      setForgotStep('otp');
+      displayMessage('info', result.message || 'Verification code sent to your email.');
+    } else {
+      displayMessage('error', result.message);
+    }
+  };
+
+  const handleForgotVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotOtp) {
+      displayMessage('error', 'Please enter the 6-digit verification code.');
+      return;
+    }
+    const result = await verifyPasswordResetOtp(forgotEmail, forgotOtp);
+    if (result.success && result.resetToken) {
+      setForgotResetToken(result.resetToken);
+      setForgotStep('password');
+      displayMessage('success', 'Email verified successfully! Choose a new password.');
+    } else {
+      displayMessage('error', result.message);
+    }
+  };
+
+  const handleForgotComplete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotPassword || !forgotConfirmPassword) {
+      displayMessage('error', 'Please fill in all fields.');
+      return;
+    }
+    if (forgotPassword.length < 6) {
+      displayMessage('error', 'Password must be at least 6 characters long.');
+      return;
+    }
+    if (forgotPassword !== forgotConfirmPassword) {
+      displayMessage('error', 'Passwords do not match.');
+      return;
+    }
+    const result = await completePasswordReset(forgotResetToken, forgotPassword);
+    if (result.success) {
+      displayMessage('success', result.message || 'Password reset successfully! Redirecting to login...');
+      setTimeout(() => {
+        setAuthMode('login');
+        resetForms();
+      }, 2000);
     } else {
       displayMessage('error', result.message);
     }
@@ -310,7 +398,16 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-obsidian-850">Password</label>
+                <div className="flex justify-between items-center">
+                  <label className="font-bold text-obsidian-850">Password</label>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode('forgot'); resetForms(); }}
+                    className="text-[10px] font-bold text-crimson-900 hover:text-gold-600 transition-colors uppercase tracking-wider"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
                 <div className="relative">
                   <input
                     type="password"
@@ -423,6 +520,26 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                   <p className="text-[10px] text-obsidian-400 font-light leading-normal mt-1">
                     An OTP will be sent to your email through the backend.
                   </p>
+                </div>
+
+                <div className="flex items-start gap-2.5 py-1">
+                  <input
+                    id="agree-signup-terms"
+                    type="checkbox"
+                    checked={signupAgree}
+                    onChange={(e) => setSignupAgree(e.target.checked)}
+                    className="mt-1 h-3.5 w-3.5 rounded border-gold-200 text-crimson-950 focus:ring-crimson-900 cursor-pointer"
+                  />
+                  <label htmlFor="agree-signup-terms" className="text-[11px] text-obsidian-500 font-light leading-normal cursor-pointer select-none">
+                    I agree to the{' '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-bold text-crimson-900 hover:text-gold-600 underline">
+                      Terms & Conditions
+                    </a>{' '}
+                    and{' '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-bold text-crimson-900 hover:text-gold-600 underline">
+                      Privacy Policy
+                    </a>.
+                  </label>
                 </div>
 
                 <button
@@ -564,6 +681,149 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                 className="font-bold text-crimson-900 hover:text-gold-600 transition-colors uppercase tracking-wider"
               >
                 Log In
+              </button>
+            </div>
+          </div>
+        )}
+        {/* --------------------- FORGOT PASSWORD FORM --------------------- */}
+        {authMode === 'forgot' && (
+          <div className="space-y-6">
+            <div className="space-y-1 text-center">
+              <h2 className="font-serif text-xl font-bold text-crimson-950">Reset Password</h2>
+              <p className="text-[11px] text-obsidian-500 font-light">Recover access to your luxury jewelry account</p>
+            </div>
+
+            {/* Step Indicators */}
+            <div className="flex items-center justify-center gap-4 text-[9px] font-bold uppercase tracking-wider font-sans text-obsidian-400 py-2 border-y border-gold-100/50">
+              <span className={forgotStep === 'email' ? 'text-crimson-900' : 'opacity-60'}>1. Email</span>
+              <span className="opacity-30">/</span>
+              <span className={forgotStep === 'otp' ? 'text-crimson-900' : 'opacity-60'}>2. Verify OTP</span>
+              <span className="opacity-30">/</span>
+              <span className={forgotStep === 'password' ? 'text-crimson-900' : 'opacity-60'}>3. New Password</span>
+            </div>
+
+            {/* STEP 1: ENTER EMAIL */}
+            {forgotStep === 'email' && (
+              <form onSubmit={handleForgotSendOtp} className="space-y-4 text-xs">
+                <div className="space-y-1.5">
+                  <label className="font-bold text-obsidian-850">Registered Email Address</label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      required
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="customer@email.com"
+                      className="w-full bg-ivory-50 border border-gold-200 focus:border-gold-500 rounded-xl py-3 pl-10 pr-4 text-obsidian-950 focus:outline-none transition-colors"
+                    />
+                    <Mail size={16} className="absolute left-3.5 top-3.5 text-gold-600" />
+                  </div>
+                  <p className="text-[10px] text-obsidian-400 font-light leading-normal mt-1">
+                    An OTP code will be sent to this email address to verify ownership.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-crimson-950 hover:bg-crimson-900 text-gold-100 font-bold uppercase tracking-wider py-3.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md mt-2"
+                >
+                  <span>Send Reset OTP</span>
+                  <ArrowRight size={14} />
+                </button>
+              </form>
+            )}
+
+            {/* STEP 2: VERIFY OTP */}
+            {forgotStep === 'otp' && (
+              <form onSubmit={handleForgotVerifyOtp} className="space-y-4 text-xs">
+                <button
+                  type="button"
+                  onClick={() => { setForgotStep('email'); setErrorMessage(null); }}
+                  className="text-[10px] font-bold text-gold-600 hover:text-crimson-900 flex items-center gap-1 transition-colors uppercase tracking-wider mb-2"
+                >
+                  <ArrowLeft size={10} />
+                  <span>Change Email ({forgotEmail})</span>
+                </button>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-obsidian-850">Enter 6-Digit OTP Code</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      pattern="\d{6}"
+                      value={forgotOtp}
+                      onChange={(e) => setForgotOtp(e.target.value)}
+                      placeholder="123456"
+                      className="w-full bg-ivory-50 border border-gold-200 focus:border-gold-500 rounded-xl py-3 pl-10 pr-4 text-center tracking-[0.8em] font-mono font-bold text-base text-obsidian-950 focus:outline-none transition-colors"
+                    />
+                    <KeyRound size={16} className="absolute left-3.5 top-4 text-gold-600" />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-crimson-950 hover:bg-crimson-900 text-gold-100 font-bold uppercase tracking-wider py-3.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md mt-2"
+                >
+                  <span>Verify OTP</span>
+                  <CheckCircle2 size={14} />
+                </button>
+              </form>
+            )}
+
+            {/* STEP 3: RESET PASSWORD */}
+            {forgotStep === 'password' && (
+              <form onSubmit={handleForgotComplete} className="space-y-4 text-xs">
+                <div className="space-y-1.5">
+                  <label className="font-bold text-obsidian-850">New Password</label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      required
+                      value={forgotPassword}
+                      onChange={(e) => setForgotPassword(e.target.value)}
+                      placeholder="Minimum 6 characters"
+                      className="w-full bg-ivory-50 border border-gold-200 focus:border-gold-500 rounded-xl py-3 pl-10 pr-4 text-obsidian-950 focus:outline-none transition-colors"
+                    />
+                    <Lock size={16} className="absolute left-3.5 top-3.5 text-gold-600" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-obsidian-850">Confirm Password</label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      required
+                      value={forgotConfirmPassword}
+                      onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                      placeholder="Re-enter password"
+                      className="w-full bg-ivory-50 border border-gold-200 focus:border-gold-500 rounded-xl py-3 pl-10 pr-4 text-obsidian-950 focus:outline-none transition-colors"
+                    />
+                    <Lock size={16} className="absolute left-3.5 top-3.5 text-gold-600" />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-crimson-950 hover:bg-crimson-900 text-gold-100 font-bold uppercase tracking-wider py-3.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md mt-2"
+                >
+                  <span>Update Password</span>
+                  <CheckCircle2 size={14} />
+                </button>
+              </form>
+            )}
+
+            {/* Back to Login */}
+            <div className="text-center pt-4 border-t border-gold-100 text-xs">
+              <button
+                type="button"
+                onClick={() => { setAuthMode('login'); resetForms(); }}
+                className="font-bold text-crimson-900 hover:text-gold-600 transition-colors uppercase tracking-wider flex items-center justify-center gap-1.5 mx-auto"
+              >
+                <ArrowLeft size={12} />
+                <span>Back to Log In</span>
               </button>
             </div>
           </div>

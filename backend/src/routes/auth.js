@@ -2,9 +2,9 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const crypto = require('node:crypto');
 const jwt = require('jsonwebtoken');
-const { User, SignupChallenge } = require('../models');
+const { User, SignupChallenge, PasswordResetChallenge } = require('../models');
 const { authenticate, requireRole } = require('../middleware/auth');
-const { sendBrevoOtpEmail } = require('../services/email');
+const { sendBrevoOtpEmail, sendBrevoResetOtpEmail } = require('../services/email');
 const { verifyGoogleIdToken } = require('../services/googleAuth');
 
 const router = express.Router();
@@ -30,6 +30,17 @@ function createSignupToken(challenge) {
   return jwt.sign(
     {
       signupChallengeId: challenge.id,
+      email: challenge.email,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+}
+
+function createResetToken(challenge) {
+  return jwt.sign(
+    {
+      resetChallengeId: challenge.id,
       email: challenge.email,
     },
     process.env.JWT_SECRET,
@@ -123,6 +134,7 @@ router.post('/signup/start', async (req, res) => {
     }
 
     const otp = createOtp();
+    console.log('--- SIGNUP OTP GENERATED:', otp, 'FOR', normalizedEmail, '---');
     const otpHash = await bcrypt.hash(otp, 10);
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const challenge = await upsertSignupChallenge({
@@ -318,6 +330,133 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: 'Login failed' });
+  }
+});
+
+router.post('/forgot-password/start', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+    const user = await User.findOne({ where: { email: normalizedEmail } });
+    if (!user) {
+      return res.status(404).json({ message: 'Account with this email does not exist' });
+    }
+
+    if (user.authProvider === 'GOOGLE') {
+      return res.status(400).json({ message: 'This account uses Google Sign-In. Please sign in with Google.' });
+    }
+
+    const otp = createOtp();
+    console.log('--- PASSWORD RESET OTP GENERATED:', otp, 'FOR', normalizedEmail, '---');
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    const existing = await PasswordResetChallenge.findOne({ where: { email: normalizedEmail } });
+    if (existing) {
+      existing.otpHash = otpHash;
+      existing.otpExpiresAt = otpExpiresAt;
+      existing.verifiedAt = null;
+      await existing.save();
+    } else {
+      await PasswordResetChallenge.create({
+        email: normalizedEmail,
+        otpHash,
+        otpExpiresAt,
+      });
+    }
+
+    await sendBrevoResetOtpEmail({
+      email: normalizedEmail,
+      name: user.name,
+      otp,
+    });
+
+    return res.status(200).json({ message: 'OTP sent to email' });
+  } catch (error) {
+    console.error('Forgot password start failed:', error);
+    return res.status(500).json({ message: 'Failed to send OTP' });
+  }
+});
+
+router.post('/forgot-password/verify', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ message: 'Email and OTP are required' });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+    const challenge = await PasswordResetChallenge.findOne({ where: { email: normalizedEmail } });
+    if (!challenge) {
+      return res.status(404).json({ message: 'Password reset session not found' });
+    }
+
+    if (challenge.verifiedAt) {
+      return res.status(400).json({ message: 'OTP already verified' });
+    }
+
+    if (new Date(challenge.otpExpiresAt).getTime() < Date.now()) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
+
+    const isOtpValid = await bcrypt.compare(String(otp).trim(), challenge.otpHash);
+    if (!isOtpValid) {
+      return res.status(401).json({ message: 'Invalid OTP' });
+    }
+
+    challenge.verifiedAt = new Date();
+    await challenge.save();
+
+    return res.json({
+      message: 'OTP verified successfully',
+      resetToken: createResetToken(challenge),
+    });
+  } catch (error) {
+    console.error('Forgot password verify failed:', error);
+    return res.status(500).json({ message: 'Failed to verify OTP' });
+  }
+});
+
+router.post('/forgot-password/complete', async (req, res) => {
+  try {
+    const { resetToken, password } = req.body;
+    if (!resetToken || !password) {
+      return res.status(400).json({ message: 'Reset token and password are required' });
+    }
+
+    let payload;
+    try {
+      payload = jwt.verify(resetToken, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({ message: 'Invalid or expired reset token' });
+    }
+
+    const challenge = await PasswordResetChallenge.findByPk(payload.resetChallengeId);
+    if (!challenge || challenge.email !== payload.email) {
+      return res.status(404).json({ message: 'Password reset session not found' });
+    }
+
+    if (!challenge.verifiedAt) {
+      return res.status(400).json({ message: 'OTP must be verified before setting a new password' });
+    }
+
+    const user = await User.findOne({ where: { email: challenge.email } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    await user.update({ passwordHash });
+    await challenge.destroy();
+
+    return res.json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Forgot password complete failed:', error);
+    return res.status(500).json({ message: 'Failed to reset password' });
   }
 });
 
