@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useShop } from '../context/ShopContext';
-import { Trash2, ArrowRight, ShoppingBag, Gift, ArrowLeft } from 'lucide-react';
+import { Trash2, ArrowRight, ShoppingBag, ArrowLeft } from 'lucide-react';
 
 export const Cart: React.FC = () => {
   const { 
@@ -13,32 +13,7 @@ export const Cart: React.FC = () => {
     navigateTo 
   } = useShop();
 
-  const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [promoError, setPromoError] = useState(false);
-  const [discountAmount, setDiscountAmount] = useState(0);
-
-  const handleApplyPromo = (e: React.FormEvent) => {
-    e.preventDefault();
-    const code = promoCode.trim().toUpperCase();
-    if (code === 'FESTIVE10') {
-      setPromoApplied(true);
-      setPromoError(false);
-      setDiscountAmount(Math.round(cartSubtotal * 0.1)); // 10% off
-    } else {
-      setPromoError(true);
-      setPromoApplied(false);
-      setDiscountAmount(0);
-    }
-  };
-
-  const handleRemovePromo = () => {
-    setPromoApplied(false);
-    setPromoCode('');
-    setDiscountAmount(0);
-  };
-
-  const finalTotal = cartTotal - discountAmount;
+  const finalTotal = cartTotal;
 
   if (cartItems.length === 0) {
     return (
@@ -191,47 +166,6 @@ export const Cart: React.FC = () => {
 
         {/* Right Column: Order Summary & Coupon */}
         <div className="space-y-6">
-          {/* Coupon Code section */}
-          <div className="bg-white border border-gold-200/50 p-6 rounded-2xl shadow-gold shadow-sm font-sans space-y-4">
-            <h3 className="font-serif text-base font-bold text-crimson-950 flex items-center gap-2">
-              <Gift size={16} className="text-gold-500" />
-              <span>Promo Code</span>
-            </h3>
-            
-            {!promoApplied ? (
-              <form onSubmit={handleApplyPromo} className="flex gap-2">
-                <input
-                  type="text"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  placeholder="Enter code (e.g. FESTIVE10)"
-                  className="flex-1 bg-ivory-50 border border-gold-200 rounded-xl px-3 py-2 text-xs uppercase focus:outline-none focus:border-gold-400"
-                />
-                <button
-                  type="submit"
-                  className="bg-crimson-950 text-gold-100 hover:bg-crimson-900 px-4 py-2 rounded-xl text-xs font-bold uppercase transition-colors"
-                >
-                  Apply
-                </button>
-              </form>
-            ) : (
-              <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl text-xs font-semibold text-emerald-800 animate-fadeIn">
-                <span>Code "FESTIVE10" applied! (10% Off)</span>
-                <button onClick={handleRemovePromo} className="text-crimson-700 hover:text-crimson-950 font-bold uppercase text-[10px]">
-                  Remove
-                </button>
-              </div>
-            )}
-
-            {promoError && (
-              <p className="text-[10px] text-crimson-600 font-bold animate-fadeIn">Invalid coupon code. Try "FESTIVE10".</p>
-            )}
-            
-            <p className="text-[10px] text-obsidian-400 font-light leading-relaxed">
-              * Apply the discount coupon "FESTIVE10" to save 10% on your cart items subtotal.
-            </p>
-          </div>
-
           {/* Checkout Summary Card */}
           <div className="bg-white border border-gold-300 p-6 rounded-3xl shadow-gold-md font-sans space-y-4">
             <h3 className="font-serif text-lg font-bold text-crimson-950 border-b border-gold-100 pb-3">
@@ -244,13 +178,6 @@ export const Cart: React.FC = () => {
                 <span className="font-semibold text-obsidian-950">₹{cartSubtotal.toLocaleString('en-IN')}</span>
               </div>
               
-              {promoApplied && (
-                <div className="flex justify-between text-emerald-700">
-                  <span>Coupon Discount</span>
-                  <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
-                </div>
-              )}
-
               <div className="flex justify-between">
                 <span>Estimated Delivery / Shipping</span>
                 <span className="font-semibold text-obsidian-950">

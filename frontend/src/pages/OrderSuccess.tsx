@@ -52,7 +52,8 @@ export const OrderSuccess: React.FC = () => {
             Order Placed Successfully!
           </h1>
           <p className="text-xs text-obsidian-600 font-sans font-light">
-            Thank you for purchasing from Ethnivaa. Your order has been registered.
+            Thank you for purchasing from Ethnivaa. Your order has been registered.<br />
+            <span className="mt-2 block">You can view the status of your order at any time by logging into your account and visiting the Order History section.</span>
           </p>
         </div>
         <div className="w-16 h-0.5 bg-gold-400 mx-auto mt-2"></div>
@@ -79,7 +80,7 @@ export const OrderSuccess: React.FC = () => {
           </div>
           <div>
             <span className="text-obsidian-400 block mb-0.5">Estimated Delivery</span>
-            <span className="font-semibold text-obsidian-950">3 - 5 Business Days</span>
+            <span className="font-semibold text-obsidian-950">5 - 10 Business Days</span>
           </div>
         </div>
 

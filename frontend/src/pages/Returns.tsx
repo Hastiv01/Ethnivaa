@@ -10,7 +10,7 @@ export const Returns: React.FC = () => {
       <div className="space-y-6">
         <section>
           <h2 className="font-serif text-xl font-bold text-crimson-950 mb-2">1. Eligibility for Returns</h2>
-          <p className="mb-2">Returns or replacements are accepted only under the following circumstances:</p>
+          <p className="mb-2">Returns are accepted only under the following circumstances:</p>
           <ul className="list-disc pl-5 space-y-1 mb-2">
             <li>You received a damaged product.</li>
             <li>You received an incorrect product.</li>
@@ -23,7 +23,6 @@ export const Returns: React.FC = () => {
           <h2 className="font-serif text-xl font-bold text-crimson-950 mb-2">2. Non-Returnable Items</h2>
           <p className="mb-2">The following items are not eligible for return or refund:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Products purchased during sale or promotional offers.</li>
             <li>Customized or personalized jewellery.</li>
             <li>Products damaged due to misuse, improper handling, or normal wear and tear.</li>
             <li>Minor variations in color, texture, or design due to photography, lighting, or handcrafted nature of the product.</li>
@@ -33,7 +32,7 @@ export const Returns: React.FC = () => {
 
         <section>
           <h2 className="font-serif text-xl font-bold text-crimson-950 mb-2">3. Return Request Process</h2>
-          <p className="mb-2">To request a return or replacement:</p>
+          <p className="mb-2">To request a return:</p>
           <ul className="list-disc pl-5 space-y-1 mb-2">
             <li>Email us at ethnivaa.help@gmail.com or contact us via WhatsApp.</li>
             <li>Share: Order ID, Product images, Description of the issue.</li>
@@ -43,18 +42,13 @@ export const Returns: React.FC = () => {
 
         <section>
           <h2 className="font-serif text-xl font-bold text-crimson-950 mb-2">4. Replacement Policy</h2>
-          <p className="mb-2">For approved damaged, defective, or incorrect items:</p>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>A replacement will be arranged subject to product availability.</li>
-            <li>If the same product is unavailable, customers may choose: Store Credit, or Full Refund.</li>
-          </ul>
+          <p>We do not offer replacements for any items under any circumstances. If you receive a damaged, defective, or incorrect product, you may apply for a return and refund.</p>
         </section>
 
         <section>
           <h2 className="font-serif text-xl font-bold text-crimson-950 mb-2">5. Refund Policy</h2>
           <p className="mb-2">Refunds are applicable only when:</p>
           <ul className="list-disc pl-5 space-y-1 mb-2">
-            <li>A replacement cannot be provided.</li>
             <li>The order is cancelled by Ethnivaa.</li>
             <li>The product received is damaged, defective, or incorrect and the return is approved.</li>
           </ul>
@@ -79,7 +73,7 @@ export const Returns: React.FC = () => {
 
         <section>
           <h2 className="font-serif text-xl font-bold text-crimson-950 mb-2">8. Contact Us</h2>
-          <p className="mb-2">For any return, refund, or replacement requests:</p>
+          <p className="mb-2">For any return or refund requests:</p>
           <p>
             <strong>Ethnivaa</strong><br/>
             Email: ethnivaa.help@gmail.com<br/>
