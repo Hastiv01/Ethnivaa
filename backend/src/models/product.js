@@ -29,6 +29,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    inventory: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 50,
+    },
+    material: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
 
     originalPrice: {
       type: DataTypes.DECIMAL(10, 2),

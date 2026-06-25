@@ -38,6 +38,13 @@ export const ProductDetails: React.FC = () => {
     return products.find(p => p.id === activeProductId) || products[0];
   }, [products, activeProductId]);
 
+  const relatedProducts = useMemo(() => {
+    if (!product) return [];
+    return products
+      .filter(p => p.id !== product.id)
+      .slice(0, 4);
+  }, [products, product]);
+
   // Fallback if no product exists
   if (!product) {
     return (
@@ -49,12 +56,6 @@ export const ProductDetails: React.FC = () => {
       </div>
     );
   }
-
-  const relatedProducts = useMemo(() => {
-    return products
-      .filter(p => p.id !== product.id)
-      .slice(0, 4);
-  }, [products, product]);
 
   const handleImageHover = (e: React.MouseEvent<HTMLDivElement>) => {
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
