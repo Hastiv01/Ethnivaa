@@ -88,6 +88,19 @@
     );
     background-size: 400% 100%;
   }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .shimmer-animate {
+    animation: shimmer 2s infinite linear;
+  }
 }
 
 /* Custom transitions and styles */

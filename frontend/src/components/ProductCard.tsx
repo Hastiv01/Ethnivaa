@@ -25,6 +25,7 @@ const getOptimizedImageUrl = (url: string, width: number = 500) => {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
   const { navigateTo, toggleWishlist, isInWishlist } = useShop();
+  const [imageLoaded, setImageLoaded] = React.useState(false);
 
   const handleCardClick = () => {
     navigateTo('details', product.id);
@@ -48,11 +49,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
   return (
     <div 
       onClick={handleCardClick}
-      className="group relative bg-white border border-gold-200/50 rounded-2xl overflow-hidden cursor-pointer product-card-hover flex flex-col justify-between transform-gpu isolate"
+      className="group relative bg-white border border-gold-200/50 rounded-2xl overflow-hidden cursor-pointer product-card-hover flex flex-col justify-between transform-gpu isolate animate-fadeIn"
     >
       {/* Product Image and Overlay Tools */}
       <div className="relative aspect-square overflow-hidden bg-ivory-100 image-zoom-container">
         
+        {/* Shimmer skeleton */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 shimmer-bg shimmer-animate z-0"></div>
+        )}
+
         {/* Wishlist Button */}
         <button
           onClick={handleWishlistClick}
@@ -89,7 +95,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           src={getOptimizedImageUrl(product.images[0], 500)} 
           alt={product.name} 
           loading="lazy"
-          className="w-full h-full object-contain bg-white object-center md:group-hover:scale-105 transition-transform duration-700 transform-gpu"
+          onLoad={() => setImageLoaded(true)}
+          className={`w-full h-full object-contain bg-white object-center md:group-hover:scale-105 transition-all duration-700 transform-gpu ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
         />
 
         {/* Quick View Drawer Hover Overlay (Desktop only) */}

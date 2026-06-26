@@ -4,6 +4,7 @@ import { ShopProvider, useShop } from './context/ShopContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { ServerWakeUpOverlay } from './components/ServerWakeUpOverlay';
 
 // Pages - dynamic lazy loads
 const Welcome = lazy(() => import('./pages/Welcome').then(m => ({ default: m.Welcome })));
@@ -42,6 +43,7 @@ const AppContent: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-ivory-100 font-sans selection:bg-gold-200 selection:text-crimson-950">
       {!isWelcome && <Navbar />}
+      <ServerWakeUpOverlay />
       <main className="flex-grow">
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>

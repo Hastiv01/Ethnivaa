@@ -161,6 +161,8 @@ interface ShopContextType {
   completePasswordReset: (resetToken: string, password: string) => Promise<AuthResult>;
   visitorCount: number;
   recordVisit: () => Promise<void>;
+  isWakingUp: boolean;
+  wakingProgress: number;
 }
 
 const safeParse = <T,>(key: string, defaultValue: T): T => {
@@ -333,6 +335,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Visitor count state
   const [visitorCount, setVisitorCount] = useState<number>(0);
 
+  // Server wake up states (Render cold start)
+  const [isWakingUp, setIsWakingUp] = useState<boolean>(false);
+  const [wakingProgress, setWakingProgress] = useState<number>(0);
+
   // On mount: fetch the current count (read-only, no increment)
   useEffect(() => {
     const fetchCount = async () => {
@@ -471,9 +477,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const PRODUCTS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   const loadBackendData = async () => {
+    let wakeTimer: any = null;
+    let progressInterval: any = null;
+
     try {
-
-
       // Check product cache before fetching
       const cacheRaw = localStorage.getItem(PRODUCTS_CACHE_KEY);
       if (cacheRaw) {
@@ -485,6 +492,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (_) { /* ignore corrupt cache */ }
       }
+
+      // Start wake up timer if network request is made
+      wakeTimer = setTimeout(() => {
+        setIsWakingUp(true);
+        progressInterval = setInterval(() => {
+          setWakingProgress(prev => {
+            if (prev >= 99) return 99;
+            return prev + 1;
+          });
+        }, 500); // 500ms * 100 = 50 seconds
+      }, 1200);
 
       // Cache miss — fetch fresh products
       const prodRes = await fetch('/api/products');
@@ -499,6 +517,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (e) {
       console.error('Failed to load initial data from backend:', e);
+    } finally {
+      if (wakeTimer) clearTimeout(wakeTimer);
+      if (progressInterval) clearInterval(progressInterval);
+      setWakingProgress(100);
+      
+      // Delay closing the overlay so user sees 100% completion
+      setTimeout(() => {
+        setIsWakingUp(false);
+      }, 600);
     }
   };
 
@@ -1510,7 +1537,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       verifyPasswordResetOtp,
       completePasswordReset,
       visitorCount,
-      recordVisit
+      recordVisit,
+      isWakingUp,
+      wakingProgress
     }}>
       {children}
     </ShopContext.Provider>
