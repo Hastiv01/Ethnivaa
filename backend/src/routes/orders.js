@@ -4,6 +4,7 @@ const Razorpay = require('razorpay');
 const { sequelize, Cart, CartItem, Order, OrderItem, Product, Address, Category } = require('../models');
 const { authenticate } = require('../middleware/auth');
 const { positiveInteger } = require('../middleware/validate');
+const { sendBrevoOrderConfirmationEmail } = require('../services/email');
 
 const router = express.Router();
 
@@ -302,6 +303,17 @@ router.patch('/:id/confirm-payment', async (req, res) => {
     const confirmed = await Order.findByPk(order.id, {
       include: [Address, { model: OrderItem, include: orderItemInclude }],
     });
+
+    // Send confirmation email asynchronously
+    if (req.user && req.user.email) {
+      sendBrevoOrderConfirmationEmail({
+        email: req.user.email,
+        name: req.user.name || 'Valued Customer',
+        order: confirmed,
+      }).catch(err => {
+        console.error('Failed to send order confirmation email:', err);
+      });
+    }
 
     return res.json({ order: confirmed });
   } catch (error) {

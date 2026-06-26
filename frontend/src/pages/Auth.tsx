@@ -48,6 +48,10 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
   const [forgotPassword, setForgotPassword] = useState('');
   const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
 
+  // OTP Cooldown Timers
+  const [signupTimer, setSignupTimer] = useState(0);
+  const [forgotTimer, setForgotTimer] = useState(0);
+
   // Notification Banner State
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -79,7 +83,17 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
     setInfoMessage(null);
     setErrorMessage(null);
     setSuccessMessage(null);
+    setSignupTimer(0);
+    setForgotTimer(0);
   };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSignupTimer(prev => (prev > 0 ? prev - 1 : 0));
+      setForgotTimer(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const checkAndRedirectHome = () => {
     if (!pendingAction) {
@@ -218,11 +232,24 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
     const result = await startSignup(signupName, signupEmail);
     if (result.success) {
       setSignupStep('otp');
+      setSignupTimer(30);
       displayMessage('info', result.message || 'OTP sent to your email.');
       return;
     }
 
     displayMessage('error', result.message);
+  };
+
+  const handleResendSignupOtp = async () => {
+    if (signupTimer > 0) return;
+    setErrorMessage(null);
+    const result = await startSignup(signupName, signupEmail);
+    if (result.success) {
+      setSignupTimer(30);
+      displayMessage('success', 'A new verification code has been sent to your email.');
+    } else {
+      displayMessage('error', result.message);
+    }
   };
 
   // Signup Step 2: Verify OTP
@@ -283,7 +310,20 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
     const result = await startPasswordReset(forgotEmail);
     if (result.success) {
       setForgotStep('otp');
+      setForgotTimer(30);
       displayMessage('info', result.message || 'Verification code sent to your email.');
+    } else {
+      displayMessage('error', result.message);
+    }
+  };
+
+  const handleResendForgotOtp = async () => {
+    if (forgotTimer > 0) return;
+    setErrorMessage(null);
+    const result = await startPasswordReset(forgotEmail);
+    if (result.success) {
+      setForgotTimer(30);
+      displayMessage('success', 'A new verification code has been sent to your email.');
     } else {
       displayMessage('error', result.message);
     }
@@ -583,13 +623,15 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                     <span>Didn't get the code?</span>
                     <button
                       type="button"
-                      onClick={() => {
-                          setErrorMessage(null);
-                          setInfoMessage('Request a new OTP by submitting your email again.');
-                      }}
-                      className="font-semibold text-crimson-900 hover:text-gold-600 transition-colors uppercase"
+                      disabled={signupTimer > 0}
+                      onClick={handleResendSignupOtp}
+                      className={`font-semibold transition-colors uppercase ${
+                        signupTimer > 0 
+                          ? 'text-obsidian-350 cursor-not-allowed' 
+                          : 'text-crimson-950 hover:text-gold-600'
+                      }`}
                     >
-                      Resend
+                      {signupTimer > 0 ? `Resend in ${signupTimer}s` : 'Resend OTP'}
                     </button>
                   </div>
                 </div>
@@ -759,6 +801,21 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                       className="w-full bg-ivory-50 border border-gold-200 focus:border-gold-500 rounded-xl py-3 pl-10 pr-4 text-center tracking-[0.8em] font-mono font-bold text-base text-obsidian-950 focus:outline-none transition-colors"
                     />
                     <KeyRound size={16} className="absolute left-3.5 top-4 text-gold-600" />
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] text-obsidian-400 font-light mt-1.5">
+                    <span>Didn't get the code?</span>
+                    <button
+                      type="button"
+                      disabled={forgotTimer > 0}
+                      onClick={handleResendForgotOtp}
+                      className={`font-semibold transition-colors uppercase ${
+                        forgotTimer > 0 
+                          ? 'text-obsidian-350 cursor-not-allowed' 
+                          : 'text-crimson-950 hover:text-gold-600'
+                      }`}
+                    >
+                      {forgotTimer > 0 ? `Resend in ${forgotTimer}s` : 'Resend OTP'}
+                    </button>
                   </div>
                 </div>
 
