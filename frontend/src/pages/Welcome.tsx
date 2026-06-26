@@ -90,7 +90,7 @@ const MandalaBackground: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 export const Welcome: React.FC = () => {
-  const { recordVisit } = useShop();
+  const { recordVisit, isWakingUp, wakingProgress } = useShop();
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -250,19 +250,40 @@ export const Welcome: React.FC = () => {
             </div>
           </div>
 
-          {/* Enter Button */}
+          {/* Enter Button / Simulated Progress */}
           <div 
-            className={`transition-all duration-1000 delay-400 transform ${
+            className={`transition-all duration-1000 delay-400 transform w-full flex justify-center min-h-[4.5rem] items-center ${
               isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            <button
-              onClick={handleEnter}
-              className="bg-gold-gradient hover:opacity-95 text-crimson-950 font-bold uppercase tracking-[0.2em] text-xs px-12 py-4 rounded-full transition-all duration-300 shadow-[0_4px_15px_rgba(212,175,55,0.25)] hover:shadow-[0_0_20px_rgba(212,175,55,0.55)] flex items-center gap-2.5 group hover:scale-105 active:scale-98"
-            >
-              <span>Enter the Boutique</span>
-              <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform duration-300" />
-            </button>
+            {isWakingUp ? (
+              <div className="w-full max-w-[280px] sm:max-w-[320px] space-y-3 animate-fadeIn bg-white/70 backdrop-blur-sm p-4 rounded-2xl border border-gold-200/50 shadow-gold shadow-sm">
+                <div className="flex justify-between items-center text-[10px] sm:text-xs">
+                  <span className="font-serif font-bold text-gold-600 uppercase tracking-wider animate-pulse min-h-[1.25rem] text-left block">
+                    {wakingProgress < 25 ? 'Stoking the boutique furnace...' :
+                     wakingProgress < 50 ? 'Opening the royal boutique...' :
+                     wakingProgress < 75 ? 'Polishing gold ornaments...' :
+                     'Preparing your royal experience...'}
+                  </span>
+                  <span className="font-sans font-bold text-crimson-950">{wakingProgress}%</span>
+                </div>
+                {/* Progress Track */}
+                <div className="w-full h-1.5 bg-gold-100 rounded-full overflow-hidden border border-gold-200/20">
+                  <div 
+                    className="h-full bg-gradient-to-r from-gold-500 to-crimson-900 transition-all duration-300 ease-out rounded-full shadow-[0_0_6px_rgba(212,175,55,0.4)]"
+                    style={{ width: `${wakingProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={handleEnter}
+                className="bg-gold-gradient hover:opacity-95 text-crimson-950 font-bold uppercase tracking-[0.2em] text-xs px-12 py-4 rounded-full transition-all duration-300 shadow-[0_4px_15px_rgba(212,175,55,0.25)] hover:shadow-[0_0_20px_rgba(212,175,55,0.55)] flex items-center gap-2.5 group hover:scale-105 active:scale-98 animate-fadeIn"
+              >
+                <span>Enter the Boutique</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+              </button>
+            )}
           </div>
         </div>
 

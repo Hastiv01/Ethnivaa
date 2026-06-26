@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import { Sparkles } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const BroochSpinner: React.FC<{ size?: number }> = ({ size = 80 }) => (
   <svg 
@@ -44,22 +45,23 @@ const BroochSpinner: React.FC<{ size?: number }> = ({ size = 80 }) => (
 export const ServerWakeUpOverlay: React.FC = () => {
   const { isWakingUp, wakingProgress } = useShop();
   const [statusMessage, setStatusMessage] = useState('Polishing the jewelry...');
+  const location = useLocation();
 
   useEffect(() => {
     if (wakingProgress < 25) {
       setStatusMessage('Stoking the furnace of the royal boutique...');
     } else if (wakingProgress < 50) {
-      setStatusMessage('Waking up our Render servers (takes about 50 seconds)...');
+      setStatusMessage('Opening the royal boutique...');
     } else if (wakingProgress < 75) {
       setStatusMessage('Unlocking the vaults and polishing the gold...');
     } else if (wakingProgress < 95) {
-      setStatusMessage('Almost there, preparing your royal experience...');
+      setStatusMessage('Preparing your royal experience...');
     } else if (wakingProgress >= 100) {
       setStatusMessage('Welcome! Entering the boutique...');
     }
   }, [wakingProgress]);
 
-  if (!isWakingUp) return null;
+  if (!isWakingUp || location.pathname === '/') return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#FAF6EE]/95 backdrop-blur-md p-6 animate-fadeIn transition-all duration-500">
@@ -81,7 +83,7 @@ export const ServerWakeUpOverlay: React.FC = () => {
         {/* Title */}
         <div className="space-y-2">
           <span className="text-[10px] tracking-[0.3em] uppercase text-gold-600 font-bold font-sans">
-            Render Free Server Cold Start
+            Heritage Collection
           </span>
           <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-crimson-950">
             Opening Treasury Vaults
@@ -91,7 +93,7 @@ export const ServerWakeUpOverlay: React.FC = () => {
 
         {/* Description */}
         <p className="text-sm text-obsidian-600 font-sans max-w-sm">
-          Our servers are waking up from a deep slumber. This happens automatically when the site hasn't been visited for 15 minutes.
+          We are preparing our exclusive boutique selection for you. Please wait a moment.
         </p>
 
         {/* Progress Section */}
