@@ -198,7 +198,7 @@ export const Welcome: React.FC = () => {
       >
         <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-crimson-950/5 text-crimson-900 text-[10px] sm:text-xs font-bold tracking-[0.3em] uppercase border border-gold-400/20 font-sans">
           <Sparkles size={12} className="text-gold-500 animate-pulse" />
-          The Heritage of Fine Jewelry
+          The Heritage of Fine Jewellery
           <Sparkles size={12} className="text-gold-500 animate-pulse" />
         </span>
       </div>

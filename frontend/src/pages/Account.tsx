@@ -113,7 +113,7 @@ export const Account: React.FC = () => {
           My Account
         </h1>
         <p className="text-xs text-obsidian-600 font-sans font-light">
-          Manage your profile, order logs, and matching jewelry wishlist
+          Manage your profile, order logs, and matching jewellery wishlist
         </p>
         <div className="w-16 h-0.5 bg-gold-400 mx-auto mt-2"></div>
       </div>
@@ -325,10 +325,19 @@ export const Account: React.FC = () => {
           {activeTab === 'addresses' && (
             <div className="space-y-4 font-sans text-xs">
               <div className="flex items-center justify-between">
-                <h2 className="font-serif text-xl font-bold text-crimson-950">Shipping Addresses</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-serif text-xl font-bold text-crimson-950">Shipping Addresses</h2>
+                  <span className="text-[10px] text-obsidian-400 font-semibold">({addresses.length}/5)</span>
+                </div>
                 <button
                   onClick={() => setShowAddAddress(true)}
-                  className="flex items-center gap-1 bg-gold-50 hover:bg-gold-100 text-crimson-950 border border-gold-200 px-3 py-1.5 rounded-full font-bold uppercase tracking-wider text-[10px]"
+                  disabled={addresses.length >= 5}
+                  className={`flex items-center gap-1 border px-3 py-1.5 rounded-full font-bold uppercase tracking-wider text-[10px] transition-all duration-200 ${
+                    addresses.length >= 5
+                      ? 'bg-obsidian-50 text-obsidian-400 border-obsidian-200 cursor-not-allowed opacity-60'
+                      : 'bg-gold-50 hover:bg-gold-100 text-crimson-950 border-gold-200'
+                  }`}
+                  title={addresses.length >= 5 ? "Maximum of 5 saved addresses reached" : "Add new shipping address"}
                 >
                   <Plus size={12} />
                   <span>Add New</span>

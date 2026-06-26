@@ -97,6 +97,7 @@ export const Checkout: React.FC = () => {
   });
 
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [saveAddress, setSaveAddress] = useState(false);
   const paymentMethod = 'Prepaid / Online';
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(() => {
     return localStorage.getItem('ethnivaa_pending_order_id');
@@ -196,7 +197,7 @@ export const Checkout: React.FC = () => {
 
     try {
       // Step 1: Create order in DB + Razorpay order via backend
-      const result = await placeOrder(formData, paymentMethod);
+      const result = await placeOrder(formData, paymentMethod, saveAddress);
       const { order, razorpayOrderId, razorpayKeyId, amount, currency } = result;
 
       setPendingOrderId(order.id);
@@ -541,6 +542,27 @@ export const Checkout: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {/* Save Address Option */}
+              {addresses.length < 5 ? (
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="saveAddress"
+                    checked={saveAddress}
+                    onChange={(e) => setSaveAddress(e.target.checked)}
+                    disabled={isBusy}
+                    className="h-4 w-4 rounded border-gold-200 text-crimson-850 focus:ring-crimson-850 accent-crimson-950 cursor-pointer"
+                  />
+                  <label htmlFor="saveAddress" className="font-semibold text-obsidian-850 cursor-pointer select-none">
+                    Save this address to my profile
+                  </label>
+                </div>
+              ) : (
+                <div className="text-[10px] text-obsidian-400 italic pt-2">
+                  Note: Saved address limit reached (5/5). You can still place this order, but the address won't be saved to your profile.
+                </div>
+              )}
             </form>
           </div>
 

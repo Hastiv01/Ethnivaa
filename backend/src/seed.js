@@ -38,7 +38,7 @@ async function seed() {
     defaults: {
       name: 'Heritage Collection',
       slug: 'heritage-collection',
-      description: 'Traditional Indian heritage jewelry boutique',
+      description: 'Traditional Indian heritage jewellery boutique',
     },
   });
 

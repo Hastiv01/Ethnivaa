@@ -434,10 +434,7 @@ export const ProductDetails: React.FC = () => {
       {/* Related Products Carousel */}
       {relatedProducts.length > 0 && (
         <section className="border-t border-gold-200/50 pt-12">
-          <div className="space-y-6 mb-8">
-            <span className="text-[10px] tracking-[0.3em] uppercase text-gold-600 font-bold font-sans block">
-              Complete the Set
-            </span>
+          <div className="mb-8">
             <h3 className="font-serif text-2xl font-bold text-crimson-950">
               Related Masterpieces
             </h3>

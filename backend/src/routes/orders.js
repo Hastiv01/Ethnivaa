@@ -85,7 +85,7 @@ router.get('/me', async (req, res) => {
  */
 router.post('/checkout', async (req, res) => {
   try {
-    const { addressId: rawAddressId, address: inlineAddress, paymentMethod } = req.body;
+    const { addressId: rawAddressId, address: inlineAddress, paymentMethod, saveAddress } = req.body;
     const addressId = positiveInteger(rawAddressId);
 
     // ── 1. Resolve shipping address ──────────────────────────────────────────
@@ -96,6 +96,13 @@ router.post('/checkout', async (req, res) => {
         return res.status(400).json({ message: 'Invalid addressId' });
       }
     } else if (inlineAddress && inlineAddress.recipientName && inlineAddress.line1) {
+      if (saveAddress) {
+        const count = await Address.count({ where: { userId: req.user.id, isSaved: true } });
+        if (count >= 5) {
+          return res.status(400).json({ message: 'Maximum limit of 5 saved addresses reached. Please uncheck "Save this address" or delete an existing address.' });
+        }
+      }
+
       // Find if an identical address already exists for this user to avoid duplicates
       const existingAddress = await Address.findOne({
         where: {
@@ -113,6 +120,10 @@ router.post('/checkout', async (req, res) => {
 
       if (existingAddress) {
         address = existingAddress;
+        if (saveAddress && !existingAddress.isSaved) {
+          existingAddress.isSaved = true;
+          await existingAddress.save();
+        }
       } else {
         address = await Address.create({
           userId: req.user.id,
@@ -126,6 +137,7 @@ router.post('/checkout', async (req, res) => {
           postalCode: inlineAddress.postalCode || '',
           country: inlineAddress.country || 'India',
           isDefault: false,
+          isSaved: Boolean(saveAddress),
         });
       }
     } else {

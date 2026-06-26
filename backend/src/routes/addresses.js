@@ -9,7 +9,7 @@ router.use(authenticate);
 router.get('/', async (req, res) => {
   try {
     const addresses = await Address.findAll({
-      where: { userId: req.user.id },
+      where: { userId: req.user.id, isSaved: true },
       order: [['createdAt', 'DESC']],
     });
     return res.json({ addresses });
@@ -35,6 +35,11 @@ router.post('/', async (req, res) => {
 
     if (!recipientName || !phone || !line1 || !city || !state || !postalCode) {
       return res.status(400).json({ message: 'recipientName, phone, line1, city, state, and postalCode are required' });
+    }
+
+    const count = await Address.count({ where: { userId: req.user.id, isSaved: true } });
+    if (count >= 5) {
+      return res.status(400).json({ message: 'Maximum limit of 5 saved addresses reached. Please delete an existing address to add a new one.' });
     }
 
     if (isDefault) {

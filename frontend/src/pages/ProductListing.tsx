@@ -164,7 +164,7 @@ export const ProductListing: React.FC = () => {
                   No Treasures Discovered
                 </h3>
                 <p className="text-xs text-obsidian-500 max-w-md font-sans">
-                  We couldn't find any jewelry pieces matching your search or filters. Try adjusting your selections.
+                  We couldn't find any jewellery pieces matching your search or filters. Try adjusting your selections.
                 </p>
               </div>
               <button

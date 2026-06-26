@@ -310,12 +310,22 @@ test('checkout creates an order from the cart', async () => {
           orderState.created = { id: 99, ...payload };
           return orderState.created;
         },
-        findByPk: async () => ({ id: 99, orderNumber: orderState.created.orderNumber }),
+        findByPk: async () => ({
+          id: 99,
+          orderNumber: orderState.created.orderNumber,
+          update: async (payload) => {
+            Object.assign(orderState.created, payload);
+          }
+        }),
       },
       OrderItem: {
         create: async (payload) => {
           orderState.items.push(payload);
           return payload;
+        },
+        bulkCreate: async (payloads) => {
+          orderState.items.push(...payloads);
+          return payloads;
         },
       },
       Product: {},
@@ -330,6 +340,13 @@ test('checkout creates an order from the cart', async () => {
         next();
       },
     },
+    'razorpay': class {
+      constructor() {
+        this.orders = {
+          create: async () => ({ id: 'rzp_order_123' })
+        };
+      }
+    }
   });
 
   const app = createAppWithRoutes({ orders: orderRouter });
@@ -337,7 +354,7 @@ test('checkout creates an order from the cart', async () => {
 
   assert.equal(response.statusCode, 201);
   assert.equal(orderState.items.length, 1);
-  assert.equal(orderState.created.total, 160);
+  assert.equal(orderState.created.total, 240);
 });
 
 test('admin route protects non-admin requests', async () => {

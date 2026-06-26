@@ -24,7 +24,7 @@ export const Cart: React.FC = () => {
         <div className="space-y-2">
           <h2 className="font-serif text-2xl font-bold text-crimson-950">Your Cart is Empty</h2>
           <p className="text-xs text-obsidian-500 font-sans max-w-sm mx-auto">
-            You haven't added any luxury jewelry to your cart yet. Explore our royal collections to find your perfect ornament.
+            You haven't added any luxury jewellery to your cart yet. Explore our royal collections to find your perfect ornament.
           </p>
         </div>
         <button

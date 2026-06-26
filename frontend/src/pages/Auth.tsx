@@ -346,7 +346,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
             ETHNIVAA
           </span>
           <span className="text-[9px] uppercase tracking-[0.3em] text-gold-600 font-bold block">
-            THE HERITAGE OF JEWELRY
+            THE HERITAGE OF JEWELLERY
           </span>
           <div className="w-12 h-0.5 bg-gold-400 mx-auto mt-2"></div>
         </div>
@@ -690,7 +690,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
           <div className="space-y-6">
             <div className="space-y-1 text-center">
               <h2 className="font-serif text-xl font-bold text-crimson-950">Reset Password</h2>
-              <p className="text-[11px] text-obsidian-500 font-light">Recover access to your luxury jewelry account</p>
+              <p className="text-[11px] text-obsidian-500 font-light">Recover access to your luxury jewellery account</p>
             </div>
 
             {/* Step Indicators */}

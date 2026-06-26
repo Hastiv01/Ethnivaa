@@ -118,7 +118,7 @@ interface ShopContextType {
 
   // Order State
   orders: Order[];
-  placeOrder: (shippingAddress: ShippingAddress, paymentMethod: string) => Promise<PlaceOrderResult>;
+  placeOrder: (shippingAddress: ShippingAddress, paymentMethod: string, saveAddress?: boolean) => Promise<PlaceOrderResult>;
   confirmPayment: (orderId: string, razorpayData: {
     razorpayPaymentId: string;
     razorpayOrderId: string;
@@ -558,7 +558,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const mapped = (data.orders || []).map((o: any) => {
             const items = (o.OrderItems || []).map((item: any) => ({
               productId: String(item.productId),
-              name: item.Product?.title || 'Jewelry Item',
+              name: item.Product?.title || 'Jewellery Item',
               price: Number(item.unitPrice) || 0,
               image: item.Product?.image || '/placeholder.png',
               quantity: Number(item.quantity) || 1,
@@ -1157,7 +1157,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
   // Order Operations
-  const placeOrder = async (address: ShippingAddress, paymentMethod: string): Promise<PlaceOrderResult> => {
+  const placeOrder = async (address: ShippingAddress, paymentMethod: string, saveAddress?: boolean): Promise<PlaceOrderResult> => {
     try {
       // Single API call — sends address inline, no separate address creation step
       const checkResponse = await fetch('/api/orders/checkout', {
@@ -1177,6 +1177,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             country: 'India',
           },
           paymentMethod,
+          saveAddress,
         })
       });
 
@@ -1194,7 +1195,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Map backend order response
       const items = (o.OrderItems || []).map((item: any) => ({
         productId: String(item.productId),
-        name: item.Product?.title || 'Jewelry Item',
+        name: item.Product?.title || 'Jewellery Item',
         price: Number(item.unitPrice) || 0,
         image: item.Product?.image || '/placeholder.png',
         quantity: Number(item.quantity) || 1

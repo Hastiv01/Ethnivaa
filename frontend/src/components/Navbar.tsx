@@ -98,7 +98,7 @@ export const Navbar: React.FC = () => {
                 ETHNIVAA
               </span>
               <span className="hidden sm:block text-[9px] uppercase tracking-[0.4em] text-gold-600 font-sans mt-0.5 font-bold">
-                THE HERITAGE OF JEWELRY
+                THE HERITAGE OF JEWELLERY
               </span>
             </button>
           </div>
@@ -222,7 +222,7 @@ export const Navbar: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Search matching jewelry..."
+            placeholder="Search matching jewellery..."
             className="w-full bg-ivory-200 border border-gold-300 text-obsidian-950 text-xs rounded-full py-2 pl-4 pr-10 focus:outline-none focus:border-gold-500 font-sans"
           />
           <button type="submit" className="absolute right-3 top-2 text-crimson-950 hover:text-gold-600">

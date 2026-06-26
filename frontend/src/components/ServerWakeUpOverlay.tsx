@@ -44,7 +44,7 @@ const BroochSpinner: React.FC<{ size?: number }> = ({ size = 80 }) => (
 
 export const ServerWakeUpOverlay: React.FC = () => {
   const { isWakingUp, wakingProgress } = useShop();
-  const [statusMessage, setStatusMessage] = useState('Polishing the jewelry...');
+  const [statusMessage, setStatusMessage] = useState('Polishing the jewellery...');
   const location = useLocation();
 
   useEffect(() => {
