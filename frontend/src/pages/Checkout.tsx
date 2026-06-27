@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useShop } from '../context/ShopContext';
 import type { ShippingAddress } from '../context/ShopContext';
 import {
   ShieldCheck, ArrowRight, ArrowLeft,
-  Loader, CheckCircle, AlertCircle, Clock,
+  Loader, CheckCircle, AlertCircle,
 } from 'lucide-react';
 
 // ─── Load Razorpay Checkout script dynamically ────────────────────────────────
@@ -80,7 +80,6 @@ export const Checkout: React.FC = () => {
     cartTotal,
     profile,
     addresses,
-    orders,
     placeOrder,
     confirmPayment,
     navigateTo,
@@ -521,32 +520,6 @@ export const Checkout: React.FC = () => {
               </span>
             </div>
 
-            {stage === 'dismissed' && pendingOrderId && (
-              <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs">
-                <Clock size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2 flex-1">
-                  <p className="font-semibold text-amber-800">Order placed — payment incomplete</p>
-                  <p className="text-amber-700 leading-relaxed">
-                    Your order was created (ID: #{pendingOrderId}) but payment was cancelled.
-                    You can retry paying now or visit <strong>My Account → Orders</strong> later.
-                  </p>
-                  <div className="flex items-center gap-3 pt-1">
-                    <button
-                      onClick={handleRetryPayment}
-                      className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg transition-colors text-[10px] uppercase tracking-wider"
-                    >
-                      Retry Payment
-                    </button>
-                    <button
-                      onClick={() => navigateTo('account')}
-                      className="text-[10px] font-bold text-amber-900 underline underline-offset-2"
-                    >
-                      Go to Account
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {stage === 'error' && (
               <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-xs">
