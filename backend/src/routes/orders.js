@@ -188,9 +188,6 @@ router.post('/checkout', async (req, res) => {
         { transaction }
       );
 
-      await CartItem.destroy({ where: { cartId: cart.id }, transaction });
-      await cart.update({ status: 'ORDERED' }, { transaction });
-
       return Order.findByPk(order.id, {
         include: [Address, { model: OrderItem, include: orderItemInclude }],
         transaction,
@@ -299,6 +296,13 @@ router.patch('/:id/confirm-payment', async (req, res) => {
       status: 'CONFIRMED',
       razorpayPaymentId,
     });
+
+    // Clear user's active cart in backend on successful payment confirmation
+    const cart = await Cart.findOne({ where: { userId: req.user.id, status: 'ACTIVE' } });
+    if (cart) {
+      await CartItem.destroy({ where: { cartId: cart.id } });
+      await cart.update({ status: 'ORDERED' });
+    }
 
     const confirmed = await Order.findByPk(order.id, {
       include: [Address, { model: OrderItem, include: orderItemInclude }],

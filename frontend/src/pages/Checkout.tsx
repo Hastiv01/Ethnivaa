@@ -99,41 +99,9 @@ export const Checkout: React.FC = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [saveAddress, setSaveAddress] = useState(false);
   const paymentMethod = 'Prepaid / Online';
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(() => {
-    return localStorage.getItem('ethnivaa_pending_order_id');
-  });
-  const [rzpOptions, setRzpOptions] = useState<{
-    razorpayOrderId: string;
-    razorpayKeyId: string;
-    amount: number;
-    currency: string;
-  } | null>(() => {
-    const saved = localStorage.getItem('ethnivaa_rzp_options');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [stage, setStage] = useState<Stage>(() => {
-    const hasPending = localStorage.getItem('ethnivaa_pending_order_id') !== null;
-    return hasPending ? 'error' : 'idle';
-  });
-  const [errorMessage, setErrorMessage] = useState<string | null>(() => {
-    const hasPending = localStorage.getItem('ethnivaa_pending_order_id') !== null;
-    return hasPending ? 'Your payment is incomplete. Please click the button below to retry and complete your checkout.' : null;
-  });
+  const [stage, setStage] = useState<Stage>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const rzpRef = useRef<any>(null);
-
-  // Recovery Mount check: verify if the restored pending order has already been paid successfully
-  useEffect(() => {
-    if (pendingOrderId && orders.length > 0) {
-      const matchedOrder = orders.find(o => o.id === pendingOrderId);
-      if (matchedOrder && (matchedOrder.paymentStatus === 'Success' || matchedOrder.status === 'Confirmed')) {
-        console.log('Pending order was already paid successfully. Cleaning storage and redirecting...');
-        localStorage.removeItem('ethnivaa_pending_order_id');
-        localStorage.removeItem('ethnivaa_rzp_options');
-        setStage('success');
-        navigateTo('success');
-      }
-    }
-  }, [pendingOrderId, orders, navigateTo]);
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -200,9 +168,6 @@ export const Checkout: React.FC = () => {
       const result = await placeOrder(formData, paymentMethod, saveAddress);
       const { order, razorpayOrderId, razorpayKeyId, amount, currency } = result;
 
-      setPendingOrderId(order.id);
-      setRzpOptions({ razorpayOrderId, razorpayKeyId, amount, currency });
-
       // Step 2: Load Razorpay script
       setStage('script_loading');
       const scriptLoaded = await loadRazorpayScript();
@@ -239,8 +204,8 @@ export const Checkout: React.FC = () => {
             setStage('success');
             setTimeout(() => navigateTo('success'), 1200);
           } catch (err: any) {
-            setStage('error');
-            setErrorMessage(err.message || 'Payment verification failed. Please contact support.');
+            console.error('Payment confirmation failed:', err);
+            navigateTo('failed');
           }
         },
 
@@ -261,8 +226,7 @@ export const Checkout: React.FC = () => {
         modal: {
           // Called when user presses the close/back button on Razorpay
           ondismiss: () => {
-            setStage('error');
-            setErrorMessage('Payment window was closed before completion. Please click the Retry button to complete your payment.');
+            navigateTo('failed');
           },
         },
         config: {
@@ -278,96 +242,8 @@ export const Checkout: React.FC = () => {
       rzpRef.current = rzp;
 
       rzp.on('payment.failed', (response: any) => {
-        setStage('error');
-        setErrorMessage(
-          response?.error?.description || 'Payment failed. Please try a different payment method.'
-        );
-      });
-
-      rzp.open();
-    } catch (err: any) {
-      setStage('error');
-      setErrorMessage(err.message || 'Something went wrong. Please try again.');
-    }
-  };
-
-  const handleRetryPayment = async () => {
-    if (!agreeTerms) {
-      setStage('error');
-      setErrorMessage('You must agree to the Terms & Conditions and Privacy Policy to proceed.');
-      return;
-    }
-    if (!rzpOptions || !pendingOrderId) return;
-    setStage('rzp_open');
-    setErrorMessage(null);
-
-    try {
-      const options = {
-        key: rzpOptions.razorpayKeyId,
-        amount: rzpOptions.amount,
-        currency: rzpOptions.currency,
-        name: 'Ethnivaa',
-        description: `Order #${pendingOrderId}`,
-        image: 'https://res.cloudinary.com/dujdgboyb/image/upload/v1781935583/new_logo_he9q1o.png',
-        order_id: rzpOptions.razorpayOrderId,
-
-        handler: async (response: {
-          razorpay_payment_id: string;
-          razorpay_order_id: string;
-          razorpay_signature: string;
-        }) => {
-          setStage('confirming');
-          try {
-            await confirmPayment(pendingOrderId, {
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpaySignature: response.razorpay_signature,
-            });
-            setStage('success');
-            setTimeout(() => navigateTo('success'), 1200);
-          } catch (err: any) {
-            setStage('error');
-            setErrorMessage(err.message || 'Payment verification failed. Please contact support.');
-          }
-        },
-
-        prefill: {
-          name: formData.fullName,
-          contact: `+91${formData.mobileNumber}`,
-          email: profile.email || '',
-        },
-
-        notes: {
-          shipping_address: `${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`,
-        },
-
-        theme: {
-          color: '#7B1C1C',
-        },
-
-        modal: {
-          ondismiss: () => {
-            setStage('error');
-            setErrorMessage('Payment window was closed before completion. Please click the Retry button to complete your payment.');
-          },
-        },
-        config: {
-          display: {
-            hide: [
-              { method: 'paylater' }
-            ]
-          }
-        },
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzpRef.current = rzp;
-
-      rzp.on('payment.failed', (response: any) => {
-        setStage('error');
-        setErrorMessage(
-          response?.error?.description || 'Payment failed. Please try a different payment method.'
-        );
+        console.error('Payment failed response:', response);
+        navigateTo('failed');
       });
 
       rzp.open();
@@ -378,7 +254,7 @@ export const Checkout: React.FC = () => {
   };
 
   // ── Empty cart guard ───────────────────────────────────────────────────────
-  if (cartItems.length === 0 && !pendingOrderId && stage !== 'confirming' && stage !== 'success') {
+  if (cartItems.length === 0 && stage !== 'confirming' && stage !== 'success') {
     return (
       <div className="max-w-md mx-auto py-16 text-center space-y-4">
         <h2 className="font-serif text-xl font-bold text-crimson-950">No items in checkout</h2>
@@ -676,22 +552,14 @@ export const Checkout: React.FC = () => {
               <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-xs">
                 <AlertCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
                 <div className="space-y-2 flex-1">
-                  <p className="font-semibold text-red-800">Payment failed</p>
+                  <p className="font-semibold text-red-800">Checkout Error</p>
                   <p className="text-red-600 leading-relaxed">{errorMessage}</p>
                   <div className="flex items-center gap-3 pt-1">
-                    {rzpOptions && (
-                      <button
-                        onClick={handleRetryPayment}
-                        className="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg transition-colors text-[10px] uppercase tracking-wider"
-                      >
-                        Retry Payment
-                      </button>
-                    )}
                     <button
                       onClick={() => { setStage('idle'); setErrorMessage(null); }}
                       className="text-[10px] font-bold text-red-700 underline underline-offset-2"
                     >
-                      Reset Form
+                      Clear Error
                     </button>
                   </div>
                 </div>
@@ -725,50 +593,28 @@ export const Checkout: React.FC = () => {
               </label>
             </div>
 
-            {/* ── Proceed to Pay / Retry Payment button ── */}
-            {pendingOrderId ? (
-              <button
-                type="button"
-                disabled={isBusy}
-                onClick={handleRetryPayment}
-                className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed
-                           text-white font-bold uppercase tracking-wider text-xs py-4 rounded-full
-                           transition-all duration-300 shadow-md flex items-center justify-center gap-2 group"
-              >
-                {stage === 'script_loading' ? (
-                  <><Loader size={14} className="animate-spin" /><span>Loading Razorpay…</span></>
-                ) : stage === 'rzp_open' ? (
-                  <><Loader size={14} className="animate-spin" /><span>Payment in Progress…</span></>
-                ) : (
-                  <>
-                    <span>Retry Payment · ₹{((rzpOptions?.amount || 0) / 100).toLocaleString('en-IN')}</span>
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                type="submit"
-                form="shipping-form"
-                disabled={isBusy}
-                className="w-full bg-crimson-950 hover:bg-crimson-900 disabled:opacity-60 disabled:cursor-not-allowed
-                           text-gold-100 font-bold uppercase tracking-wider text-xs py-4 rounded-full
-                           transition-all duration-300 shadow-md flex items-center justify-center gap-2 group"
-              >
-                {stage === 'creating' ? (
-                  <><Loader size={14} className="animate-spin" /><span>Creating Order…</span></>
-                ) : stage === 'script_loading' ? (
-                  <><Loader size={14} className="animate-spin" /><span>Loading Razorpay…</span></>
-                ) : stage === 'rzp_open' ? (
-                  <><Loader size={14} className="animate-spin" /><span>Payment in Progress…</span></>
-                ) : (
-                  <>
-                    <span>Proceed to Pay · ₹{cartTotal.toLocaleString('en-IN')}</span>
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
-            )}
+            {/* ── Proceed to Pay button ── */}
+            <button
+              type="submit"
+              form="shipping-form"
+              disabled={isBusy}
+              className="w-full bg-crimson-950 hover:bg-crimson-900 disabled:opacity-60 disabled:cursor-not-allowed
+                         text-gold-100 font-bold uppercase tracking-wider text-xs py-4 rounded-full
+                         transition-all duration-300 shadow-md flex items-center justify-center gap-2 group"
+            >
+              {stage === 'creating' ? (
+                <><Loader size={14} className="animate-spin" /><span>Creating Order…</span></>
+              ) : stage === 'script_loading' ? (
+                <><Loader size={14} className="animate-spin" /><span>Loading Razorpay…</span></>
+              ) : stage === 'rzp_open' ? (
+                <><Loader size={14} className="animate-spin" /><span>Payment in Progress…</span></>
+              ) : (
+                <>
+                  <span>Proceed to Pay · ₹{cartTotal.toLocaleString('en-IN')}</span>
+                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
 
             <p className="text-[9px] text-obsidian-400 text-center font-sans">
               By proceeding, you agree to Ethnivaa's Terms of Service and Privacy Policy.

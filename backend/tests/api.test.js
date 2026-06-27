@@ -4,6 +4,8 @@ const express = require('express');
 const request = require('supertest');
 const proxyquire = require('proxyquire').noCallThru();
 
+process.env.JWT_SECRET = 'test-secret-key';
+
 function createAppWithRoutes(routeModules) {
   const app = express();
   app.use(express.json());
@@ -66,7 +68,7 @@ test('auth register and login routes work with model stubs', async () => {
   };
 
   const authRouter = proxyquire('../src/routes/auth', {
-    '../models': { User: userStub, SignupChallenge: signupChallengeStub },
+    '../models': { User: userStub, SignupChallenge: signupChallengeStub, PasswordResetChallenge: { findOne: async () => null, create: async () => null } },
     bcrypt: {
       hash: async () => 'hashed-secret',
       compare: async () => true,
@@ -125,7 +127,7 @@ test('email OTP signup flow starts, verifies, and completes', async () => {
   };
 
   const authRouter = proxyquire('../src/routes/auth', {
-    '../models': { User: userStub, SignupChallenge: signupChallengeStub },
+    '../models': { User: userStub, SignupChallenge: signupChallengeStub, PasswordResetChallenge: { findOne: async () => null, create: async () => null } },
     bcrypt: {
       hash: async (value) => `hashed:${value}`,
       compare: async () => true,
@@ -184,7 +186,7 @@ test('google sign-in returns a token and user payload', async () => {
   };
 
   const authRouter = proxyquire('../src/routes/auth', {
-    '../models': { User: userStub, SignupChallenge: { findOne: async () => null, create: async () => null } },
+    '../models': { User: userStub, SignupChallenge: { findOne: async () => null, create: async () => null }, PasswordResetChallenge: { findOne: async () => null, create: async () => null } },
     bcrypt: {
       hash: async (value) => `hashed:${value}`,
       compare: async () => true,

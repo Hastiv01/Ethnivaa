@@ -63,7 +63,7 @@ export interface PlaceOrderResult {
   currency: string;
 }
 
-export type PageType = 'welcome' | 'home' | 'shop' | 'details' | 'cart' | 'checkout' | 'success' | 'account' | 'admin' | 'login' | 'signup' | 'terms' | 'privacy' | 'returns';
+export type PageType = 'welcome' | 'home' | 'shop' | 'details' | 'cart' | 'checkout' | 'success' | 'failed' | 'account' | 'admin' | 'login' | 'signup' | 'terms' | 'privacy' | 'returns';
 
 export interface BackendAddress {
   id: number;
@@ -217,6 +217,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (path === '/cart') return 'cart';
     if (path === '/checkout') return 'checkout';
     if (path === '/success') return 'success';
+    if (path === '/failed') return 'failed';
     if (path === '/account') return 'account';
     if (path === '/admin') return 'admin';
     if (path === '/login') return 'login';
@@ -237,6 +238,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       case 'cart': return '/cart';
       case 'checkout': return '/checkout';
       case 'success': return '/success';
+      case 'failed': return '/failed';
       case 'account': return '/account';
       case 'admin': return '/admin';
       case 'login': return '/login';
@@ -1189,9 +1191,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const responseData = await checkResponse.json();
       const o = responseData.order;
 
-      // Local Cart reset
-      setCartItems([]);
-
       // Map backend order response
       const items = (o.OrderItems || []).map((item: any) => ({
         productId: String(item.productId),
@@ -1223,18 +1222,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setLatestOrder(newOrder);
       setOrders(prev => [newOrder, ...prev]);
-
-      // Save pending order info to localStorage for refresh recovery
-      localStorage.setItem('ethnivaa_pending_order_id', newOrder.id);
-      localStorage.setItem(
-        'ethnivaa_rzp_options',
-        JSON.stringify({
-          razorpayOrderId: responseData.razorpayOrderId,
-          razorpayKeyId: responseData.razorpayKeyId,
-          amount: responseData.amount,
-          currency: responseData.currency || 'INR',
-        })
-      );
 
       // Return order + Razorpay fields needed to open the real Razorpay Checkout popup
       return {
@@ -1289,6 +1276,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ? { ...prev, paymentStatus: 'Success', status: 'Confirmed' }
         : prev
     );
+
+    // Clear local cart items upon successful payment confirmation
+    setCartItems([]);
 
     // Clear pending order info from localStorage on successful payment
     localStorage.removeItem('ethnivaa_pending_order_id');

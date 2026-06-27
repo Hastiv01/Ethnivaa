@@ -14,6 +14,7 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails').then(m => ({ 
 const Cart = lazy(() => import('./pages/Cart').then(m => ({ default: m.Cart })));
 const Checkout = lazy(() => import('./pages/Checkout').then(m => ({ default: m.Checkout })));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess').then(m => ({ default: m.OrderSuccess })));
+const PaymentFailed = lazy(() => import('./pages/PaymentFailed').then(m => ({ default: m.PaymentFailed })));
 const Account = lazy(() => import('./pages/Account').then(m => ({ default: m.Account })));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const Auth = lazy(() => import('./pages/Auth').then(m => ({ default: m.Auth })));
@@ -61,6 +62,7 @@ const AppContent: React.FC = () => {
             {/* All other routes require login */}
             <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
             <Route path="/success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
+            <Route path="/failed" element={<ProtectedRoute><PaymentFailed /></ProtectedRoute>} />
             <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
 
