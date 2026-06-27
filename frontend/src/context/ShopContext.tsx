@@ -621,11 +621,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 4. Load backend addresses when logged in
   const fetchAddresses = useCallback(async () => {
-    const token = safeParse<string | null>('ethnivaa_auth_token', null);
-    if (!token) return;
+    if (!authToken) return;
     try {
       const res = await fetch('/api/addresses', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${authToken}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -634,7 +633,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Failed to load addresses:', err);
     }
-  }, []);
+  }, [authToken]);
 
   useEffect(() => {
     if (currentUser && authToken) {
