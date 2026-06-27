@@ -83,7 +83,12 @@ export const Checkout: React.FC = () => {
     placeOrder,
     confirmPayment,
     navigateTo,
+    fetchAddresses,
   } = useShop();
+
+  React.useEffect(() => {
+    fetchAddresses();
+  }, [fetchAddresses]);
 
   // ── Address form state ─────────────────────────────────────────────────────
   const [formData, setFormData] = useState<ShippingAddress>({

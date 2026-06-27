@@ -41,8 +41,8 @@ function buildOrderNumber(userId) {
 
 function calculateTotals(items) {
   const subtotal = items.reduce((sum, item) => sum + Number(item.unitPrice) * Number(item.quantity), 0);
-  // Mirror the frontend rule: free shipping for ₹499 and above; ₹80 otherwise
-  const shippingCost = subtotal === 0 ? 0 : subtotal >= 499 ? 0 : 80;
+  // Mirror the frontend rule: free shipping for ₹699 and above; ₹80 otherwise
+  const shippingCost = subtotal === 0 ? 0 : subtotal >= 699 ? 0 : 80;
   return {
     subtotal: toMoney(subtotal),
     shippingCost: toMoney(shippingCost),

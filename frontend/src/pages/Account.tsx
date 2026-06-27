@@ -21,7 +21,14 @@ export const Account: React.FC = () => {
     addAddress,
     deleteAddress,
     currentUser,
+    fetchAddresses,
   } = useShop();
+
+  React.useEffect(() => {
+    if (currentUser) {
+      fetchAddresses();
+    }
+  }, [currentUser, fetchAddresses]);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
