@@ -262,7 +262,7 @@ export const Welcome: React.FC = () => {
                   <span className="font-serif font-bold text-gold-600 uppercase tracking-wider animate-pulse min-h-[1.25rem] text-left block">
                     {wakingProgress < 25 ? 'Stoking the boutique furnace...' :
                      wakingProgress < 50 ? 'Opening the royal boutique...' :
-                     wakingProgress < 75 ? 'Polishing gold ornaments...' :
+                     wakingProgress < 75 ? 'Polishing ornaments...' :
                      'Preparing your royal experience...'}
                   </span>
                   <span className="font-sans font-bold text-crimson-950">{wakingProgress}%</span>

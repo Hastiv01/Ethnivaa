@@ -53,7 +53,7 @@ export const ServerWakeUpOverlay: React.FC = () => {
     } else if (wakingProgress < 50) {
       setStatusMessage('Opening the royal boutique...');
     } else if (wakingProgress < 75) {
-      setStatusMessage('Unlocking the vaults and polishing the gold...');
+      setStatusMessage('Unlocking the vaults and polishing the ornaments...');
     } else if (wakingProgress < 95) {
       setStatusMessage('Preparing your royal experience...');
     } else if (wakingProgress >= 100) {

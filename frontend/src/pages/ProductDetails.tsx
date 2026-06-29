@@ -181,7 +181,7 @@ export const ProductDetails: React.FC = () => {
                   />
                 ))}
               </div>
-              <span className="font-bold text-obsidian-900">{product.rating} / 5.0</span>
+              <span className="font-bold text-obsidian-900">{Number(product.rating).toFixed(1)} / 5.0</span>
               <span className="text-obsidian-400 group-hover:text-gold-600 transition-colors border-b border-transparent group-hover:border-gold-600 pb-0.5">({product.reviewsCount} customer reviews)</span>
             </button>
           </div>
@@ -305,7 +305,7 @@ export const ProductDetails: React.FC = () => {
               <h3 className="font-serif text-lg font-bold text-crimson-950">Customer Rating</h3>
               
               <div className="flex items-center gap-4">
-                <span className="font-serif text-4xl font-extrabold text-crimson-950">{product.rating}</span>
+                <span className="font-serif text-4xl font-extrabold text-crimson-950">{Number(product.rating).toFixed(1)}</span>
                 <div>
                   <div className="flex text-gold-400">
                     {[...Array(5)].map((_, i) => (

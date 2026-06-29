@@ -47,10 +47,10 @@ async function seed() {
     defaults: {
       categoryId: defaultCategory.id,
       title: 'Mayur Pankh Oxidized Choker Set',
-      description: 'This peacock-inspired oxidized silver choker features intricate hand-carved detailing and dangling metal beads. Perfect for pairing with ethnic ghagras and sarees during Garba nights.',
+      description: 'This peacock-inspired oxidized metallic choker features intricate hand-carved detailing and dangling metal beads. Perfect for pairing with ethnic ghagras and sarees during Garba nights.',
       price: 1899,
       originalPrice: 2499,
-      color: 'Oxidized Silver',
+      color: 'Oxidized Metallic',
       image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&auto=format&fit=crop&q=80',
       images: [
         'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&auto=format&fit=crop&q=80',
@@ -69,7 +69,7 @@ async function seed() {
       description: 'An absolute masterpiece of traditional craftsmanship. This Royal Kundan Hasli is embellished with high-grade hand-cut glass stones, pearls, and green meenakari work on the reverse side.',
       price: 8499,
       originalPrice: 10999,
-      color: 'Gold Plated',
+      color: 'Brass Plated',
       image: 'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=800&auto=format&fit=crop&q=80',
       images: [
         'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=800&auto=format&fit=crop&q=80',
@@ -87,7 +87,7 @@ async function seed() {
       description: 'Timeless crescent moon Chandbalis featuring delicate filigree work, tiny floral motifs, and pearls hanging at the border. Lightweight enough for daily or festive styling.',
       price: 999,
       originalPrice: 1499,
-      color: 'Oxidized Silver',
+      color: 'Oxidized Metallic',
       image: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=800&auto=format&fit=crop&q=80',
       images: [
         'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=800&auto=format&fit=crop&q=80',
