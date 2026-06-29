@@ -57,7 +57,7 @@ router.get('/me', async (req, res) => {
     const orders = await Order.findAll({
       where: { userId: req.user.id },
       include: [
-        { model: Address },
+        { model: Address, paranoid: false },
         {
           model: OrderItem,
           include: orderItemInclude,
@@ -189,7 +189,7 @@ router.post('/checkout', async (req, res) => {
       );
 
       return Order.findByPk(order.id, {
-        include: [Address, { model: OrderItem, include: orderItemInclude }],
+        include: [{ model: Address, paranoid: false }, { model: OrderItem, include: orderItemInclude }],
         transaction,
       });
     });
@@ -259,7 +259,7 @@ router.patch('/:id/confirm-payment', async (req, res) => {
     if (order.paymentStatus === 'SUCCESS') {
       // Idempotent — already confirmed, return the updated order
       const confirmed = await Order.findByPk(order.id, {
-        include: [Address, { model: OrderItem, include: orderItemInclude }],
+        include: [{ model: Address, paranoid: false }, { model: OrderItem, include: orderItemInclude }],
       });
       return res.json({ order: confirmed });
     }
@@ -305,7 +305,7 @@ router.patch('/:id/confirm-payment', async (req, res) => {
     }
 
     const confirmed = await Order.findByPk(order.id, {
-      include: [Address, { model: OrderItem, include: orderItemInclude }],
+      include: [{ model: Address, paranoid: false }, { model: OrderItem, include: orderItemInclude }],
     });
 
     // Send confirmation email asynchronously

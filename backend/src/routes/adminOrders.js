@@ -41,7 +41,7 @@ router.get('/dashboard', async (req, res) => {
       where: { paymentStatus: 'SUCCESS' },
       include: [
         { model: User, attributes: ['id', 'name', 'email'] },
-        { model: Address },
+        { model: Address, paranoid: false },
         { model: OrderItem, include: orderItemInclude },
       ],
       order: [['createdAt', 'DESC']],
@@ -61,7 +61,7 @@ router.get('/', async (req, res) => {
       where: { paymentStatus: 'SUCCESS' },
       include: [
         { model: User, attributes: ['id', 'name', 'email'] },
-        { model: Address },
+        { model: Address, paranoid: false },
         { model: OrderItem, include: orderItemInclude },
       ],
       order: [['createdAt', 'DESC']],
@@ -100,7 +100,7 @@ router.patch('/:id/status', async (req, res) => {
     const updatedOrder = await Order.findByPk(order.id, {
       include: [
         { model: User, attributes: ['id', 'name', 'email'] },
-        { model: Address },
+        { model: Address, paranoid: false },
         { model: OrderItem, include: orderItemInclude },
       ],
     });

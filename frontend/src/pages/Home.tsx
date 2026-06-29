@@ -62,9 +62,9 @@ export const Home: React.FC = () => {
                 <h3 className="font-serif text-4xl sm:text-7xl font-extrabold text-white drop-shadow-2xl tracking-wider">
                   {col.name}
                 </h3>
-                <span className="mt-8 text-xs sm:text-sm uppercase tracking-widest font-bold text-gold-400 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 drop-shadow-md">
+                <span className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-gold-300 bg-crimson-950/80 text-xs font-bold uppercase tracking-widest text-gold-100 shadow-lg backdrop-blur-md group-hover:bg-gold-500 group-hover:text-crimson-950 group-hover:border-gold-500 transition-all duration-300 active:scale-95">
                   <span>View All Treasures</span>
-                  <ArrowRight size={16} />
+                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </span>
               </div>
             </div>

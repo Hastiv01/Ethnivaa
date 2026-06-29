@@ -73,21 +73,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
 
         {/* Badges */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-          {product.isBestSeller && (
+          {product.isBestSeller ? (
             <span className="bg-crimson-950 text-gold-100 text-[9px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-md font-sans">
               Best Seller
             </span>
-          )}
-          {product.isNewArrival && (
+          ) : product.isNewArrival ? (
             <span className="bg-gold-400 text-crimson-950 text-[9px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-md font-sans">
               New Arrival
             </span>
-          )}
-          {hasDiscount && (
-            <span className="bg-emerald-600 text-white text-[9px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-md font-sans">
-              {discountPercent}% Off
-            </span>
-          )}
+          ) : null}
         </div>
 
         {/* Product Image */}
@@ -135,14 +129,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
 
         {/* Pricing & Mobile Action */}
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gold-100">
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
             <span className="font-serif font-bold text-crimson-950 text-base">
               ₹{product.price.toLocaleString('en-IN')}
             </span>
             {hasDiscount && (
-              <span className="font-sans line-through text-obsidian-400 text-xs font-light">
-                ₹{product.originalPrice!.toLocaleString('en-IN')}
-              </span>
+              <>
+                <span className="font-sans line-through text-obsidian-400 text-[11px] font-light">
+                  ₹{product.originalPrice!.toLocaleString('en-IN')}
+                </span>
+                <span className="text-emerald-600 font-sans text-[11px] font-bold whitespace-nowrap">
+                  {discountPercent}% Off
+                </span>
+              </>
             )}
           </div>
           
