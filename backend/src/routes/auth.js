@@ -6,6 +6,7 @@ const { User, SignupChallenge, PasswordResetChallenge } = require('../models');
 const { authenticate, requireRole } = require('../middleware/auth');
 const { sendBrevoOtpEmail, sendBrevoResetOtpEmail } = require('../services/email');
 const { verifyGoogleIdToken } = require('../services/googleAuth');
+const { isDisposableEmail } = require('../services/disposableEmail');
 
 const router = express.Router();
 
@@ -91,6 +92,11 @@ router.post('/register', async (req, res) => {
     }
 
     const normalizedEmail = normalizeEmail(email);
+
+    if (isDisposableEmail(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please use a real email address. Disposable or temporary email addresses are not allowed.' });
+    }
+
     const existingUser = await User.findOne({ where: { email: normalizedEmail } });
 
     if (existingUser) {
@@ -128,6 +134,11 @@ router.post('/signup/start', async (req, res) => {
     }
 
     const normalizedEmail = normalizeEmail(email);
+
+    if (isDisposableEmail(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please use a real email address. Disposable or temporary email addresses are not allowed.' });
+    }
+
     const existingUser = await User.findOne({ where: { email: normalizedEmail } });
     if (existingUser) {
       return res.status(409).json({ message: 'Email already registered' });
