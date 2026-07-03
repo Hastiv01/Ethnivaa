@@ -189,6 +189,7 @@ const apiRequest = async <T,>(path: string, body: Record<string, unknown>): Prom
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include', // send/receive httpOnly session cookie
     body: JSON.stringify(body),
   });
 
@@ -441,7 +442,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = useCallback(async (token: string) => {
     try {
       const res = await fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
@@ -553,7 +555,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const url = currentUserRole === 'ADMIN' ? '/api/admin/orders' : '/api/orders/me';
         const response = await fetch(url, {
-          headers: { 'Authorization': `Bearer ${authToken}` }
+          headers: { 'Authorization': `Bearer ${authToken}` },
+          credentials: 'include',
         });
         if (response.ok) {
           const data = await response.json();
@@ -604,7 +607,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       try {
         const response = await fetch('/api/cart', {
-          headers: { 'Authorization': `Bearer ${authToken}` }
+          headers: { 'Authorization': `Bearer ${authToken}` },
+          credentials: 'include',
         });
         if (response.ok) {
           const data = await response.json();
@@ -624,7 +628,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!authToken) return;
     try {
       const res = await fetch('/api/addresses', {
-        headers: { 'Authorization': `Bearer ${authToken}` }
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
@@ -652,6 +657,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: JSON.stringify({
           label: address.label || 'Shipping Address',
           recipientName: address.recipientName,
@@ -685,7 +691,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetch(`/api/addresses/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${authToken}` }
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        credentials: 'include',
       });
       if (res.ok) {
         setAddresses(prev => prev.filter(a => a.id !== id));
@@ -794,6 +801,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: JSON.stringify({
           title: newProd.name,
           description: newProd.description,
@@ -849,6 +857,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: JSON.stringify(body)
       });
 
@@ -887,9 +896,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await fetch(`/api/admin/products/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -937,6 +945,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: JSON.stringify({
           productId: Number(productId),
           rating: newReview.rating,
@@ -977,6 +986,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: JSON.stringify({ productId: Number(product.id), quantity })
       });
       if (response.ok) {
@@ -1059,6 +1069,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: JSON.stringify({ quantity })
       });
       if (response.ok) {
@@ -1099,9 +1110,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await fetch(`/api/cart/items/${backendItemId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        credentials: 'include',
       });
       if (response.ok) {
         const data = await response.json();
@@ -1123,9 +1133,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await fetch('/api/cart', {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        credentials: 'include',
       });
       if (response.ok) {
         setCartItems([]);
@@ -1167,6 +1176,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: JSON.stringify({
           address: {
             recipientName: address.fullName,
@@ -1256,6 +1266,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`,
       },
+      credentials: 'include',
       body: JSON.stringify(razorpayData),
     });
     if (!response.ok) {
@@ -1304,6 +1315,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
+        credentials: 'include',
         body: JSON.stringify(body)
       });
 
@@ -1414,7 +1426,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Tell the backend to clear the httpOnly session cookie
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch (_) { /* best-effort */ }
+
     setCurrentUser(null);
     setCurrentUserRole(null);
     setAuthToken(null);

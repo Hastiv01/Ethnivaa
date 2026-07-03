@@ -3,15 +3,44 @@ const bcrypt = require('bcrypt');
 const crypto = require('node:crypto');
 const jwt = require('jsonwebtoken');
 const { User, SignupChallenge, PasswordResetChallenge } = require('../models');
-const { authenticate, requireRole } = require('../middleware/auth');
+const { authenticate, requireRole, COOKIE_NAME, COOKIE_OPTIONS } = require('../middleware/auth');
 const { sendBrevoOtpEmail, sendBrevoResetOtpEmail } = require('../services/email');
 const { verifyGoogleIdToken } = require('../services/googleAuth');
 const { isDisposableEmail } = require('../services/disposableEmail');
+const {
+  loginLimiter,
+  otpSendLimiter,
+  otpVerifyLimiter,
+  generalAuthLimiter,
+} = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+const OTP_MAX_ATTEMPTS = 5; // lock after this many wrong guesses
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
+}
+
+/**
+ * Input length guard — prevents bcrypt DoS (hashing huge strings is expensive)
+ * and DB column overflow errors.
+ * Returns an error message string if invalid, null if all good.
+ */
+function validateInputLengths({ name, email, password } = {}) {
+  if (name !== undefined && String(name).trim().length > 100) {
+    return 'Name must be 100 characters or fewer.';
+  }
+  if (email !== undefined && String(email).trim().length > 254) {
+    return 'Email address is too long.';
+  }
+  if (password !== undefined && String(password).length > 128) {
+    return 'Password must be 128 characters or fewer.';
+  }
+  return null;
 }
 
 function createToken(user) {
@@ -25,6 +54,18 @@ function createToken(user) {
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );
+}
+
+/**
+ * Sets the JWT as a secure httpOnly cookie AND returns the token string
+ * so existing frontend Authorization-header code keeps working during migration.
+ */
+function setAuthCookie(res, token) {
+  res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
+}
+
+function clearAuthCookie(res) {
+  res.clearCookie(COOKIE_NAME, { path: '/' });
 }
 
 function createSignupToken(challenge) {
@@ -64,6 +105,26 @@ function sanitizeUser(user) {
   };
 }
 
+/**
+ * Password strength validation.
+ * Requires: min 8 chars, 1 uppercase, 1 digit, 1 special character.
+ */
+function validatePasswordStrength(password) {
+  if (!password || password.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'Password must contain at least one uppercase letter.';
+  }
+  if (!/[0-9]/.test(password)) {
+    return 'Password must contain at least one number.';
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return 'Password must contain at least one special character (e.g. @, #, !, $).';
+  }
+  return null; // null = valid
+}
+
 async function upsertSignupChallenge({ email, name, otpHash, otpExpiresAt }) {
   const existing = await SignupChallenge.findOne({ where: { email } });
   if (existing) {
@@ -71,6 +132,7 @@ async function upsertSignupChallenge({ email, name, otpHash, otpExpiresAt }) {
     existing.otpHash = otpHash;
     existing.otpExpiresAt = otpExpiresAt;
     existing.verifiedAt = null;
+    existing.otpAttempts = 0; // reset attempts on resend
     await existing.save();
     return existing;
   }
@@ -80,10 +142,14 @@ async function upsertSignupChallenge({ email, name, otpHash, otpExpiresAt }) {
     name,
     otpHash,
     otpExpiresAt,
+    otpAttempts: 0,
   });
 }
 
-router.post('/register', async (req, res) => {
+// ─── Routes ──────────────────────────────────────────────────────────────────
+
+// Legacy direct-register (no OTP) — apply rate limiter + disposable + password strength
+router.post('/register', generalAuthLimiter, async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -91,14 +157,21 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Name, email, and password are required' });
     }
 
+    const lengthError = validateInputLengths({ name, email, password });
+    if (lengthError) return res.status(400).json({ message: lengthError });
+
     const normalizedEmail = normalizeEmail(email);
 
     if (isDisposableEmail(normalizedEmail)) {
       return res.status(400).json({ message: 'Please use a real email address. Disposable or temporary email addresses are not allowed.' });
     }
 
-    const existingUser = await User.findOne({ where: { email: normalizedEmail } });
+    const passwordError = validatePasswordStrength(password);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
+    }
 
+    const existingUser = await User.findOne({ where: { email: normalizedEmail } });
     if (existingUser) {
       return res.status(409).json({ message: 'Email already registered' });
     }
@@ -114,6 +187,7 @@ router.post('/register', async (req, res) => {
     });
 
     const token = createToken(user);
+    setAuthCookie(res, token);
 
     return res.status(201).json({
       message: 'User registered successfully',
@@ -125,13 +199,17 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/signup/start', async (req, res) => {
+// Step 1: Start signup — send OTP
+router.post('/signup/start', otpSendLimiter, async (req, res) => {
   try {
     const { name, email } = req.body;
 
     if (!name || !email) {
       return res.status(400).json({ message: 'Name and email are required' });
     }
+
+    const lengthError = validateInputLengths({ name, email });
+    if (lengthError) return res.status(400).json({ message: lengthError });
 
     const normalizedEmail = normalizeEmail(email);
 
@@ -145,7 +223,6 @@ router.post('/signup/start', async (req, res) => {
     }
 
     const otp = createOtp();
-    console.log('--- SIGNUP OTP GENERATED:', otp, 'FOR', normalizedEmail, '---');
     const otpHash = await bcrypt.hash(otp, 10);
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const challenge = await upsertSignupChallenge({
@@ -170,7 +247,8 @@ router.post('/signup/start', async (req, res) => {
   }
 });
 
-router.post('/signup/verify', async (req, res) => {
+// Step 2: Verify OTP — with attempt lockout
+router.post('/signup/verify', otpVerifyLimiter, async (req, res) => {
   try {
     const { email, otp } = req.body;
 
@@ -189,13 +267,27 @@ router.post('/signup/verify', async (req, res) => {
       return res.status(400).json({ message: 'OTP already verified' });
     }
 
+    // Lockout after too many wrong attempts
+    if (challenge.otpAttempts >= OTP_MAX_ATTEMPTS) {
+      return res.status(429).json({
+        message: `Too many incorrect attempts. Please request a new verification code.`,
+      });
+    }
+
     if (new Date(challenge.otpExpiresAt).getTime() < Date.now()) {
-      return res.status(400).json({ message: 'OTP expired' });
+      return res.status(400).json({ message: 'OTP expired. Please request a new code.' });
     }
 
     const isOtpValid = await bcrypt.compare(String(otp).trim(), challenge.otpHash);
     if (!isOtpValid) {
-      return res.status(401).json({ message: 'Invalid OTP' });
+      challenge.otpAttempts += 1;
+      await challenge.save();
+      const remaining = OTP_MAX_ATTEMPTS - challenge.otpAttempts;
+      return res.status(401).json({
+        message: remaining > 0
+          ? `Invalid verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
+          : 'Too many incorrect attempts. Please request a new verification code.',
+      });
     }
 
     challenge.verifiedAt = new Date();
@@ -210,12 +302,21 @@ router.post('/signup/verify', async (req, res) => {
   }
 });
 
-router.post('/signup/complete', async (req, res) => {
+// Step 3: Complete signup — set password with strength check
+router.post('/signup/complete', generalAuthLimiter, async (req, res) => {
   try {
     const { signupToken, password } = req.body;
 
     if (!signupToken || !password) {
       return res.status(400).json({ message: 'signupToken and password are required' });
+    }
+
+    const lengthError = validateInputLengths({ password });
+    if (lengthError) return res.status(400).json({ message: lengthError });
+
+    const passwordError = validatePasswordStrength(password);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
     }
 
     let payload;
@@ -250,10 +351,12 @@ router.post('/signup/complete', async (req, res) => {
     });
 
     await challenge.destroy();
+    const token = createToken(user);
+    setAuthCookie(res, token);
 
     return res.status(201).json({
       message: 'Account created successfully',
-      token: createToken(user),
+      token,
       user: sanitizeUser(user),
     });
   } catch (error) {
@@ -261,7 +364,8 @@ router.post('/signup/complete', async (req, res) => {
   }
 });
 
-router.post('/google', async (req, res) => {
+// Google Sign-In
+router.post('/google', generalAuthLimiter, async (req, res) => {
   try {
     const { idToken } = req.body;
 
@@ -302,9 +406,12 @@ router.post('/google', async (req, res) => {
       await user.update(updates);
     }
 
+    const token = createToken(user);
+    setAuthCookie(res, token);
+
     return res.json({
       message: 'Google sign-in successful',
-      token: createToken(user),
+      token,
       user: sanitizeUser(user),
     });
   } catch (error) {
@@ -312,13 +419,17 @@ router.post('/google', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
+// Login — with rate limiter
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
+
+    const lengthError = validateInputLengths({ email, password });
+    if (lengthError) return res.status(400).json({ message: lengthError });
 
     const normalizedEmail = normalizeEmail(email);
     const user = await User.findOne({ where: { email: normalizedEmail } });
@@ -333,6 +444,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = createToken(user);
+    setAuthCookie(res, token);
 
     return res.json({
       message: 'Login successful',
@@ -344,25 +456,28 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.post('/forgot-password/start', async (req, res) => {
+// Forgot Password Step 1: Send OTP
+// Anti-enumeration: always respond with same message whether email exists or not
+router.post('/forgot-password/start', otpSendLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
     }
 
+    const lengthError = validateInputLengths({ email });
+    if (lengthError) return res.status(400).json({ message: lengthError });
+
     const normalizedEmail = normalizeEmail(email);
     const user = await User.findOne({ where: { email: normalizedEmail } });
-    if (!user) {
-      return res.status(404).json({ message: 'Account with this email does not exist' });
-    }
 
-    if (user.authProvider === 'GOOGLE') {
-      return res.status(400).json({ message: 'This account uses Google Sign-In. Please sign in with Google.' });
+    // Anti-enumeration: if no user or Google-only account, respond with same
+    // success message so attackers cannot discover which emails are registered.
+    if (!user || user.authProvider === 'GOOGLE') {
+      return res.status(200).json({ message: 'If an account with this email exists, an OTP has been sent.' });
     }
 
     const otp = createOtp();
-    console.log('--- PASSWORD RESET OTP GENERATED:', otp, 'FOR', normalizedEmail, '---');
     const otpHash = await bcrypt.hash(otp, 10);
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -371,12 +486,14 @@ router.post('/forgot-password/start', async (req, res) => {
       existing.otpHash = otpHash;
       existing.otpExpiresAt = otpExpiresAt;
       existing.verifiedAt = null;
+      existing.otpAttempts = 0; // reset attempts on resend
       await existing.save();
     } else {
       await PasswordResetChallenge.create({
         email: normalizedEmail,
         otpHash,
         otpExpiresAt,
+        otpAttempts: 0,
       });
     }
 
@@ -386,14 +503,14 @@ router.post('/forgot-password/start', async (req, res) => {
       otp,
     });
 
-    return res.status(200).json({ message: 'OTP sent to email' });
+    return res.status(200).json({ message: 'If an account with this email exists, an OTP has been sent.' });
   } catch (error) {
-    console.error('Forgot password start failed:', error);
     return res.status(500).json({ message: 'Failed to send OTP' });
   }
 });
 
-router.post('/forgot-password/verify', async (req, res) => {
+// Forgot Password Step 2: Verify OTP — with attempt lockout
+router.post('/forgot-password/verify', otpVerifyLimiter, async (req, res) => {
   try {
     const { email, otp } = req.body;
     if (!email || !otp) {
@@ -410,13 +527,27 @@ router.post('/forgot-password/verify', async (req, res) => {
       return res.status(400).json({ message: 'OTP already verified' });
     }
 
+    // Lockout after too many wrong attempts
+    if (challenge.otpAttempts >= OTP_MAX_ATTEMPTS) {
+      return res.status(429).json({
+        message: 'Too many incorrect attempts. Please request a new verification code.',
+      });
+    }
+
     if (new Date(challenge.otpExpiresAt).getTime() < Date.now()) {
-      return res.status(400).json({ message: 'OTP expired' });
+      return res.status(400).json({ message: 'OTP expired. Please request a new code.' });
     }
 
     const isOtpValid = await bcrypt.compare(String(otp).trim(), challenge.otpHash);
     if (!isOtpValid) {
-      return res.status(401).json({ message: 'Invalid OTP' });
+      challenge.otpAttempts += 1;
+      await challenge.save();
+      const remaining = OTP_MAX_ATTEMPTS - challenge.otpAttempts;
+      return res.status(401).json({
+        message: remaining > 0
+          ? `Invalid verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
+          : 'Too many incorrect attempts. Please request a new verification code.',
+      });
     }
 
     challenge.verifiedAt = new Date();
@@ -427,16 +558,24 @@ router.post('/forgot-password/verify', async (req, res) => {
       resetToken: createResetToken(challenge),
     });
   } catch (error) {
-    console.error('Forgot password verify failed:', error);
     return res.status(500).json({ message: 'Failed to verify OTP' });
   }
 });
 
-router.post('/forgot-password/complete', async (req, res) => {
+// Forgot Password Step 3: Set new password with strength check
+router.post('/forgot-password/complete', generalAuthLimiter, async (req, res) => {
   try {
     const { resetToken, password } = req.body;
     if (!resetToken || !password) {
       return res.status(400).json({ message: 'Reset token and password are required' });
+    }
+
+    const lengthError = validateInputLengths({ password });
+    if (lengthError) return res.status(400).json({ message: lengthError });
+
+    const passwordError = validatePasswordStrength(password);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
     }
 
     let payload;
@@ -466,13 +605,18 @@ router.post('/forgot-password/complete', async (req, res) => {
 
     return res.json({ message: 'Password reset successfully' });
   } catch (error) {
-    console.error('Forgot password complete failed:', error);
     return res.status(500).json({ message: 'Failed to reset password' });
   }
 });
 
 router.get('/me', authenticate, async (req, res) => {
   return res.json({ user: req.user });
+});
+
+// Logout — clears the httpOnly session cookie
+router.post('/logout', (req, res) => {
+  clearAuthCookie(res);
+  return res.json({ message: 'Logged out successfully' });
 });
 
 router.get('/admin-check', authenticate, requireRole('ADMIN'), (req, res) => {

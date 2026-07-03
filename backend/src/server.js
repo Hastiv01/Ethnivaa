@@ -7,8 +7,13 @@ const PORT = process.env.PORT || 4000;
 async function start() {
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ alter: true });
-    console.log('Database connected and synced');
+
+    // In production, never auto-alter the live database schema — use proper
+    // migrations instead. In development, alter:true is convenient.
+    const isDev = process.env.NODE_ENV !== 'production';
+    await sequelize.sync({ alter: isDev });
+    console.log(`Database connected and synced (alter: ${isDev})`);
+
 
     app.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);

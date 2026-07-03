@@ -279,8 +279,20 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
       return;
     }
 
-    if (signupPassword.length < 6) {
-      displayMessage('error', 'Password must be at least 6 characters long.');
+    if (signupPassword.length < 8) {
+      displayMessage('error', 'Password must be at least 8 characters long.');
+      return;
+    }
+    if (!/[A-Z]/.test(signupPassword)) {
+      displayMessage('error', 'Password must contain at least one uppercase letter.');
+      return;
+    }
+    if (!/[0-9]/.test(signupPassword)) {
+      displayMessage('error', 'Password must contain at least one number.');
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(signupPassword)) {
+      displayMessage('error', 'Password must contain at least one special character (e.g. @, #, !, $).');
       return;
     }
 
@@ -351,8 +363,20 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
       displayMessage('error', 'Please fill in all fields.');
       return;
     }
-    if (forgotPassword.length < 6) {
-      displayMessage('error', 'Password must be at least 6 characters long.');
+    if (forgotPassword.length < 8) {
+      displayMessage('error', 'Password must be at least 8 characters long.');
+      return;
+    }
+    if (!/[A-Z]/.test(forgotPassword)) {
+      displayMessage('error', 'Password must contain at least one uppercase letter.');
+      return;
+    }
+    if (!/[0-9]/.test(forgotPassword)) {
+      displayMessage('error', 'Password must contain at least one number.');
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(forgotPassword)) {
+      displayMessage('error', 'Password must contain at least one special character (e.g. @, #, !, $).');
       return;
     }
     if (forgotPassword !== forgotConfirmPassword) {
@@ -672,7 +696,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                       required
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
-                      placeholder="Minimum 6 characters"
+                      placeholder="Min 8 chars, uppercase, number, symbol"
                       className="w-full bg-ivory-50 border border-gold-200 focus:border-gold-500 rounded-xl py-3 pl-10 pr-4 text-obsidian-950 focus:outline-none transition-colors"
                     />
                     <Lock size={16} className="absolute left-3.5 top-3.5 text-gold-600" />
@@ -840,7 +864,7 @@ export const Auth: React.FC<AuthProps> = ({ mode: initialMode }) => {
                       required
                       value={forgotPassword}
                       onChange={(e) => setForgotPassword(e.target.value)}
-                      placeholder="Minimum 6 characters"
+                      placeholder="Min 8 chars, uppercase, number, symbol"
                       className="w-full bg-ivory-50 border border-gold-200 focus:border-gold-500 rounded-xl py-3 pl-10 pr-4 text-obsidian-950 focus:outline-none transition-colors"
                     />
                     <Lock size={16} className="absolute left-3.5 top-3.5 text-gold-600" />

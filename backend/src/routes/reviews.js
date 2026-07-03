@@ -1,5 +1,5 @@
 const express = require('express');
-const { Review, Product, User } = require('../models');
+const { Review, Product, User, Order, OrderItem } = require('../models');
 const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
@@ -23,6 +23,19 @@ router.post('/', async (req, res) => {
     const product = await Product.findByPk(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Purchase verification: only buyers can review
+    const hasPurchased = await OrderItem.findOne({
+      where: { productId: Number(productId) },
+      include: [{
+        model: Order,
+        where: { userId: req.user.id, paymentStatus: 'SUCCESS' },
+        required: true,
+      }],
+    });
+    if (!hasPurchased) {
+      return res.status(403).json({ message: 'You can only review products you have purchased.' });
     }
 
     // Check if user has already reviewed this product
