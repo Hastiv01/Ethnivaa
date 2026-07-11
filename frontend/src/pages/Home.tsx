@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
 import { ArrowRight } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 const COLLECTIONS = [
   {
@@ -26,8 +27,42 @@ export const Home: React.FC = () => {
   const bestSellers = products.filter(p => p.isBestSeller).slice(0, 4);
   const newArrivals = products.filter(p => p.isNewArrival).slice(0, 4);
 
+  const homeSchema = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': 'https://ethnivaa.com/#website',
+        'url': 'https://ethnivaa.com',
+        'name': 'Ethnivaa',
+        'description': 'Premium traditional Indian jewellery brand. Explore Navratri collection, Kundan, Temple jewellery, and antique oxidized ornaments designed with modern elegance.',
+        'potentialAction': {
+          '@type': 'SearchAction',
+          'target': 'https://ethnivaa.com/shop?search={search_term_string}',
+          'query-input': 'required name=search_term_string'
+        }
+      },
+      {
+        '@type': 'Organization',
+        '@id': 'https://ethnivaa.com/#organization',
+        'name': 'Ethnivaa',
+        'url': 'https://ethnivaa.com',
+        'logo': 'https://ethnivaa.com/logo.jpg',
+        'sameAs': [
+          'https://instagram.com/ethnivaa',
+          'https://facebook.com/ethnivaa'
+        ]
+      }
+    ]
+  }), []);
+
   return (
     <div className="space-y-16 pt-8 pb-16 animate-fadeIn">
+      <SEO 
+        title="Ethnivaa | Traditional Indian Jewellery | Festive Luxury"
+        description="Discover Ethnivaa, a premium traditional Indian jewellery brand. Explore our Navratri collection, Kundan, Temple jewellery, and antique oxidized ornaments."
+        schema={homeSchema}
+      />
       {/* 1. All Collections Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-2 mb-10">

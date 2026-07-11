@@ -1,8 +1,13 @@
 import React from 'react';
+import { SEO } from '../components/SEO';
 
 export const Privacy: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16 font-sans text-obsidian-800">
+      <SEO 
+        title="Privacy Policy | Ethnivaa Jewellery"
+        description="Learn how Ethnivaa protects, stores, collects, and processes your personal data and shipping details."
+      />
       <h1 className="font-serif text-3xl font-bold text-crimson-950 mb-6">Ethnivaa Privacy Policy</h1>
       <p className="mb-4"><strong>Effective Date:</strong> 24 June, 2026</p>
       <p className="mb-8">At Ethnivaa, we value your privacy and are committed to protecting your personal information.</p>

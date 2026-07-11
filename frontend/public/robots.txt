@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /shop
+Allow: /details/
+Allow: /terms
+Allow: /privacy
+Allow: /returns
+
+Disallow: /cart
+Disallow: /checkout
+Disallow: /success
+Disallow: /failed
+Disallow: /account
+Disallow: /admin
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://ethnivaa.com/sitemap.xml

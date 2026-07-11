@@ -4,6 +4,7 @@ import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
 import { SlidersHorizontal, ArrowUpDown, RotateCcw, X, Search } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 
 const PRICE_RANGES = [
@@ -77,8 +78,24 @@ export const ProductListing: React.FC = () => {
     setSortBy('popular');
   };
 
+  const seoTitle = useMemo(() => {
+    if (specialFilter === 'best-sellers') return 'Best Sellers Collection | Traditional Indian Jewellery | Ethnivaa';
+    if (specialFilter === 'new-arrivals') return 'New Arrivals | Latest Indian Jewellery Designs | Ethnivaa';
+    return 'Shop Traditional Indian Jewellery | Kundan, Temple & Oxidized | Ethnivaa';
+  }, [specialFilter]);
+
+  const seoDescription = useMemo(() => {
+    if (specialFilter === 'best-sellers') return 'Discover our most popular traditional Indian ornaments. Handcrafted Kundan choker sets, oxidized jhumkas, and premium heritage jewellery collections.';
+    if (specialFilter === 'new-arrivals') return 'Explore the newly unveiled heritage jewellery at Ethnivaa. Modern elegance combined with classic Indian festive style.';
+    return 'Browse the full Ethnivaa catalog. Hand-crafted luxury traditional Indian jewellery including Kundan choker sets, temple necklaces, oxidized chandbalis, and festive ornaments.';
+  }, [specialFilter]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fadeIn min-h-screen">
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+      />
       {/* Page Title & Breadcrumbs */}
       <div className="text-center space-y-2 mb-10">
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-crimson-950 uppercase tracking-wide">

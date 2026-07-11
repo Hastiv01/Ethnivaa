@@ -1,8 +1,13 @@
 import React from 'react';
+import { SEO } from '../components/SEO';
 
 export const Returns: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16 font-sans text-obsidian-800">
+      <SEO 
+        title="Return & Refund Policy | Ethnivaa Jewellery"
+        description="Review Ethnivaa's return, exchange, and refund rules for handcrafted traditional Indian ornaments."
+      />
       <h1 className="font-serif text-3xl font-bold text-crimson-950 mb-6">Return & Refund Policy – Ethnivaa</h1>
       <p className="mb-4"><strong>Effective Date:</strong> 24 June, 2026</p>
       <p className="mb-8">At Ethnivaa, we take great care in crafting and packaging our jewellery. Customer satisfaction is important to us, and we strive to ensure every order reaches you in perfect condition.</p>

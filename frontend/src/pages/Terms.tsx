@@ -1,8 +1,13 @@
 import React from 'react';
+import { SEO } from '../components/SEO';
 
 export const Terms: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16 font-sans text-obsidian-800">
+      <SEO 
+        title="Terms & Conditions | Ethnivaa Jewellery"
+        description="Read the terms and conditions for using Ethnivaa services, purchasing handcrafted traditional Indian jewellery, and ordering policy rules."
+      />
       <h1 className="font-serif text-3xl font-bold text-crimson-950 mb-6">Ethnivaa Terms & Conditions</h1>
       <p className="mb-4"><strong>Effective Date:</strong> 24 June, 2026</p>
       <p className="mb-8">Welcome to Ethnivaa. By using our website and purchasing our products, you agree to the following terms and conditions.</p>

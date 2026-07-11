@@ -5,6 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { QuickViewModal } from '../components/QuickViewModal';
 import type { Product } from '../data/products';
 import { Star, Truck, ShoppingBag, Heart, ArrowLeft, Plus, Minus, Send, ShieldCheck, Lock } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const ProductDetails: React.FC = () => {
   const { id: urlProductId } = useParams<{ id: string }>();
@@ -100,8 +101,53 @@ export const ProductDetails: React.FC = () => {
 
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
 
+  const productSchema = useMemo(() => {
+    if (!product) return undefined;
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      'name': product.name,
+      'image': product.images,
+      'description': product.description,
+      'offers': {
+        '@type': 'Offer',
+        'priceCurrency': 'INR',
+        'price': product.price,
+        'itemCondition': 'https://schema.org/NewCondition',
+        'availability': 'https://schema.org/InStock',
+        'url': window.location.origin + window.location.pathname,
+        'priceValidUntil': '2030-12-31'
+      },
+      'aggregateRating': product.reviewsCount > 0 ? {
+        '@type': 'AggregateRating',
+        'ratingValue': product.rating,
+        'reviewCount': product.reviewsCount
+      } : undefined,
+      'review': product.reviews?.map(rev => ({
+        '@type': 'Review',
+        'author': {
+          '@type': 'Person',
+          'name': rev.userName
+        },
+        'datePublished': rev.date || '2026-06-15',
+        'reviewRating': {
+          '@type': 'Rating',
+          'ratingValue': rev.rating
+        },
+        'reviewBody': rev.comment
+      }))
+    };
+  }, [product]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn min-h-screen">
+      <SEO 
+        title={`${product.name} | Ethnivaa Jewellery`}
+        description={product.description || `Buy high quality ${product.name} at Ethnivaa, your premium traditional Indian jewellery brand.`}
+        image={product.images && product.images[0]}
+        type="product"
+        schema={productSchema}
+      />
       {/* Back Button */}
       <button
         onClick={() => navigateTo('shop')}

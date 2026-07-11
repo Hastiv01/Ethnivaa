@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { Sparkles, ArrowRight, Gift, Gem, Compass, Crown } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 // Reusable detailed SVG Golden Flower Brooch with Ruby Center
 const Brooch: React.FC<{ size?: number; className?: string }> = ({ size = 64, className }) => (
@@ -122,6 +123,10 @@ export const Welcome: React.FC = () => {
         isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
       }`}
     >
+      <SEO 
+        title="Welcome to Ethnivaa | Premium Festive Luxury Traditional Jewellery"
+        description="Step into the royal boutique of Ethnivaa. Handcrafted traditional Indian jewellery for special occasions, Navratri, weddings, and premium festive gifting."
+      />
       {/* Background Ornaments / Decorative Graphics */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
         
