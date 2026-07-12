@@ -16,4 +16,4 @@ Disallow: /admin
 Disallow: /login
 Disallow: /signup
 
-Sitemap: https://ethnivaa.com/sitemap.xml
+Sitemap: https://ethnivaa.vercel.app/sitemap.xml
