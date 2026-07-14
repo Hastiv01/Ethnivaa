@@ -125,8 +125,8 @@ export const Welcome: React.FC = () => {
     >
       <SEO 
         title="Welcome to Ethnivaa | Premium Festive Luxury Traditional Jewellery"
-        description="Step into the royal boutique of Ethnivaa. Handcrafted traditional Indian jewellery for special occasions, Navratri, weddings, and premium festive gifting. Also known as Ethniva."
-        keywords="Ethnivaa, Ethniva, traditional Indian jewellery, festive jewellery, Navratri jewellery, wedding jewellery, Kundan, Temple jewellery, premium ethnic jewellery"
+        description="Step into the royal boutique of Ethnivaa. Handcrafted traditional Indian jewellery for special occasions, Navratri, weddings, and premium festive gifting."
+        keywords="Ethnivaa, ethnivaa jewellery, traditional Indian jewellery, festive jewellery, Navratri jewellery, wedding jewellery, Kundan, Temple jewellery, premium ethnic jewellery"
       />
       {/* Background Ornaments / Decorative Graphics */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">

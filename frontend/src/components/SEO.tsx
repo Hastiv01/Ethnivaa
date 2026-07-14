@@ -12,8 +12,8 @@ interface SEOProps {
 
 export const SEO: React.FC<SEOProps> = ({
   title = 'Ethnivaa | Traditional Indian Jewellery | Festive Luxury',
-  description = 'Discover Ethnivaa (also searched as Ethniva), a premium traditional Indian jewellery brand. Explore Navratri collection, Kundan, Temple jewellery, and antique oxidized ornaments designed with modern elegance.',
-  keywords = 'Ethnivaa, Ethniva, ethnivaa jewellery, ethniva jewellery, Indian jewellery, Kundan, Oxidized jewellery, Temple jewellery, Navratri jewellery, luxury ethnic fashion, jhumkas, chokers, traditional jewellery brand',
+  description = 'Discover Ethnivaa, a premium traditional Indian jewellery brand. Explore Navratri collection, Kundan, Temple jewellery, and antique oxidized ornaments designed with modern elegance.',
+  keywords = 'Ethnivaa, ethnivaa jewellery, Indian jewellery, Kundan, Oxidized jewellery, Temple jewellery, Navratri jewellery, luxury ethnic fashion, jhumkas, chokers, traditional Indian jewellery brand',
   image = 'https://ethnivaa.vercel.app/logo.jpg',
   url,
   type = 'website',

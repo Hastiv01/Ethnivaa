@@ -35,7 +35,6 @@ export const Home: React.FC = () => {
         '@id': 'https://ethnivaa.vercel.app/#website',
         'url': 'https://ethnivaa.vercel.app',
         'name': 'Ethnivaa',
-        'alternateName': ['Ethniva', 'Ethnivaa Jewellery', 'Ethniva Jewellery'],
         'description': 'Premium traditional Indian jewellery brand. Explore Navratri collection, Kundan, Temple jewellery, and antique oxidized ornaments designed with modern elegance.',
         'potentialAction': {
           '@type': 'SearchAction',
@@ -47,7 +46,6 @@ export const Home: React.FC = () => {
         '@type': 'Organization',
         '@id': 'https://ethnivaa.vercel.app/#organization',
         'name': 'Ethnivaa',
-        'alternateName': ['Ethniva', 'Ethnivaa Jewellery', 'Ethniva Jewellery'],
         'url': 'https://ethnivaa.vercel.app',
         'logo': 'https://ethnivaa.vercel.app/logo.jpg',
         'sameAs': [
