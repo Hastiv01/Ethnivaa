@@ -32,22 +32,24 @@ export const Home: React.FC = () => {
     '@graph': [
       {
         '@type': 'WebSite',
-        '@id': 'https://ethnivaa.com/#website',
-        'url': 'https://ethnivaa.com',
+        '@id': 'https://ethnivaa.vercel.app/#website',
+        'url': 'https://ethnivaa.vercel.app',
         'name': 'Ethnivaa',
+        'alternateName': ['Ethniva', 'Ethnivaa Jewellery', 'Ethniva Jewellery'],
         'description': 'Premium traditional Indian jewellery brand. Explore Navratri collection, Kundan, Temple jewellery, and antique oxidized ornaments designed with modern elegance.',
         'potentialAction': {
           '@type': 'SearchAction',
-          'target': 'https://ethnivaa.com/shop?search={search_term_string}',
+          'target': 'https://ethnivaa.vercel.app/shop?search={search_term_string}',
           'query-input': 'required name=search_term_string'
         }
       },
       {
         '@type': 'Organization',
-        '@id': 'https://ethnivaa.com/#organization',
+        '@id': 'https://ethnivaa.vercel.app/#organization',
         'name': 'Ethnivaa',
-        'url': 'https://ethnivaa.com',
-        'logo': 'https://ethnivaa.com/logo.jpg',
+        'alternateName': ['Ethniva', 'Ethnivaa Jewellery', 'Ethniva Jewellery'],
+        'url': 'https://ethnivaa.vercel.app',
+        'logo': 'https://ethnivaa.vercel.app/logo.jpg',
         'sameAs': [
           'https://instagram.com/ethnivaa',
           'https://facebook.com/ethnivaa'
